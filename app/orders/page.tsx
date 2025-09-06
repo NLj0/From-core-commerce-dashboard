@@ -9,10 +9,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, MoreHorizontal, Eye, Edit, Package, Truck, CheckCircle, XCircle } from "lucide-react"
+import { Search, MoreHorizontal, Eye, Edit, Download, CheckCircle, XCircle, Clock } from "lucide-react"
 import { OrderDetailsDialog } from "@/components/order-details-dialog"
 
-// Mock orders data
 const mockOrders = [
   {
     id: "ORD-001",
@@ -22,15 +21,15 @@ const mockOrders = [
       avatar: "/placeholder.svg?height=32&width=32",
     },
     products: [
-      { name: "Wireless Headphones", quantity: 1, price: 299.99 },
-      { name: "Phone Case", quantity: 2, price: 29.99 },
+      { name: "Premium WordPress Theme", quantity: 1, price: 299.99, type: "digital" },
+      { name: "Logo Design Package", quantity: 1, price: 149.99, type: "service" },
     ],
-    total: 359.97,
+    total: 449.98,
     status: "completed",
     date: "2024-01-15",
-    shippingAddress: "123 Main St, New York, NY 10001",
     paymentMethod: "Credit Card",
-    trackingNumber: "TRK123456789",
+    deliveryMethod: "Email + Download",
+    downloadExpiry: "2024-02-15",
   },
   {
     id: "ORD-002",
@@ -39,13 +38,13 @@ const mockOrders = [
       email: "sarah@example.com",
       avatar: "/placeholder.svg?height=32&width=32",
     },
-    products: [{ name: "Smart Watch", quantity: 1, price: 199.99 }],
+    products: [{ name: "Digital Marketing Course", quantity: 1, price: 199.99, type: "digital" }],
     total: 199.99,
     status: "processing",
     date: "2024-01-15",
-    shippingAddress: "456 Oak Ave, Los Angeles, CA 90210",
     paymentMethod: "PayPal",
-    trackingNumber: null,
+    deliveryMethod: "Email Access",
+    downloadExpiry: null,
   },
   {
     id: "ORD-003",
@@ -55,15 +54,15 @@ const mockOrders = [
       avatar: "/placeholder.svg?height=32&width=32",
     },
     products: [
-      { name: "Laptop Stand", quantity: 1, price: 79.99 },
-      { name: "Gaming Mouse", quantity: 1, price: 89.99 },
+      { name: "Stock Photo Bundle", quantity: 1, price: 79.99, type: "digital" },
+      { name: "Video Editing Service", quantity: 1, price: 89.99, type: "service" },
     ],
     total: 169.98,
-    status: "shipped",
+    status: "delivered",
     date: "2024-01-14",
-    shippingAddress: "789 Pine St, Chicago, IL 60601",
     paymentMethod: "Credit Card",
-    trackingNumber: "TRK987654321",
+    deliveryMethod: "Download Link",
+    downloadExpiry: "2024-02-14",
   },
   {
     id: "ORD-004",
@@ -72,13 +71,13 @@ const mockOrders = [
       email: "emma@example.com",
       avatar: "/placeholder.svg?height=32&width=32",
     },
-    products: [{ name: "Bluetooth Speaker", quantity: 1, price: 149.99 }],
+    products: [{ name: "UI/UX Design Templates", quantity: 1, price: 149.99, type: "digital" }],
     total: 149.99,
     status: "completed",
     date: "2024-01-14",
-    shippingAddress: "321 Elm St, Miami, FL 33101",
     paymentMethod: "Apple Pay",
-    trackingNumber: "TRK456789123",
+    deliveryMethod: "Instant Download",
+    downloadExpiry: "2024-03-14",
   },
   {
     id: "ORD-005",
@@ -87,13 +86,13 @@ const mockOrders = [
       email: "alex@example.com",
       avatar: "/placeholder.svg?height=32&width=32",
     },
-    products: [{ name: "Phone Case", quantity: 3, price: 29.99 }],
-    total: 89.97,
+    products: [{ name: "SEO Audit Service", quantity: 1, price: 299.99, type: "service" }],
+    total: 299.99,
     status: "cancelled",
     date: "2024-01-13",
-    shippingAddress: "654 Maple Dr, Seattle, WA 98101",
     paymentMethod: "Credit Card",
-    trackingNumber: null,
+    deliveryMethod: "Email Report",
+    downloadExpiry: null,
   },
   {
     id: "ORD-006",
@@ -103,15 +102,15 @@ const mockOrders = [
       avatar: "/placeholder.svg?height=32&width=32",
     },
     products: [
-      { name: "Wireless Headphones", quantity: 1, price: 299.99 },
-      { name: "Laptop Stand", quantity: 1, price: 79.99 },
+      { name: "E-book Collection", quantity: 1, price: 99.99, type: "digital" },
+      { name: "Content Writing Service", quantity: 1, price: 199.99, type: "service" },
     ],
-    total: 379.98,
+    total: 299.98,
     status: "pending",
     date: "2024-01-16",
-    shippingAddress: "987 Cedar Ln, Boston, MA 02101",
     paymentMethod: "Credit Card",
-    trackingNumber: null,
+    deliveryMethod: "Email + Download",
+    downloadExpiry: null,
   },
 ]
 
@@ -127,15 +126,15 @@ function getStatusBadge(status: string) {
     case "processing":
       return (
         <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-100">
-          <Package className="mr-1 h-3 w-3" />
+          <Clock className="mr-1 h-3 w-3" />
           Processing
         </Badge>
       )
-    case "shipped":
+    case "delivered":
       return (
         <Badge variant="outline" className="bg-purple-100 text-purple-800 hover:bg-purple-100">
-          <Truck className="mr-1 h-3 w-3" />
-          Shipped
+          <Download className="mr-1 h-3 w-3" />
+          Delivered
         </Badge>
       )
     case "pending":
@@ -194,7 +193,7 @@ export default function OrdersPage() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-foreground">Orders</h1>
-        <p className="text-muted-foreground mt-2">Track and manage all customer orders.</p>
+        <p className="text-muted-foreground mt-2">Track and manage all digital orders and services.</p>
       </div>
 
       {/* Summary Cards */}
@@ -258,7 +257,7 @@ export default function OrdersPage() {
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="processing">Processing</SelectItem>
-                  <SelectItem value="shipped">Shipped</SelectItem>
+                  <SelectItem value="delivered">Delivered</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
@@ -339,9 +338,9 @@ export default function OrdersPage() {
                             <Edit className="mr-2 h-4 w-4" />
                             Mark Processing
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "shipped")}>
-                            <Truck className="mr-2 h-4 w-4" />
-                            Mark Shipped
+                          <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "delivered")}>
+                            <Download className="mr-2 h-4 w-4" />
+                            Mark Delivered
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "completed")}>
                             <CheckCircle className="mr-2 h-4 w-4" />
@@ -369,16 +368,14 @@ export default function OrdersPage() {
                     {getStatusBadge(order.status)}
                   </div>
 
-                  {/* Line 2: Date + Total Price + Shipping Info */}
+                  {/* Line 2: Date + Total Price + Delivery Method */}
                   <div className="flex items-center justify-between text-sm text-muted-foreground">
                     <div className="flex items-center gap-4">
                       <span>{order.date}</span>
                       <span className="font-medium text-foreground">${order.total.toFixed(2)}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      {order.trackingNumber && (
-                        <span className="text-xs bg-muted px-2 py-1 rounded">{order.trackingNumber}</span>
-                      )}
+                      <span className="text-xs bg-muted px-2 py-1 rounded">{order.deliveryMethod}</span>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -394,9 +391,9 @@ export default function OrdersPage() {
                             <Edit className="mr-2 h-4 w-4" />
                             Mark Processing
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "shipped")}>
-                            <Truck className="mr-2 h-4 w-4" />
-                            Mark Shipped
+                          <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "delivered")}>
+                            <Download className="mr-2 h-4 w-4" />
+                            Mark Delivered
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "completed")}>
                             <CheckCircle className="mr-2 h-4 w-4" />
