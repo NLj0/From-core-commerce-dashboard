@@ -17,8 +17,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Upload, X } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Upload, Search, Globe } from "lucide-react"
 
 interface Product {
   id: string
@@ -59,9 +59,13 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
     expirationDays: "",
     codes: [] as string[],
     deliveryTime: "",
+    deliveryType: "", // for services: file, email, link
+    uploadedFile: null as File | null,
     // Bundle fields
     bundleProducts: [] as string[],
     bundleDelivery: "combined",
+    // Stock management
+    unlimitedStock: false,
   })
 
   useEffect(() => {
@@ -84,6 +88,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
         deliveryTime: "",
         bundleProducts: [],
         bundleDelivery: "combined",
+        unlimitedStock: false,
       })
     } else {
       setFormData({
@@ -104,6 +109,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
         deliveryTime: "",
         bundleProducts: [],
         bundleDelivery: "combined",
+        unlimitedStock: false,
       })
     }
   }, [product])
@@ -114,7 +120,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
     const productData = {
       name: formData.name,
       price: Number.parseFloat(formData.price),
-      stock: Number.parseInt(formData.stock),
+      stock: formData.unlimitedStock ? null : Number.parseInt(formData.stock),
       category: formData.category,
       sku: formData.sku,
       image: formData.image || `/placeholder.svg?height=60&width=60&query=${formData.name}`,
@@ -193,9 +199,24 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
     setFormData({ ...formData, codes: newCodes })
   }
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      setFormData({ ...formData, uploadedFile: file })
+    }
+  }
+
+  const getSEOPreview = () => {
+    const title = formData.metaTitle || formData.name || "Product Title"
+    const description = formData.metaDescription || formData.description || "Product description will appear here..."
+    const url = `https://yourstore.com/products/${formData.name.toLowerCase().replace(/\s+/g, "-")}`
+
+    return { title, description, url }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{product ? `Edit ${getProductTypeTitle()}` : `Add New ${getProductTypeTitle()}`}</DialogTitle>
           <DialogDescription>
@@ -206,18 +227,17 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
         </DialogHeader>
 
         <Tabs value={currentStep} onValueChange={setCurrentStep} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="basic">Basic Info</TabsTrigger>
             <TabsTrigger value="seo">SEO</TabsTrigger>
-            <TabsTrigger value="delivery">Delivery</TabsTrigger>
             <TabsTrigger value="images">Images</TabsTrigger>
           </TabsList>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <TabsContent value="basic" className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Product Name</Label>
+                  <Label htmlFor="name">Product Name *</Label>
                   <Input
                     id="name"
                     value={formData.name}
@@ -227,7 +247,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
+                  <Label htmlFor="category">Category *</Label>
                   <Select
                     value={formData.category}
                     onValueChange={(value) => setFormData({ ...formData, category: value })}
@@ -237,18 +257,20 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Electronics">Electronics</SelectItem>
-                      <SelectItem value="Accessories">Accessories</SelectItem>
-                      <SelectItem value="Digital">Digital</SelectItem>
+                      <SelectItem value="Digital Products">Digital Products</SelectItem>
+                      <SelectItem value="Digital Cards">Digital Cards</SelectItem>
                       <SelectItem value="Services">Services</SelectItem>
+                      <SelectItem value="Bundles">Bundles</SelectItem>
+                      <SelectItem value="Software">Software</SelectItem>
+                      <SelectItem value="Templates">Templates</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price ($)</Label>
+                  <Label htmlFor="price">Price ($) *</Label>
                   <Input
                     id="price"
                     type="number"
@@ -260,22 +282,39 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="stock">
-                    {productType === "digital" ? "Stock (Leave empty for unlimited)" : "Stock Quantity"}
-                  </Label>
+                  <Label htmlFor="stock">Stock Quantity</Label>
+                  {(productType === "digital" || productType === "digital-card") && (
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Checkbox
+                        id="unlimited"
+                        checked={formData.unlimitedStock}
+                        onCheckedChange={(checked) =>
+                          setFormData({
+                            ...formData,
+                            unlimitedStock: checked as boolean,
+                            stock: checked ? "" : formData.stock,
+                          })
+                        }
+                      />
+                      <Label htmlFor="unlimited" className="text-sm">
+                        Unlimited Stock
+                      </Label>
+                    </div>
+                  )}
                   <Input
                     id="stock"
                     type="number"
                     value={formData.stock}
                     onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                    placeholder={productType === "digital" ? "Unlimited" : "0"}
-                    required={productType !== "digital"}
+                    placeholder={formData.unlimitedStock ? "Unlimited" : "0"}
+                    disabled={formData.unlimitedStock}
+                    required={!formData.unlimitedStock && productType !== "digital"}
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="sku">SKU</Label>
+                <Label htmlFor="sku">SKU *</Label>
                 <div className="flex gap-2">
                   <Input
                     id="sku"
@@ -333,124 +372,43 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                   placeholder="Comma-separated keywords"
                 />
               </div>
-            </TabsContent>
 
-            <TabsContent value="delivery" className="space-y-4">
-              {productType && productType !== "bundle" && (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Delivery Method</Label>
-                    <RadioGroup
-                      value={formData.deliveryMethod}
-                      onValueChange={(value) => setFormData({ ...formData, deliveryMethod: value })}
-                    >
-                      {getDeliveryMethods().map((method) => (
-                        <div key={method.value} className="flex items-center space-x-2">
-                          <RadioGroupItem value={method.value} id={method.value} />
-                          <Label htmlFor={method.value}>{method.label}</Label>
-                        </div>
-                      ))}
-                    </RadioGroup>
-                  </div>
-
-                  {formData.deliveryMethod === "download" && (
-                    <div className="space-y-2">
-                      <Label htmlFor="downloadLink">Download Link</Label>
-                      <Input
-                        id="downloadLink"
-                        value={formData.downloadLink}
-                        onChange={(e) => setFormData({ ...formData, downloadLink: e.target.value })}
-                        placeholder="https://example.com/download"
-                      />
-                      <div className="space-y-2">
-                        <Label htmlFor="expirationDays">Link Expiration (days)</Label>
-                        <Input
-                          id="expirationDays"
-                          type="number"
-                          value={formData.expirationDays}
-                          onChange={(e) => setFormData({ ...formData, expirationDays: e.target.value })}
-                          placeholder="7"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {(formData.deliveryMethod === "code" || formData.deliveryMethod === "email") &&
-                    productType === "digital-card" && (
-                      <div className="space-y-2">
-                        <Label>Codes</Label>
-                        {formData.codes.map((code, index) => (
-                          <div key={index} className="flex gap-2">
-                            <Input
-                              value={code}
-                              onChange={(e) => updateCode(index, e.target.value)}
-                              placeholder="Enter code"
-                            />
-                            <Button type="button" variant="outline" size="icon" onClick={() => removeCode(index)}>
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                        <Button type="button" variant="outline" onClick={addCode}>
-                          Add Code
-                        </Button>
-                      </div>
-                    )}
-
-                  {productType === "service" && (
-                    <div className="space-y-2">
-                      <Label htmlFor="deliveryTime">Delivery Time (days)</Label>
-                      <Input
-                        id="deliveryTime"
-                        type="number"
-                        value={formData.deliveryTime}
-                        onChange={(e) => setFormData({ ...formData, deliveryTime: e.target.value })}
-                        placeholder="3"
-                      />
-                    </div>
-                  )}
+              <div className="space-y-3 mt-6">
+                <div className="flex items-center gap-2">
+                  <Search className="h-4 w-4 text-muted-foreground" />
+                  <Label className="text-sm font-medium">SEO Preview</Label>
                 </div>
-              )}
-
-              {productType === "bundle" && (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Bundle Contents</Label>
-                    <p className="text-sm text-muted-foreground">Select products to include in this bundle</p>
-                    {/* This would typically be a multi-select component with existing products */}
-                    <div className="border rounded-lg p-4 space-y-2">
-                      <p className="text-sm text-muted-foreground">Bundle product selection would go here</p>
+                <div className="border rounded-lg p-4 bg-muted/20 space-y-2">
+                  <div className="flex items-start gap-2">
+                    <Globe className="h-4 w-4 text-blue-600 mt-1 shrink-0" />
+                    <div className="space-y-1 flex-1 min-w-0">
+                      <div className="text-blue-600 text-sm font-medium hover:underline cursor-pointer truncate">
+                        {getSEOPreview().title}
+                      </div>
+                      <div className="text-green-700 text-xs truncate">{getSEOPreview().url}</div>
+                      <div className="text-gray-600 text-sm leading-relaxed">{getSEOPreview().description}</div>
                     </div>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label>Bundle Delivery</Label>
-                    <RadioGroup
-                      value={formData.bundleDelivery}
-                      onValueChange={(value) => setFormData({ ...formData, bundleDelivery: value })}
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="combined" id="combined" />
-                        <Label htmlFor="combined">Combined delivery (everything in one order)</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="separate" id="separate" />
-                        <Label htmlFor="separate">Separate delivery (each product delivered separately)</Label>
-                      </div>
-                    </RadioGroup>
+                  <div className="text-xs text-muted-foreground mt-2 pt-2 border-t">
+                    This is how your product will appear in Google search results
                   </div>
                 </div>
-              )}
+              </div>
             </TabsContent>
 
             <TabsContent value="images" className="space-y-4">
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label>Product Images</Label>
                 <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
                   <Upload className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground mb-2">
-                    {productType === "service" ? "Upload portfolio samples or service images" : "Upload product images"}
+                    {productType === "service"
+                      ? "Upload portfolio samples or service images"
+                      : productType === "digital-card"
+                        ? "Upload card design or preview images"
+                        : "Upload product images or screenshots"}
                   </p>
+                  <p className="text-xs text-muted-foreground mb-4">Supported formats: JPG, PNG, GIF (Max 5MB each)</p>
                   <Button type="button" variant="outline">
                     Choose Files
                   </Button>
@@ -458,11 +416,13 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
               </div>
             </TabsContent>
 
-            <DialogFooter className="flex gap-2">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <DialogFooter className="flex flex-col sm:flex-row gap-2">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
                 Cancel
               </Button>
-              <Button type="submit">{product ? "Update Product" : "Add Product"}</Button>
+              <Button type="submit" className="w-full sm:w-auto">
+                {product ? "Update Product" : "Add Product"}
+              </Button>
             </DialogFooter>
           </form>
         </Tabs>

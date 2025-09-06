@@ -3,7 +3,18 @@
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { LayoutDashboard, Package, ShoppingCart, Users, Star, Settings, Store, X } from "lucide-react"
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  Users,
+  Star,
+  Settings,
+  Store,
+  X,
+  Percent,
+  FolderOpen,
+} from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -19,6 +30,11 @@ const sidebarItems = [
     icon: Package,
   },
   {
+    title: "Categories",
+    href: "/categories",
+    icon: FolderOpen,
+  },
+  {
     title: "Orders",
     href: "/orders",
     icon: ShoppingCart,
@@ -32,6 +48,11 @@ const sidebarItems = [
     title: "Reviews",
     href: "/reviews",
     icon: Star,
+  },
+  {
+    title: "Coupons",
+    href: "/coupons",
+    icon: Percent,
   },
   {
     title: "Settings",
