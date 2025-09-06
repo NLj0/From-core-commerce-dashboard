@@ -501,11 +501,19 @@ export default function SettingsPage() {
                               type="password"
                               value={
                                 gateway === "stripe"
-                                  ? config.publicKey
+                                  ? (config as typeof paymentGateways.stripe).publicKey
                                   : gateway === "paypal"
-                                    ? config.clientId
-                                    : (config as any).keyId
+                                    ? (config as typeof paymentGateways.paypal).clientId
+                                    : (config as typeof paymentGateways.razorpay).keyId
                               }
+                              onChange={(e) => {
+                                const field =
+                                  gateway === "stripe" ? "publicKey" : gateway === "paypal" ? "clientId" : "keyId"
+                                setPaymentGateways((prev) => ({
+                                  ...prev,
+                                  [gateway]: { ...prev[gateway as keyof typeof prev], [field]: e.target.value },
+                                }))
+                              }}
                               placeholder="Enter key..."
                               className="text-xs"
                             />
@@ -522,11 +530,23 @@ export default function SettingsPage() {
                               type="password"
                               value={
                                 gateway === "stripe"
-                                  ? config.secretKey
+                                  ? (config as typeof paymentGateways.stripe).secretKey
                                   : gateway === "paypal"
-                                    ? config.clientSecret
-                                    : (config as any).keySecret
+                                    ? (config as typeof paymentGateways.paypal).clientSecret
+                                    : (config as typeof paymentGateways.razorpay).keySecret
                               }
+                              onChange={(e) => {
+                                const field =
+                                  gateway === "stripe"
+                                    ? "secretKey"
+                                    : gateway === "paypal"
+                                      ? "clientSecret"
+                                      : "keySecret"
+                                setPaymentGateways((prev) => ({
+                                  ...prev,
+                                  [gateway]: { ...prev[gateway as keyof typeof prev], [field]: e.target.value },
+                                }))
+                              }}
                               placeholder="Enter secret..."
                               className="text-xs"
                             />
