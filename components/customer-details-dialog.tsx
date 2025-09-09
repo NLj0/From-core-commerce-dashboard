@@ -61,7 +61,7 @@ function getStatusBadge(status: string) {
       )
     case "active":
       return (
-        <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-100">
+        <Badge variant="default" className="bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20">
           Active
         </Badge>
       )
@@ -86,7 +86,7 @@ function getOrderStatusBadge(status: string) {
   switch (status) {
     case "completed":
       return (
-        <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-100">
+        <Badge variant="default" className="bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20">
           <CheckCircle className="mr-1 h-3 w-3" />
           Completed
         </Badge>

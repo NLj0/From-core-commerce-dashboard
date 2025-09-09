@@ -127,11 +127,11 @@ export default function CouponsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
-        return <Badge className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20">Active</Badge>
+        return <Badge className="bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20">Active</Badge>
       case "expired":
         return <Badge variant="secondary">Expired</Badge>
       case "disabled":
-        return <Badge variant="destructive">Disabled</Badge>
+        return <Badge variant="destructive" className="bg-rose-500/10 text-rose-400 hover:bg-rose-500/20">Disabled</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -153,7 +153,7 @@ export default function CouponsPage() {
           <h1 className="text-3xl font-bold text-foreground">Coupons & Discounts</h1>
           <p className="text-muted-foreground">Manage discount codes and promotional offers</p>
         </div>
-        <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={handleCreateCoupon}>
+        <Button className="text-white bg-emerald-600 hover:bg-emerald-700" onClick={handleCreateCoupon}>
           <Plus className="mr-2 h-4 w-4" />
           Create Coupon
         </Button>

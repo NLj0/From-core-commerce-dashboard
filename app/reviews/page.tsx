@@ -165,19 +165,19 @@ function getStatusBadge(status: string) {
   switch (status) {
     case "published":
       return (
-        <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-100">
+        <Badge variant="default" className="bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20">
           Published
         </Badge>
       )
     case "pending":
       return (
-        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+        <Badge variant="secondary" className="bg-amber-500/10 text-amber-400 hover:bg-amber-500/20">
           Pending
         </Badge>
       )
     case "flagged":
       return (
-        <Badge variant="destructive" className="bg-red-100 text-red-800 hover:bg-red-100">
+        <Badge variant="destructive" className="bg-rose-500/10 text-rose-400 hover:bg-rose-500/20">
           <AlertTriangle className="mr-1 h-3 w-3" />
           Flagged
         </Badge>

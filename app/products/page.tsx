@@ -80,19 +80,19 @@ function getStatusBadge(status: string) {
   switch (status) {
     case "active":
       return (
-        <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-100">
+        <Badge variant="default" className="bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20">
           Active
         </Badge>
       )
     case "out_of_stock":
       return (
-        <Badge variant="destructive" className="bg-red-100 text-red-800 hover:bg-red-100">
+        <Badge variant="destructive" className="bg-rose-500/10 text-rose-400 hover:bg-rose-500/20">
           Out of Stock
         </Badge>
       )
     case "low_stock":
       return (
-        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+        <Badge variant="secondary" className="bg-amber-500/10 text-amber-400 hover:bg-amber-500/20">
           Low Stock
         </Badge>
       )
@@ -162,35 +162,35 @@ export default function ProductsPage() {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button className="gap-2 w-full md:w-auto" size="sm">
+            <Button className="gap-2 w-full md:w-auto bg-primary text-white rounded-xl shadow-md hover:bg-primary/90" size="sm">
               <Plus className="h-4 w-4" />
               Add Product
               <ChevronDown className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem onClick={() => handleAddProduct("digital")}>
+            <DropdownMenuItem onClick={() => handleAddProduct("digital")} className="hover:bg-emerald-500/20">
               <div className="flex flex-col items-start">
                 <span className="font-medium">Digital Product</span>
-                <span className="text-xs text-muted-foreground">Files, courses, software</span>
+                <span className="text-xs">Files, courses, software</span>
               </div>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleAddProduct("digital-card")}>
+            <DropdownMenuItem onClick={() => handleAddProduct("digital-card")} className="hover:bg-emerald-500/20">
               <div className="flex flex-col items-start">
                 <span className="font-medium">Digital Card</span>
-                <span className="text-xs text-muted-foreground">Coupons, recharge codes</span>
+                <span className="text-xs">Coupons, recharge codes</span>
               </div>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleAddProduct("service")}>
+            <DropdownMenuItem onClick={() => handleAddProduct("service")} className="hover:bg-emerald-500/20">
               <div className="flex flex-col items-start">
                 <span className="font-medium">On-Demand Service</span>
-                <span className="text-xs text-muted-foreground">Design, consulting, writing</span>
+                <span className="text-xs">Design, consulting, writing</span>
               </div>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleAddProduct("bundle")}>
+            <DropdownMenuItem onClick={() => handleAddProduct("bundle")} className="hover:bg-emerald-500/20">
               <div className="flex flex-col items-start">
                 <span className="font-medium">Bundle Products</span>
-                <span className="text-xs text-muted-foreground">Multi-product packages</span>
+                <span className="text-xs">Multi-product packages</span>
               </div>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -296,17 +296,17 @@ export default function ProductsPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
+                          <DropdownMenuItem className="hover:bg-emerald-500/20">
                             <Eye className="mr-2 h-4 w-4" />
                             View
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditProduct(product)}>
+                          <DropdownMenuItem className="hover:bg-emerald-500/20" onClick={() => handleEditProduct(product)} >
                             <Edit className="mr-2 h-4 w-4" />
                             Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDeleteProduct(product.id)}
-                            className="text-destructive"
+                            className="hover:bg-destructive"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
                             Delete

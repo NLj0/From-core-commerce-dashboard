@@ -30,6 +30,8 @@ const mockOrders = [
     paymentMethod: "Credit Card",
     deliveryMethod: "Email + Download",
     downloadExpiry: "2024-02-15",
+    shippingAddress: "123 Main St, Springfield",
+    trackingNumber: "TRACK-001",
   },
   {
     id: "ORD-002",
@@ -45,6 +47,8 @@ const mockOrders = [
     paymentMethod: "PayPal",
     deliveryMethod: "Email Access",
     downloadExpiry: null,
+    shippingAddress: "456 Oak Ave, Springfield",
+    trackingNumber: "TRACK-002",
   },
   {
     id: "ORD-003",
@@ -63,6 +67,8 @@ const mockOrders = [
     paymentMethod: "Credit Card",
     deliveryMethod: "Download Link",
     downloadExpiry: "2024-02-14",
+    shippingAddress: "789 Pine Rd, Springfield",
+    trackingNumber: "TRACK-003",
   },
   {
     id: "ORD-004",
@@ -78,6 +84,8 @@ const mockOrders = [
     paymentMethod: "Apple Pay",
     deliveryMethod: "Instant Download",
     downloadExpiry: "2024-03-14",
+    shippingAddress: "321 Birch Blvd, Springfield",
+    trackingNumber: "TRACK-004",
   },
   {
     id: "ORD-005",
@@ -93,6 +101,8 @@ const mockOrders = [
     paymentMethod: "Credit Card",
     deliveryMethod: "Email Report",
     downloadExpiry: null,
+    shippingAddress: "654 Cedar St, Springfield",
+    trackingNumber: "TRACK-005",
   },
   {
     id: "ORD-006",
@@ -111,6 +121,8 @@ const mockOrders = [
     paymentMethod: "Credit Card",
     deliveryMethod: "Email + Download",
     downloadExpiry: null,
+    shippingAddress: "987 Maple Ln, Springfield",
+    trackingNumber: "TRACK-006",
   },
 ]
 
@@ -118,34 +130,34 @@ function getStatusBadge(status: string) {
   switch (status) {
     case "completed":
       return (
-        <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-100">
+        <Badge variant="default" className="bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20">
           <CheckCircle className="mr-1 h-3 w-3" />
           Completed
         </Badge>
       )
     case "processing":
       return (
-        <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+        <Badge variant="secondary" className="bg-blue-500/10 text-blue-400 hover:bg-blue-500/20">
           <Clock className="mr-1 h-3 w-3" />
           Processing
         </Badge>
       )
     case "delivered":
       return (
-        <Badge variant="outline" className="bg-purple-100 text-purple-800 hover:bg-purple-100">
+        <Badge className="bg-violet-500/10 text-violet-400 hover:bg-violet-500/20">
           <Download className="mr-1 h-3 w-3" />
           Delivered
         </Badge>
       )
     case "pending":
       return (
-        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+        <Badge variant="secondary" className="bg-amber-500/10 text-amber-400 hover:bg-amber-500/20">
           Pending
         </Badge>
       )
     case "cancelled":
       return (
-        <Badge variant="destructive" className="bg-red-100 text-red-800 hover:bg-red-100">
+        <Badge variant="destructive" className="bg-rose-500/10 text-rose-400 hover:bg-rose-500/20">
           <XCircle className="mr-1 h-3 w-3" />
           Cancelled
         </Badge>

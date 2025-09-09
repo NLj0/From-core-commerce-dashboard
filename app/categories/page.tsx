@@ -104,14 +104,14 @@ function getStatusBadge(status: string) {
   switch (status) {
     case "active":
       return (
-        <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-100">
+        <Badge variant="default" className="bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20">
           <CheckCircle className="mr-1 h-3 w-3" />
           Active
         </Badge>
       )
     case "inactive":
       return (
-        <Badge variant="secondary" className="bg-gray-100 text-gray-800 hover:bg-gray-100">
+        <Badge variant="secondary" className="bg-gray-200/10 text-gray-200 hover:bg-gray-200/20">
           <XCircle className="mr-1 h-3 w-3" />
           Inactive
         </Badge>
@@ -239,8 +239,8 @@ export default function CategoriesPage() {
         <CardHeader>
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <CardTitle>Category Management</CardTitle>
-            <Button onClick={handleAddCategory}>
-              <Plus className="mr-2 h-4 w-4" />
+            <Button className="text-white" onClick={handleAddCategory}>
+              <Plus className="mr-2 h-4 w-4 text-white" />
               Add Category
             </Button>
           </div>

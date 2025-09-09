@@ -106,7 +106,7 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full text-xs flex items-center justify-center text-destructive-foreground">
+                <span className="absolute -top-1 -right-1 h-4 min-w-[0.75rem] px-1 bg-rose-500/50 rounded-full text-xs flex items-center justify-center text-gray-200">
                   {unreadCount}
                 </span>
               )}
@@ -115,16 +115,16 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
           <DropdownMenuContent align="end" className="w-80 md:w-96">
             <DropdownMenuLabel className="flex items-center justify-between">
               <span>Notifications</span>
-              <Button variant="ghost" size="sm" className="text-xs h-auto p-1">
+              <Button variant="ghost" size="sm" className="text-xs h-auto p-1 hover:bg-emerald-500/40">
                 Mark all as read
               </Button>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <div className="max-h-80 overflow-y-auto">
+            <div className="max-h-80 overflow-y-auto ">
               {mockNotifications.map((notification) => {
                 const IconComponent = notification.icon
                 return (
-                  <DropdownMenuItem key={notification.id} className="flex items-start gap-3 p-3 cursor-pointer">
+                  <DropdownMenuItem key={notification.id} className="flex items-start gap-3 p-3 cursor-pointer hover:bg-emerald-500/20">
                     <div className={`mt-0.5 ${getNotificationColor(notification.type)}`}>
                       <IconComponent className="h-4 w-4" />
                     </div>
@@ -142,7 +142,7 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="justify-center text-center">
-              <Button variant="ghost" size="sm" className="w-full">
+              <Button variant="ghost" size="sm" className="w-full hover:bg-emerald-500/40">
                 View All Notifications
               </Button>
             </DropdownMenuItem>
@@ -166,16 +166,16 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem className="hover:bg-emerald-500/20">
               <User className="mr-2 h-4 w-4" />
               Profile
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem className="hover:bg-emerald-500/20">
               <Settings className="mr-2 h-4 w-4" />
               Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem className="text-rose-400 hover:bg-destructive">
               <LogOut className="mr-2 h-4 w-4" />
               Log out
             </DropdownMenuItem>
