@@ -80,19 +80,19 @@ function getStatusBadge(status: string) {
   switch (status) {
     case "active":
       return (
-        <Badge variant="default" className="bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20">
+        <Badge variant="success">
           Active
         </Badge>
       )
     case "out_of_stock":
       return (
-        <Badge variant="destructive" className="bg-rose-500/10 text-rose-400 hover:bg-rose-500/20">
+        <Badge variant="danger">
           Out of Stock
         </Badge>
       )
     case "low_stock":
       return (
-        <Badge variant="secondary" className="bg-amber-500/10 text-amber-400 hover:bg-amber-500/20">
+        <Badge variant="warning">
           Low Stock
         </Badge>
       )

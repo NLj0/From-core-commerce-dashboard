@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark));
 
 :root {
   /* Updated color tokens to match e-commerce admin design brief */
@@ -38,13 +38,6 @@
   --sidebar-accent-foreground: oklch(1 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.459 0.136 162.4 / 0.5);
-  /* badge colors */
-  --badge-emerald: "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20";
-  --badge-amber: "bg-amber-500/10 text-amber-400 hover:bg-amber-500/20";
-  --badge-rose: "bg-rose-500/10 text-rose-400 hover:bg-rose-500/20";
-  --badge-gray: "bg-gray-200/10 text-gray-200 hover:bg-gray-200/20";
-  --badge-blue: "bg-blue-500/10 text-blue-400 hover:bg-blue-500/20";
-  --badge-violet: "bg-violet-500/10 text-violet-400 hover:bg-violet-500/20";
 }
 
 .dark {
@@ -81,14 +74,6 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.569 0.148 162.4 / 0.5);
-
-  /* badge colors dark */
-  --badge-emerald: "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20";
-  --badge-amber: "bg-amber-500/10 text-amber-400 hover:bg-amber-500/20";
-  --badge-rose: "bg-rose-500/10 text-rose-400 hover:bg-rose-500/20";
-  --badge-gray: "bg-gray-500/10 text-gray-400 hover:bg-gray-500/20";
-  --badge-blue: "bg-blue-500/10 text-blue-400 hover:bg-blue-500/20";
-  --badge-violet: "bg-violet-500/10 text-violet-400 hover:bg-violet-500/20";
 }
 
 @theme inline {

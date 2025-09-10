@@ -151,25 +151,25 @@ function getStatusBadge(status: string) {
   switch (status) {
     case "vip":
       return (
-        <Badge variant="default" className="bg-violet-500/10 text-violet-400 hover:bg-violet-500/20">
+        <Badge variant="violet">
           VIP
         </Badge>
       )
     case "active":
       return (
-        <Badge variant="default" className="bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20">
+        <Badge variant="success">
           Active
         </Badge>
       )
     case "new":
       return (
-        <Badge variant="secondary" className="bg-blue-500/10 text-blue-400 hover:bg-blue-500/20">
+        <Badge variant="info">
           New
         </Badge>
       )
     case "inactive":
       return (
-        <Badge variant="outline" className="bg-gray-200/10 text-gray-200 hover:bg-gray-200/20">
+        <Badge variant="gray">
           Inactive
         </Badge>
       )

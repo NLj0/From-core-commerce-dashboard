@@ -19,22 +19,42 @@ const badgeVariants = cva(
           "border-border text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
           
         "badge-emerald":
-          "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 [a&]:hover:bg-emerald-500/20 dark:[a&]:hover:bg-emerald-500/30",
-          
-        "badge-amber": 
-          "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 [a&]:hover:bg-amber-500/20 dark:[a&]:hover:bg-amber-500/30",
+          "bg-emerald-500/10 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30",
+        emerald:
+          "bg-emerald-500/10 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30",
+        success:
+          "bg-emerald-500/10 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30",
 
-        "badge-rose": 
-          "border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400 [a&]:hover:bg-rose-500/20 dark:[a&]:hover:bg-rose-500/30",
+        "badge-amber":
+          "bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30",
+        amber:
+          "bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30",
+        warning:
+          "bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30",
+
+        "badge-rose":
+          "bg-rose-500/10 text-rose-600 border-rose-500/30 hover:bg-rose-500/20 dark:text-rose-400 dark:border-rose-500/30",
+        rose:
+          "bg-rose-500/10 text-rose-600 border-rose-500/30 hover:bg-rose-500/20 dark:text-rose-400 dark:border-rose-500/30",
+        danger:
+          "bg-rose-500/10 text-rose-600 border-rose-500/30 hover:bg-rose-500/20 dark:text-rose-400 dark:border-rose-500/30",
 
         "badge-gray": 
-          "border-gray-400/30 bg-gray-500/10 text-gray-700 dark:text-gray-300 [a&]:hover:bg-gray-500/20 dark:[a&]:hover:bg-gray-500/30",
+          "bg-gray-500/10 text-gray-700 border-gray-500/30 hover:bg-gray-500/20 dark:text-gray-400 dark:border-gray-500/30",
+        gray:
+          "bg-gray-500/10 text-gray-700 border-gray-500/30 hover:bg-gray-500/20 dark:text-gray-400 dark:border-gray-500/30",
 
         "badge-blue": 
-          "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400 [a&]:hover:bg-blue-500/20 dark:[a&]:hover:bg-blue-500/30",
+          "bg-blue-500/10 text-blue-600 border-blue-500/30 hover:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30",
+        blue:
+          "bg-blue-500/10 text-blue-600 border-blue-500/30 hover:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30",
+        info:
+          "bg-blue-500/10 text-blue-600 border-blue-500/30 hover:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30",
 
         "badge-violet": 
-          "border-violet-500/30 bg-violet-500/10 text-violet-600 dark:text-violet-400 [a&]:hover:bg-violet-500/20 dark:[a&]:hover:bg-violet-500/30",
+          "bg-violet-500/10 text-violet-600 border-violet-500/30 hover:bg-violet-500/20 dark:text-violet-400 dark:border-violet-500/30",
+        violet:
+          "bg-violet-500/10 text-violet-600 border-violet-500/30 hover:bg-violet-500/20 dark:text-violet-400 dark:border-violet-500/30",
       },
     },
     defaultVariants: {

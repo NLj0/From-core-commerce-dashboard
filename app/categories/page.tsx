@@ -104,14 +104,14 @@ function getStatusBadge(status: string) {
   switch (status) {
     case "active":
       return (
-        <Badge variant="default" className="bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20">
+        <Badge variant="success">
           <CheckCircle className="mr-1 h-3 w-3" />
           Active
         </Badge>
       )
     case "inactive":
       return (
-        <Badge variant="secondary" className="bg-gray-200/10 text-gray-200 hover:bg-gray-200/20">
+        <Badge variant="gray">
           <XCircle className="mr-1 h-3 w-3" />
           Inactive
         </Badge>
