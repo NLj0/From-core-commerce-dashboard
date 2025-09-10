@@ -117,19 +117,19 @@ function getStatusBadge(status: string) {
   switch (status) {
     case "completed":
       return (
-        <Badge variant="default" className="bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20">
+        <Badge variant="badge-emerald">
           Completed
         </Badge>
       )
     case "processing":
       return (
-        <Badge variant="secondary" className="bg-amber-500/10 text-amber-400 hover:bg-amber-500/20">
+        <Badge variant="badge-amber">
           Processing
         </Badge>
       )
     case "shipped":
       return (
-        <Badge className="bg-blue-500/10 text-blue-400 hover:bg-blue-500/20">
+        <Badge variant="badge-blue">
           Shipped
         </Badge>
       )
