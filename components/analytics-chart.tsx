@@ -19,8 +19,8 @@ export function AnalyticsChart() {
         <AreaChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
           <defs>
             <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#ffffff" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="#ffffff" stopOpacity={0.1} />
+              <stop offset="5%" stopColor="#f88628" stopOpacity={0.8} />
+              <stop offset="95%" stopColor="#f88628" stopOpacity={0.1} />
             </linearGradient>
             <linearGradient id="ordersGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
@@ -67,7 +67,7 @@ export function AnalyticsChart() {
           <Area
             type="monotone"
             dataKey="sales"
-            stroke="#ffffffff"
+            stroke="#f88628"
             strokeWidth={3}
             fill="url(#salesGradient)"
             name="Sales ($)"

@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
+import { useTheme } from "next-themes"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -34,7 +35,7 @@ import {
 } from "lucide-react"
 
 export default function SettingsPage() {
-  const [theme, setTheme] = useState("dark")
+  const { theme, setTheme } = useTheme()
   const [language, setLanguage] = useState("english")
   const [notifications, setNotifications] = useState({
     email: true,
@@ -284,7 +285,7 @@ export default function SettingsPage() {
                   </div>
                   <div className="p-4 bg-muted/50 rounded-lg">
                     <div className="text-sm text-muted-foreground">
-                      Current theme: <span className="font-medium capitalize">{theme}</span>
+                      Current theme: <span className="font-medium capitalize">{theme || 'system'}</span>
                     </div>
                   </div>
                 </CardContent>
