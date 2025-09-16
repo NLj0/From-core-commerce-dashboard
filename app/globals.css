@@ -16,7 +16,7 @@
   --secondary: oklch(0.569 0.148 162.4);
   --secondary-foreground: oklch(1 0 0);
   --muted: oklch(0.976 0 0);
-  --muted-foreground: oklch(0.345 0 0);
+  --muted-foreground: oklch(0.545 0 0); /* Improved contrast for light mode */
   --accent: oklch(0.569 0.148 162.4);
   --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.576 0.232 35.67);
@@ -24,11 +24,12 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.976 0 0);
   --ring: oklch(0.459 0.136 162.4 / 0.5);
-  --chart-1: oklch(0.459 0.136 162.4);
-  --chart-2: oklch(0.569 0.148 162.4);
-  --chart-3: oklch(0.678 0.181 35.67);
-  --chart-4: oklch(0.598 0.201 35.67);
-  --chart-5: oklch(0.576 0.232 35.67);
+  /* Enhanced chart colors for better visibility in light mode */
+  --chart-1: oklch(0.359 0.136 162.4); /* Darker teal for better contrast */
+  --chart-2: oklch(0.469 0.148 162.4); /* Darker secondary color */
+  --chart-3: oklch(0.578 0.181 35.67); /* Darker orange */
+  --chart-4: oklch(0.498 0.201 35.67); /* Darker red-orange */
+  --chart-5: oklch(0.476 0.232 35.67); /* Darker red */
   --radius: 0.5rem;
   --sidebar: oklch(1 0 0);
   --sidebar-foreground: oklch(0.345 0 0);
@@ -61,11 +62,12 @@
   --border: oklch(0.269 0 0);
   --input: oklch(0.269 0 0);
   --ring: oklch(0.569 0.148 162.4 / 0.5);
-  --chart-1: oklch(0.569 0.148 162.4);
-  --chart-2: oklch(0.678 0.181 35.67);
-  --chart-3: oklch(0.598 0.201 35.67);
-  --chart-4: oklch(0.576 0.232 35.67);
-  --chart-5: oklch(0.459 0.136 162.4);
+  /* Brightened chart colors for better visibility in dark mode */
+  --chart-1: oklch(0.669 0.148 162.4); /* Brighter teal */
+  --chart-2: oklch(0.778 0.181 35.67); /* Brighter orange */
+  --chart-3: oklch(0.698 0.201 35.67); /* Brighter red-orange */
+  --chart-4: oklch(0.676 0.232 35.67); /* Brighter red */
+  --chart-5: oklch(0.559 0.136 162.4); /* Brighter secondary teal */
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.569 0.148 162.4);
@@ -131,7 +133,7 @@
     border: 1px solid var(--border);
     padding: 8px 10px;
     border-radius: 8px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
     font-size: 13px;
     line-height: 1.3;
   }

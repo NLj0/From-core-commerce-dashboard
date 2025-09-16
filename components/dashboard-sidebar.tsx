@@ -14,6 +14,7 @@ import {
   X,
   Percent,
   FolderOpen,
+  Mail,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -53,6 +54,11 @@ const sidebarItems = [
     title: "Coupons",
     href: "/coupons",
     icon: Percent,
+  },
+  {
+    title: "Emails",
+    href: "/emails",
+    icon: Mail,
   },
   {
     title: "Settings",

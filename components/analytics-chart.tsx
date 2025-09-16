@@ -19,35 +19,47 @@ export function AnalyticsChart() {
         <AreaChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
           <defs>
             <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#f88628" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="#f88628" stopOpacity={0.1} />
+              <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8} />
+              <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.1} />
             </linearGradient>
             <linearGradient id="ordersGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="#10b981" stopOpacity={0.1} />
+              <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.8} />
+              <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0.1} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.2)" strokeOpacity={0.5} />
-          <XAxis 
-            dataKey="name" 
-            axisLine={false} 
-            tickLine={false} 
-            tick={{ fill: "white", fontSize: 12, fontWeight: "500" }}
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground))" strokeOpacity={0.3} />
+          <XAxis
+            dataKey="name"
+            axisLine={false}
+            tickLine={false}
+            tick={{
+              fill: "hsl(var(--muted-foreground))",
+              fontSize: 12,
+              fontWeight: "500",
+            }}
             dy={10}
           />
-          <YAxis 
+          <YAxis
             yAxisId="left"
-            axisLine={false} 
-            tickLine={false} 
-            tick={{ fill: "white", fontSize: 12, fontWeight: "500" }}
+            axisLine={false}
+            tickLine={false}
+            tick={{
+              fill: "hsl(var(--muted-foreground))",
+              fontSize: 12,
+              fontWeight: "500",
+            }}
             dx={-10}
           />
-          <YAxis 
+          <YAxis
             yAxisId="right"
             orientation="right"
-            axisLine={false} 
-            tickLine={false} 
-            tick={{ fill: "white", fontSize: 12, fontWeight: "500" }}
+            axisLine={false}
+            tickLine={false}
+            tick={{
+              fill: "hsl(var(--muted-foreground))",
+              fontSize: 12,
+              fontWeight: "500",
+            }}
             dx={10}
           />
           <Tooltip
@@ -57,17 +69,17 @@ export function AnalyticsChart() {
               borderRadius: "8px",
               boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
             }}
-            labelStyle={{ 
-              color: "hsl(var(--foreground))", 
+            labelStyle={{
+              color: "hsl(var(--foreground))",
               fontWeight: "600",
-              marginBottom: "4px"
+              marginBottom: "4px",
             }}
             itemStyle={{ color: "hsl(var(--foreground))" }}
           />
           <Area
             type="monotone"
             dataKey="sales"
-            stroke="#f88628"
+            stroke="hsl(var(--chart-1))"
             strokeWidth={3}
             fill="url(#salesGradient)"
             name="Sales ($)"
@@ -76,7 +88,7 @@ export function AnalyticsChart() {
           <Area
             type="monotone"
             dataKey="orders"
-            stroke="#10b981"
+            stroke="hsl(var(--chart-2))"
             strokeWidth={2}
             fill="url(#ordersGradient)"
             name="Orders"
