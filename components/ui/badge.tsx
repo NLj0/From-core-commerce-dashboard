@@ -1,4 +1,4 @@
-import type * as React from "react"
+import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
@@ -9,51 +9,58 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "border-primary text-primary [a&]:hover:bg-primary/10",
-        secondary: "border-secondary text-secondary [a&]:hover:bg-secondary/10",
+        default:
+          "border-primary text-primary [a&]:hover:bg-primary/10",
+        secondary:
+          "border-secondary text-secondary [a&]:hover:bg-secondary/10",
         destructive:
           "border-destructive text-destructive [a&]:hover:bg-destructive/10 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
-        outline: "border-border text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
-
+        outline:
+          "border-border text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
+          
         "badge-emerald":
-          "bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800 dark:hover:bg-emerald-900",
+          "bg-emerald-500/10 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30",
         emerald:
-          "bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800 dark:hover:bg-emerald-900",
+          "bg-emerald-500/10 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30",
         success:
-          "bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800 dark:hover:bg-emerald-900",
+          "bg-emerald-500/10 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30",
 
         "badge-amber":
-          "bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800 dark:hover:bg-amber-900",
+          "bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30",
         amber:
-          "bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800 dark:hover:bg-amber-900",
+          "bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30",
         warning:
-          "bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800 dark:hover:bg-amber-900",
+          "bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30",
 
         "badge-rose":
-          "bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100 dark:bg-rose-950 dark:text-rose-200 dark:border-rose-800 dark:hover:bg-rose-900",
-        rose: "bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100 dark:bg-rose-950 dark:text-rose-200 dark:border-rose-800 dark:hover:bg-rose-900",
+          "bg-rose-500/10 text-rose-600 border-rose-500/30 hover:bg-rose-500/20 dark:text-rose-400 dark:border-rose-500/30",
+        rose:
+          "bg-rose-500/10 text-rose-600 border-rose-500/30 hover:bg-rose-500/20 dark:text-rose-400 dark:border-rose-500/30",
         danger:
-          "bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100 dark:bg-rose-950 dark:text-rose-200 dark:border-rose-800 dark:hover:bg-rose-900",
+          "bg-rose-500/10 text-rose-600 border-rose-500/30 hover:bg-rose-500/20 dark:text-rose-400 dark:border-rose-500/30",
 
-        "badge-gray":
-          "bg-gray-50 text-gray-800 border-gray-200 hover:bg-gray-100 dark:bg-gray-950 dark:text-gray-200 dark:border-gray-800 dark:hover:bg-gray-900",
-        gray: "bg-gray-50 text-gray-800 border-gray-200 hover:bg-gray-100 dark:bg-gray-950 dark:text-gray-200 dark:border-gray-800 dark:hover:bg-gray-900",
+        "badge-gray": 
+          "bg-gray-500/10 text-gray-700 border-gray-500/30 hover:bg-gray-500/20 dark:text-gray-400 dark:border-gray-500/30",
+        gray:
+          "bg-gray-500/10 text-gray-700 border-gray-500/30 hover:bg-gray-500/20 dark:text-gray-400 dark:border-gray-500/30",
 
-        "badge-blue":
-          "bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100 dark:bg-blue-950 dark:text-blue-200 dark:border-blue-800 dark:hover:bg-blue-900",
-        blue: "bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100 dark:bg-blue-950 dark:text-blue-200 dark:border-blue-800 dark:hover:bg-blue-900",
-        info: "bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100 dark:bg-blue-950 dark:text-blue-200 dark:border-blue-800 dark:hover:bg-blue-900",
+        "badge-blue": 
+          "bg-blue-500/10 text-blue-600 border-blue-500/30 hover:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30",
+        blue:
+          "bg-blue-500/10 text-blue-600 border-blue-500/30 hover:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30",
+        info:
+          "bg-blue-500/10 text-blue-600 border-blue-500/30 hover:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30",
 
-        "badge-violet":
-          "bg-violet-50 text-violet-800 border-violet-200 hover:bg-violet-100 dark:bg-violet-950 dark:text-violet-200 dark:border-violet-800 dark:hover:bg-violet-900",
+        "badge-violet": 
+          "bg-violet-500/10 text-violet-600 border-violet-500/30 hover:bg-violet-500/20 dark:text-violet-400 dark:border-violet-500/30",
         violet:
-          "bg-violet-50 text-violet-800 border-violet-200 hover:bg-violet-100 dark:bg-violet-950 dark:text-violet-200 dark:border-violet-800 dark:hover:bg-violet-900",
+          "bg-violet-500/10 text-violet-600 border-violet-500/30 hover:bg-violet-500/20 dark:text-violet-400 dark:border-violet-500/30",
       },
     },
     defaultVariants: {
       variant: "default",
     },
-  },
+  }
 )
 
 function Badge({
@@ -61,10 +68,17 @@ function Badge({
   variant,
   asChild = false,
   ...props
-}: React.ComponentProps<"span"> & VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
+}: React.ComponentProps<"span"> &
+  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
   const Comp = asChild ? Slot : "span"
 
-  return <Comp data-slot="badge" className={cn(badgeVariants({ variant }), className)} {...props} />
+  return (
+    <Comp
+      data-slot="badge"
+      className={cn(badgeVariants({ variant }), className)}
+      {...props}
+    />
+  )
 }
 
 export { Badge, badgeVariants }
