@@ -119,7 +119,7 @@ export default function CouponsPage() {
   }
 
   const handleSaveCoupon = (couponData: any) => {
-    console.log("[v0] Saving coupon:", couponData)
+    console.log("Saving coupon:", couponData)
     // Here you would typically save to your backend
     // For now, just log the data
   }

@@ -10,7 +10,6 @@ import ClientLayout from "@/components/client-layout"
 export const metadata: Metadata = {
   title: "StoreAdmin - E-commerce Dashboard",
   description: "Professional e-commerce admin dashboard for managing your online store",
-  generator: "v0.app",
 }
 
 export default function RootLayout({
