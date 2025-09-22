@@ -208,7 +208,7 @@ function getStatusBadge(status: string) {
     case "draft":
       return <Badge variant="badge-gray">Draft</Badge>
     case "failed":
-      return <Badge variant="badge-red">Failed</Badge>
+      return <Badge variant="badge-rose">Failed</Badge>
     case "active":
       return <Badge variant="badge-emerald">Active</Badge>
     default:
@@ -221,7 +221,7 @@ function getTypeBadge(type: string) {
     case "transactional":
       return <Badge variant="badge-blue">Transactional</Badge>
     case "marketing":
-      return <Badge variant="badge-purple">Marketing</Badge>
+      return <Badge variant="secondary">Marketing</Badge>
     default:
       return <Badge variant="outline">{type}</Badge>
   }
