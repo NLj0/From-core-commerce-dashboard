@@ -122,7 +122,7 @@ export function CustomerDetailsDialog({ open, onOpenChange, customer }: Customer
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <Avatar className="h-12 w-12">

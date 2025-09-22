@@ -50,51 +50,51 @@ function DialogContent({
         data-slot="dialog-content"
         className={cn(
           "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed z-50 grid gap-4 rounded-lg border shadow-lg duration-200",
-          "hidden sm:block sm:top-[50%] sm:left-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:w-[800px] sm:max-w-[calc(100vw-4rem)] sm:max-h-[calc(100vh-4rem)] sm:p-6",
-          "sm:hidden inset-0 w-full h-full max-w-none max-h-none rounded-none border-0 p-0 flex flex-col",
+          "inset-4 h-[calc(100vh-2rem)] w-[calc(100vw-2rem)]",
+          "md:inset-auto md:top-[50%] md:left-[50%] md:translate-x-[-50%] md:translate-y-[-50%] md:h-[85vh] md:w-[90vw] md:max-w-4xl",
+          "overflow-hidden",
           className,
         )}
         {...props}
       >
-        <div className="sm:hidden sticky top-0 z-10 bg-background border-b p-4 flex-shrink-0">
-          {React.Children.map(children, (child) => {
-            if (React.isValidElement(child) && child.type === DialogHeader) {
-              return child
-            }
-            return null
-          })}
-          {showCloseButton && (
-            <DialogPrimitive.Close
-              data-slot="dialog-close"
-              className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
-            >
-              <XIcon />
-              <span className="sr-only">Close</span>
-            </DialogPrimitive.Close>
-          )}
+        <div className="flex flex-col h-full overflow-hidden">
+          <div className="flex-shrink-0 p-6 pb-0">
+            {React.Children.toArray(children).filter(
+              (child) =>
+                React.isValidElement(child) &&
+                (child.props["data-slot"] === "dialog-header" || child.type === DialogHeader),
+            )}
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-6">
+            {React.Children.toArray(children).filter(
+              (child) =>
+                React.isValidElement(child) &&
+                child.props["data-slot"] !== "dialog-header" &&
+                child.props["data-slot"] !== "dialog-footer" &&
+                child.type !== DialogHeader &&
+                child.type !== DialogFooter,
+            )}
+          </div>
+
+          <div className="flex-shrink-0 p-6 pt-0">
+            {React.Children.toArray(children).filter(
+              (child) =>
+                React.isValidElement(child) &&
+                (child.props["data-slot"] === "dialog-footer" || child.type === DialogFooter),
+            )}
+          </div>
         </div>
 
-        <div className="sm:hidden flex-1 overflow-y-auto p-4">
-          {React.Children.map(children, (child) => {
-            if (React.isValidElement(child) && child.type !== DialogHeader) {
-              return child
-            }
-            return null
-          })}
-        </div>
-
-        <div className="hidden sm:block">
-          {children}
-          {showCloseButton && (
-            <DialogPrimitive.Close
-              data-slot="dialog-close"
-              className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
-            >
-              <XIcon />
-              <span className="sr-only">Close</span>
-            </DialogPrimitive.Close>
-          )}
-        </div>
+        {showCloseButton && (
+          <DialogPrimitive.Close
+            data-slot="dialog-close"
+            className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 z-10"
+          >
+            <XIcon />
+            <span className="sr-only">Close</span>
+          </DialogPrimitive.Close>
+        )}
       </DialogPrimitive.Content>
     </DialogPortal>
   )
@@ -114,12 +114,7 @@ function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="dialog-footer"
-      className={cn(
-        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
-        "sm:hidden sticky bottom-0 bg-background border-t p-4 mt-auto flex-shrink-0",
-        "hidden sm:flex",
-        className,
-      )}
+      className={cn("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", className)}
       {...props}
     />
   )

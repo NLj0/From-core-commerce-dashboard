@@ -83,7 +83,7 @@ export function OrderDetailsDialog({ open, onOpenChange, order, onUpdateStatus }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             Order Details - {order.id}
@@ -92,7 +92,7 @@ export function OrderDetailsDialog({ open, onOpenChange, order, onUpdateStatus }
           <DialogDescription>Complete order information and management options.</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-y-auto">
           {/* Customer Information */}
           <div>
             <h3 className="text-lg font-semibold mb-3">Customer Information</h3>
