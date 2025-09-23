@@ -18,7 +18,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Upload, X } from "lucide-react"
+import { Upload, X, Star } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { ProductValidator } from "@/lib/product-validation"
+import { ValidationDisplay } from "@/components/validation-display"
 
 interface Product {
   id: string
@@ -31,6 +34,13 @@ interface Product {
   sku: string
 }
 
+interface ProductImage {
+  id: string
+  url: string
+  file?: File
+  isPrimary: boolean
+}
+
 interface ProductDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -41,6 +51,13 @@ interface ProductDialogProps {
 
 export function ProductDialog({ open, onOpenChange, product, productType, onSave }: ProductDialogProps) {
   const [currentStep, setCurrentStep] = useState("basic")
+  const [productImages, setProductImages] = useState<ProductImage[]>([])
+  const [imageErrors, setImageErrors] = useState<string[]>([])
+  const [validationResult, setValidationResult] = useState<{ isValid: boolean; errors: any[]; warnings: any[] }>({
+    isValid: true,
+    errors: [],
+    warnings: [],
+  })
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -49,19 +66,23 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
     sku: "",
     description: "",
     image: "",
-    // SEO fields
     metaTitle: "",
     metaDescription: "",
     keywords: "",
-    // Delivery fields
     deliveryMethod: "",
     downloadLink: "",
     expirationDays: "",
     codes: [] as string[],
     deliveryTime: "",
-    // Bundle fields
     bundleProducts: [] as string[],
     bundleDelivery: "combined",
+    customFields: [] as Array<{
+      id: string
+      type: "text" | "textarea" | "image" | "dropdown"
+      label: string
+      required: boolean
+      options?: string[] // for dropdown
+    }>,
   })
 
   useEffect(() => {
@@ -84,7 +105,9 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
         deliveryTime: "",
         bundleProducts: [],
         bundleDelivery: "combined",
+        customFields: [],
       })
+      setProductImages(product.images || [])
     } else {
       setFormData({
         name: "",
@@ -104,12 +127,34 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
         deliveryTime: "",
         bundleProducts: [],
         bundleDelivery: "combined",
+        customFields: [],
       })
+      setProductImages([])
     }
   }, [product])
 
+  useEffect(() => {
+    const result = ProductValidator.validateProduct({
+      images: productImages,
+      customFields: formData.customFields,
+    })
+    setValidationResult(result)
+  }, [productImages, formData.customFields])
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+
+    const validationResult = ProductValidator.validateProduct({
+      images: productImages,
+      customFields: formData.customFields,
+    })
+
+    if (!validationResult.isValid) {
+      // Show validation errors in a more user-friendly way
+      const errorMessages = validationResult.errors.map((error) => error.message).join("\n")
+      alert(`Please fix the following issues:\n\n${errorMessages}`)
+      return
+    }
 
     const productData = {
       name: formData.name,
@@ -117,8 +162,13 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
       stock: Number.parseInt(formData.stock),
       category: formData.category,
       sku: formData.sku,
-      image: formData.image || `/placeholder.svg?height=60&width=60&query=${formData.name}`,
+      image:
+        productImages.find((img) => img.isPrimary)?.url ||
+        productImages[0]?.url ||
+        `/placeholder.svg?height=60&width=60&query=${formData.name}`,
       productType: productType || "standard",
+      images: productImages,
+      customFields: formData.customFields,
       ...formData,
     }
 
@@ -193,6 +243,135 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
     setFormData({ ...formData, codes: newCodes })
   }
 
+  const validateImageUpload = (files: FileList): { valid: File[]; errors: string[] } => {
+    const validFiles: File[] = []
+    const errors: string[] = []
+
+    if (productImages.length + files.length > 10) {
+      errors.push(`Maximum 10 images allowed. You can add ${10 - productImages.length} more images.`)
+      return { valid: [], errors }
+    }
+
+    Array.from(files).forEach((file, index) => {
+      if (!file.type.startsWith("image/")) {
+        errors.push(`File ${file.name} is not an image.`)
+        return
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
+        errors.push(`File ${file.name} exceeds 10MB limit.`)
+        return
+      }
+
+      validFiles.push(file)
+    })
+
+    return { valid: validFiles, errors }
+  }
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
+
+    const { valid, errors } = validateImageUpload(files)
+    setImageErrors(errors)
+
+    if (valid.length > 0) {
+      const newImages: ProductImage[] = valid.map((file, index) => ({
+        id: Date.now().toString() + index,
+        url: URL.createObjectURL(file),
+        file,
+        isPrimary: productImages.length === 0 && index === 0,
+      }))
+
+      setProductImages((prev) => [...prev, ...newImages])
+    }
+  }
+
+  const setPrimaryImage = (imageId: string) => {
+    setProductImages((prev) =>
+      prev.map((img) => ({
+        ...img,
+        isPrimary: img.id === imageId,
+      })),
+    )
+  }
+
+  const removeImage = (imageId: string) => {
+    setProductImages((prev) => {
+      const filtered = prev.filter((img) => img.id !== imageId)
+      if (filtered.length > 0 && !filtered.some((img) => img.isPrimary)) {
+        filtered[0].isPrimary = true
+      }
+      return filtered
+    })
+    setImageErrors([])
+  }
+
+  const addCustomField = (type: "text" | "textarea" | "image" | "dropdown") => {
+    const textFieldCount = formData.customFields.filter((f) => f.type === "text").length
+    const hasTextarea = formData.customFields.some((f) => f.type === "textarea")
+    const hasImageUpload = formData.customFields.some((f) => f.type === "image")
+    const hasDropdown = formData.customFields.some((f) => f.type === "dropdown")
+
+    if (type === "text" && textFieldCount >= 7) {
+      alert("Maximum 7 text fields allowed")
+      return
+    }
+
+    if (type === "textarea" && hasTextarea) {
+      alert("Only 1 textarea allowed")
+      return
+    }
+
+    if (type === "image" && hasImageUpload) {
+      alert("Only 1 image upload field allowed")
+      return
+    }
+
+    if (type === "dropdown" && hasDropdown) {
+      alert("Only 1 dropdown field allowed")
+      return
+    }
+
+    if ((type === "textarea" || type === "image" || type === "dropdown") && textFieldCount >= 3) {
+      alert("When using Textarea, Image Upload, or Dropdown, you can only add up to 3 Text Fields")
+      return
+    }
+
+    if ((type === "textarea" || type === "image" || type === "dropdown") && textFieldCount > 3) {
+      alert("You have more than 3 text fields. Remove some text fields before adding this field type.")
+      return
+    }
+
+    const newField = {
+      id: Date.now().toString(),
+      type,
+      label: `${type.charAt(0).toUpperCase() + type.slice(1)} Field`,
+      required: false,
+      options: type === "dropdown" ? ["Option 1", "Option 2"] : undefined,
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      customFields: [...prev.customFields, newField],
+    }))
+  }
+
+  const removeCustomField = (fieldId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      customFields: prev.customFields.filter((f) => f.id !== fieldId),
+    }))
+  }
+
+  const updateCustomField = (fieldId: string, updates: Partial<(typeof formData.customFields)[0]>) => {
+    setFormData((prev) => ({
+      ...prev,
+      customFields: prev.customFields.map((f) => (f.id === fieldId ? { ...f, ...updates } : f)),
+    }))
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -204,6 +383,10 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
               : `Fill in the details to add a new ${getProductTypeTitle().toLowerCase()}.`}
           </DialogDescription>
         </DialogHeader>
+
+        {(validationResult.errors.length > 0 || validationResult.warnings.length > 0) && (
+          <ValidationDisplay errors={validationResult.errors} warnings={validationResult.warnings} showSummary={true} />
+        )}
 
         <Tabs value={currentStep} onValueChange={setCurrentStep} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
@@ -409,6 +592,89 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                       />
                     </div>
                   )}
+
+                  <div className="space-y-4 border-t pt-4">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-base font-medium">Custom Order Fields</Label>
+                      <div className="flex gap-2">
+                        <Button type="button" variant="outline" size="sm" onClick={() => addCustomField("text")}>
+                          + Text
+                        </Button>
+                        <Button type="button" variant="outline" size="sm" onClick={() => addCustomField("textarea")}>
+                          + Textarea
+                        </Button>
+                        <Button type="button" variant="outline" size="sm" onClick={() => addCustomField("image")}>
+                          + Image
+                        </Button>
+                        <Button type="button" variant="outline" size="sm" onClick={() => addCustomField("dropdown")}>
+                          + Dropdown
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <p>• Maximum 7 text fields</p>
+                      <p>• Only 1 textarea, 1 image upload, and 1 dropdown allowed</p>
+                      <p>• If using textarea/image/dropdown, maximum 3 text fields</p>
+                    </div>
+
+                    {formData.customFields.length > 0 && (
+                      <div className="space-y-3">
+                        {formData.customFields.map((field) => (
+                          <div key={field.id} className="border rounded-lg p-3 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <Badge variant="outline">{field.type}</Badge>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeCustomField(field.id)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <Label className="text-xs">Field Label</Label>
+                                <Input
+                                  value={field.label}
+                                  onChange={(e) => updateCustomField(field.id, { label: e.target.value })}
+                                  placeholder="Field label"
+                                  size="sm"
+                                />
+                              </div>
+                              <div className="flex items-center space-x-2 pt-5">
+                                <input
+                                  type="checkbox"
+                                  checked={field.required}
+                                  onChange={(e) => updateCustomField(field.id, { required: e.target.checked })}
+                                />
+                                <Label className="text-xs">Required</Label>
+                              </div>
+                            </div>
+                            {field.type === "dropdown" && (
+                              <div>
+                                <Label className="text-xs">Options (comma-separated)</Label>
+                                <Input
+                                  value={field.options?.join(", ") || ""}
+                                  onChange={(e) =>
+                                    updateCustomField(field.id, {
+                                      options: e.target.value
+                                        .split(",")
+                                        .map((s) => s.trim())
+                                        .filter(Boolean),
+                                    })
+                                  }
+                                  placeholder="Option 1, Option 2, Option 3"
+                                  size="sm"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -417,7 +683,6 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                   <div className="space-y-2">
                     <Label>Bundle Contents</Label>
                     <p className="text-sm text-muted-foreground">Select products to include in this bundle</p>
-                    {/* This would typically be a multi-select component with existing products */}
                     <div className="border rounded-lg p-4 space-y-2">
                       <p className="text-sm text-muted-foreground">Bundle product selection would go here</p>
                     </div>
@@ -444,17 +709,67 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
             </TabsContent>
 
             <TabsContent value="images" className="space-y-4">
-              <div className="space-y-2">
-                <Label>Product Images</Label>
-                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-medium">Product Images</Label>
+                  <Badge variant="outline">{productImages.length}/10</Badge>
+                </div>
+
+                {imageErrors.length > 0 && (
+                  <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+                    <div className="text-sm text-destructive space-y-1">
+                      {imageErrors.map((error, index) => (
+                        <p key={index}>• {error}</p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
                   <Upload className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground mb-2">
-                    {productType === "service" ? "Upload portfolio samples or service images" : "Upload product images"}
-                  </p>
-                  <Button type="button" variant="outline">
+                  <p className="text-sm text-muted-foreground mb-2">Upload product images (Max 10 images, 10MB each)</p>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById("image-upload")?.click()}
+                  >
                     Choose Files
                   </Button>
                 </div>
+
+                {productImages.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {productImages.map((image) => (
+                      <div key={image.id} className="relative group border rounded-lg overflow-hidden">
+                        <img src={image.url || "/placeholder.svg"} alt="Product" className="w-full h-32 object-cover" />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant={image.isPrimary ? "default" : "secondary"}
+                            onClick={() => setPrimaryImage(image.id)}
+                          >
+                            <Star className={`h-4 w-4 ${image.isPrimary ? "fill-current" : ""}`} />
+                          </Button>
+                          <Button type="button" size="sm" variant="destructive" onClick={() => removeImage(image.id)}>
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        {image.isPrimary && (
+                          <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground">Primary</Badge>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </TabsContent>
 
@@ -462,7 +777,13 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button type="submit">{product ? "Update Product" : "Add Product"}</Button>
+              <Button
+                type="submit"
+                disabled={!validationResult.isValid}
+                className={!validationResult.isValid ? "opacity-50 cursor-not-allowed" : ""}
+              >
+                {product ? "Update Product" : "Add Product"}
+              </Button>
             </DialogFooter>
           </form>
         </Tabs>

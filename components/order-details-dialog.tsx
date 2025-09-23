@@ -1,10 +1,25 @@
 "use client"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Package, Truck, CheckCircle, XCircle, MapPin, CreditCard, Hash } from "lucide-react"
+import {
+  Package,
+  Truck,
+  CheckCircle,
+  XCircle,
+  MapPin,
+  CreditCard,
+  Hash,
+  Download,
+  Mail,
+  FileText,
+  Copy,
+  Eye,
+} from "lucide-react"
+import { useState } from "react"
 
 interface Order {
   id: string
@@ -17,6 +32,20 @@ interface Order {
     name: string
     quantity: number
     price: number
+    type?: string
+    deliveryMethod?: string
+    downloadLink?: string
+    emailCode?: string
+    files?: Array<{
+      name: string
+      url: string
+      type: string
+    }>
+    customerFiles?: Array<{
+      name: string
+      url: string
+      uploadedAt: string
+    }>
   }>
   total: number
   status: string
@@ -24,6 +53,8 @@ interface Order {
   shippingAddress: string
   paymentMethod: string
   trackingNumber: string | null
+  deliveryMethod?: string
+  downloadExpiry?: string | null
 }
 
 interface OrderDetailsDialogProps {
@@ -37,34 +68,30 @@ function getStatusBadge(status: string) {
   switch (status) {
     case "completed":
       return (
-        <Badge variant="default" className="bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20">
+        <Badge variant="success">
           <CheckCircle className="mr-1 h-3 w-3" />
           Completed
         </Badge>
       )
     case "processing":
       return (
-        <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+        <Badge variant="info">
           <Package className="mr-1 h-3 w-3" />
           Processing
         </Badge>
       )
-    case "shipped":
+    case "delivered":
       return (
-        <Badge variant="outline" className="bg-purple-100 text-purple-800 hover:bg-purple-100">
+        <Badge variant="violet">
           <Truck className="mr-1 h-3 w-3" />
-          Shipped
+          Delivered
         </Badge>
       )
     case "pending":
-      return (
-        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
-          Pending
-        </Badge>
-      )
+      return <Badge variant="warning">Pending</Badge>
     case "cancelled":
       return (
-        <Badge variant="destructive" className="bg-red-100 text-red-800 hover:bg-red-100">
+        <Badge variant="danger">
           <XCircle className="mr-1 h-3 w-3" />
           Cancelled
         </Badge>
@@ -75,10 +102,27 @@ function getStatusBadge(status: string) {
 }
 
 export function OrderDetailsDialog({ open, onOpenChange, order, onUpdateStatus }: OrderDetailsDialogProps) {
+  const [copiedCode, setCopiedCode] = useState<string | null>(null)
+
   if (!order) return null
 
   const handleStatusChange = (newStatus: string) => {
     onUpdateStatus(order.id, newStatus)
+  }
+
+  const copyToClipboard = (text: string, type: string) => {
+    navigator.clipboard.writeText(text)
+    setCopiedCode(type)
+    setTimeout(() => setCopiedCode(null), 2000)
+  }
+
+  const downloadFile = (url: string, filename: string) => {
+    const link = document.createElement("a")
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   return (
@@ -115,18 +159,148 @@ export function OrderDetailsDialog({ open, onOpenChange, order, onUpdateStatus }
 
           {/* Order Items */}
           <div>
-            <h3 className="text-lg font-semibold mb-3">Order Items</h3>
-            <div className="space-y-3">
+            <h3 className="text-lg font-semibold mb-3">Order Items & Delivery</h3>
+            <div className="space-y-4">
               {order.products.map((product, index) => (
-                <div key={index} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                  <div>
-                    <div className="font-medium">{product.name}</div>
-                    <div className="text-sm text-muted-foreground">Quantity: {product.quantity}</div>
+                <div key={index} className="border rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="font-medium">{product.name}</div>
+                      <div className="text-sm text-muted-foreground">Quantity: {product.quantity}</div>
+                      {product.type && (
+                        <Badge variant="outline" className="mt-1">
+                          {product.type}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium">${(product.price * product.quantity).toFixed(2)}</div>
+                      <div className="text-sm text-muted-foreground">${product.price.toFixed(2)} each</div>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-medium">${(product.price * product.quantity).toFixed(2)}</div>
-                    <div className="text-sm text-muted-foreground">${product.price.toFixed(2)} each</div>
-                  </div>
+
+                  {product.deliveryMethod && (
+                    <div className="space-y-3 border-t pt-3">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary">{product.deliveryMethod}</Badge>
+                      </div>
+
+                      {/* Download Link */}
+                      {product.downloadLink && (
+                        <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Download className="h-4 w-4 text-blue-600" />
+                              <span className="text-sm font-medium">Download Available</span>
+                            </div>
+                            <Button size="sm" onClick={() => window.open(product.downloadLink, "_blank")}>
+                              <Download className="h-4 w-4 mr-1" />
+                              Download
+                            </Button>
+                          </div>
+                          {order.downloadExpiry && (
+                            <p className="text-xs text-muted-foreground mt-1">Expires: {order.downloadExpiry}</p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Email Code */}
+                      {product.emailCode && (
+                        <div className="bg-green-50 dark:bg-green-950/20 p-3 rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Mail className="h-4 w-4 text-green-600" />
+                              <span className="text-sm font-medium">Access Code</span>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => copyToClipboard(product.emailCode!, `code-${index}`)}
+                            >
+                              {copiedCode === `code-${index}` ? (
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                              ) : (
+                                <Copy className="h-4 w-4 mr-1" />
+                              )}
+                              {copiedCode === `code-${index}` ? "Copied!" : "Copy Code"}
+                            </Button>
+                          </div>
+                          <div className="mt-2 font-mono text-sm bg-white dark:bg-gray-800 p-2 rounded border">
+                            {product.emailCode}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Files on Order Page */}
+                      {product.files && product.files.length > 0 && (
+                        <div className="bg-purple-50 dark:bg-purple-950/20 p-3 rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <FileText className="h-4 w-4 text-purple-600" />
+                            <span className="text-sm font-medium">Order Files</span>
+                          </div>
+                          <div className="space-y-2">
+                            {product.files.map((file, fileIndex) => (
+                              <div
+                                key={fileIndex}
+                                className="flex items-center justify-between bg-white dark:bg-gray-800 p-2 rounded border"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <FileText className="h-4 w-4" />
+                                  <span className="text-sm">{file.name}</span>
+                                  <Badge variant="outline" className="text-xs">
+                                    {file.type}
+                                  </Badge>
+                                </div>
+                                <div className="flex gap-1">
+                                  <Button size="sm" variant="ghost" onClick={() => window.open(file.url, "_blank")}>
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                  <Button size="sm" variant="ghost" onClick={() => downloadFile(file.url, file.name)}>
+                                    <Download className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Customer Uploaded Files */}
+                      {product.customerFiles && product.customerFiles.length > 0 && (
+                        <div className="bg-orange-50 dark:bg-orange-950/20 p-3 rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Package className="h-4 w-4 text-orange-600" />
+                            <span className="text-sm font-medium">Customer Files</span>
+                            <Badge variant="outline">{product.customerFiles.length}/3</Badge>
+                          </div>
+                          <div className="space-y-2">
+                            {product.customerFiles.map((file, fileIndex) => (
+                              <div
+                                key={fileIndex}
+                                className="flex items-center justify-between bg-white dark:bg-gray-800 p-2 rounded border"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <FileText className="h-4 w-4" />
+                                  <div>
+                                    <span className="text-sm">{file.name}</span>
+                                    <div className="text-xs text-muted-foreground">Uploaded: {file.uploadedAt}</div>
+                                  </div>
+                                </div>
+                                <div className="flex gap-1">
+                                  <Button size="sm" variant="ghost" onClick={() => window.open(file.url, "_blank")}>
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                  <Button size="sm" variant="ghost" onClick={() => downloadFile(file.url, file.name)}>
+                                    <Download className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -183,7 +357,7 @@ export function OrderDetailsDialog({ open, onOpenChange, order, onUpdateStatus }
                 <SelectContent>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="processing">Processing</SelectItem>
-                  <SelectItem value="shipped">Shipped</SelectItem>
+                  <SelectItem value="delivered">Delivered</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>

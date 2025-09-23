@@ -21,8 +21,28 @@ const mockOrders = [
       avatar: "/placeholder.svg?height=32&width=32",
     },
     products: [
-      { name: "Premium WordPress Theme", quantity: 1, price: 299.99, type: "digital" },
-      { name: "Logo Design Package", quantity: 1, price: 149.99, type: "service" },
+      {
+        name: "Premium WordPress Theme",
+        quantity: 1,
+        price: 299.99,
+        type: "digital",
+        deliveryMethod: "File displayed on Order Page",
+        files: [
+          { name: "theme-files.zip", url: "/downloads/theme-files.zip", type: "ZIP" },
+          { name: "documentation.pdf", url: "/downloads/docs.pdf", type: "PDF" },
+        ],
+      },
+      {
+        name: "Logo Design Package",
+        quantity: 1,
+        price: 149.99,
+        type: "service",
+        deliveryMethod: "Upload file after completion",
+        customerFiles: [
+          { name: "logo-brief.pdf", url: "/uploads/logo-brief.pdf", uploadedAt: "2024-01-15 10:30" },
+          { name: "brand-colors.png", url: "/uploads/brand-colors.png", uploadedAt: "2024-01-15 10:32" },
+        ],
+      },
     ],
     total: 449.98,
     status: "completed",
@@ -40,7 +60,16 @@ const mockOrders = [
       email: "sarah@example.com",
       avatar: "/placeholder.svg?height=32&width=32",
     },
-    products: [{ name: "Digital Marketing Course", quantity: 1, price: 199.99, type: "digital" }],
+    products: [
+      {
+        name: "Digital Marketing Course",
+        quantity: 1,
+        price: 199.99,
+        type: "digital",
+        deliveryMethod: "Code sent by Email",
+        emailCode: "DMC-2024-SARAH-7X9K",
+      },
+    ],
     total: 199.99,
     status: "processing",
     date: "2024-01-15",
@@ -58,8 +87,26 @@ const mockOrders = [
       avatar: "/placeholder.svg?height=32&width=32",
     },
     products: [
-      { name: "Stock Photo Bundle", quantity: 1, price: 79.99, type: "digital" },
-      { name: "Video Editing Service", quantity: 1, price: 89.99, type: "service" },
+      {
+        name: "Stock Photo Bundle",
+        quantity: 1,
+        price: 79.99,
+        type: "digital",
+        deliveryMethod: "Direct Download Link",
+        downloadLink: "https://downloads.example.com/stock-photos-bundle",
+      },
+      {
+        name: "Video Editing Service",
+        quantity: 1,
+        price: 89.99,
+        type: "service",
+        deliveryMethod: "Send by Email",
+        customerFiles: [
+          { name: "raw-footage.mp4", url: "/uploads/raw-footage.mp4", uploadedAt: "2024-01-14 14:20" },
+          { name: "editing-notes.txt", url: "/uploads/editing-notes.txt", uploadedAt: "2024-01-14 14:22" },
+          { name: "music-preference.mp3", url: "/uploads/music-preference.mp3", uploadedAt: "2024-01-14 14:25" },
+        ],
+      },
     ],
     total: 169.98,
     status: "delivered",
@@ -77,7 +124,19 @@ const mockOrders = [
       email: "emma@example.com",
       avatar: "/placeholder.svg?height=32&width=32",
     },
-    products: [{ name: "UI/UX Design Templates", quantity: 1, price: 149.99, type: "digital" }],
+    products: [
+      {
+        name: "UI/UX Design Templates",
+        quantity: 1,
+        price: 149.99,
+        type: "digital",
+        deliveryMethod: "File displayed on Order Page",
+        files: [
+          { name: "ui-templates.sketch", url: "/downloads/ui-templates.sketch", type: "SKETCH" },
+          { name: "design-system.fig", url: "/downloads/design-system.fig", type: "FIGMA" },
+        ],
+      },
+    ],
     total: 149.99,
     status: "completed",
     date: "2024-01-14",
@@ -94,7 +153,9 @@ const mockOrders = [
       email: "alex@example.com",
       avatar: "/placeholder.svg?height=32&width=32",
     },
-    products: [{ name: "SEO Audit Service", quantity: 1, price: 299.99, type: "service" }],
+    products: [
+      { name: "SEO Audit Service", quantity: 1, price: 299.99, type: "service", deliveryMethod: "Send by Email" },
+    ],
     total: 299.99,
     status: "cancelled",
     date: "2024-01-13",
@@ -112,8 +173,21 @@ const mockOrders = [
       avatar: "/placeholder.svg?height=32&width=32",
     },
     products: [
-      { name: "E-book Collection", quantity: 1, price: 99.99, type: "digital" },
-      { name: "Content Writing Service", quantity: 1, price: 199.99, type: "service" },
+      {
+        name: "E-book Collection",
+        quantity: 1,
+        price: 99.99,
+        type: "digital",
+        deliveryMethod: "Code sent by Email",
+        emailCode: "EBOOK-2024-LISA-M3N8",
+      },
+      {
+        name: "Content Writing Service",
+        quantity: 1,
+        price: 199.99,
+        type: "service",
+        deliveryMethod: "Upload file after completion",
+      },
     ],
     total: 299.98,
     status: "pending",
@@ -150,11 +224,7 @@ function getStatusBadge(status: string) {
         </Badge>
       )
     case "pending":
-      return (
-        <Badge variant="warning">
-          Pending
-        </Badge>
-      )
+      return <Badge variant="warning">Pending</Badge>
     case "cancelled":
       return (
         <Badge variant="danger">
