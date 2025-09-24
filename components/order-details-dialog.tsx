@@ -46,6 +46,8 @@ interface Order {
       url: string
       uploadedAt: string
     }>
+    digitalCodes?: string[]
+    codeMessages?: string[]
   }>
   total: number
   status: string
@@ -201,6 +203,56 @@ export function OrderDetailsDialog({ open, onOpenChange, order, onUpdateStatus }
                           {order.downloadExpiry && (
                             <p className="text-xs text-muted-foreground mt-1">Expires: {order.downloadExpiry}</p>
                           )}
+                        </div>
+                      )}
+
+                      {(product.deliveryMethod === "Code shown on Order Page" ||
+                        product.deliveryMethod === "order-page") &&
+                        product.digitalCodes && (
+                          <div className="bg-indigo-50 dark:bg-indigo-950/20 p-3 rounded-lg">
+                            <div className="flex items-center gap-2 mb-3">
+                              <Hash className="h-4 w-4 text-indigo-600" />
+                              <span className="text-sm font-medium">Digital Codes</span>
+                              <Badge variant="outline">{product.digitalCodes.length} codes</Badge>
+                            </div>
+                            <div className="space-y-2">
+                              {product.digitalCodes.map((code: string, codeIndex: number) => (
+                                <div
+                                  key={codeIndex}
+                                  className="flex items-center justify-between bg-white dark:bg-gray-800 p-2 rounded border"
+                                >
+                                  <div className="font-mono text-sm">{code}</div>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => copyToClipboard(code, `digital-code-${index}-${codeIndex}`)}
+                                  >
+                                    {copiedCode === `digital-code-${index}-${codeIndex}` ? (
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                    ) : (
+                                      <Copy className="h-4 w-4 mr-1" />
+                                    )}
+                                    {copiedCode === `digital-code-${index}-${codeIndex}` ? "Copied!" : "Copy"}
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                      {product.codeMessages && product.codeMessages.length > 0 && (
+                        <div className="bg-yellow-50 dark:bg-yellow-950/20 p-3 rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <FileText className="h-4 w-4 text-yellow-600" />
+                            <span className="text-sm font-medium">Instructions & Messages</span>
+                          </div>
+                          <div className="space-y-2">
+                            {product.codeMessages.map((message: string, msgIndex: number) => (
+                              <div key={msgIndex} className="bg-white dark:bg-gray-800 p-2 rounded border text-sm">
+                                {message}
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
 

@@ -73,6 +73,8 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
     downloadLink: "",
     expirationDays: "",
     codes: [] as string[],
+    digitalCodes: [] as string[],
+    codeMessages: [] as string[],
     deliveryTime: "",
     bundleProducts: [] as string[],
     bundleDelivery: "combined",
@@ -81,7 +83,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
       type: "text" | "textarea" | "image" | "dropdown"
       label: string
       required: boolean
-      options?: string[] // for dropdown
+      options?: Array<{ label: string; price: number }>
     }>,
   })
 
@@ -102,6 +104,8 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
         downloadLink: "",
         expirationDays: "",
         codes: [],
+        digitalCodes: [],
+        codeMessages: [],
         deliveryTime: "",
         bundleProducts: [],
         bundleDelivery: "combined",
@@ -124,6 +128,8 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
         downloadLink: "",
         expirationDays: "",
         codes: [],
+        digitalCodes: [],
+        codeMessages: [],
         deliveryTime: "",
         bundleProducts: [],
         bundleDelivery: "combined",
@@ -243,6 +249,36 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
     setFormData({ ...formData, codes: newCodes })
   }
 
+  const addDigitalCode = () => {
+    setFormData({ ...formData, digitalCodes: [...formData.digitalCodes, ""] })
+  }
+
+  const updateDigitalCode = (index: number, value: string) => {
+    const newCodes = [...formData.digitalCodes]
+    newCodes[index] = value
+    setFormData({ ...formData, digitalCodes: newCodes })
+  }
+
+  const removeDigitalCode = (index: number) => {
+    const newCodes = formData.digitalCodes.filter((_, i) => i !== index)
+    setFormData({ ...formData, digitalCodes: newCodes })
+  }
+
+  const addCodeMessage = () => {
+    setFormData({ ...formData, codeMessages: [...formData.codeMessages, ""] })
+  }
+
+  const updateCodeMessage = (index: number, value: string) => {
+    const newMessages = [...formData.codeMessages]
+    newMessages[index] = value
+    setFormData({ ...formData, codeMessages: newMessages })
+  }
+
+  const removeCodeMessage = (index: number) => {
+    const newMessages = formData.codeMessages.filter((_, i) => i !== index)
+    setFormData({ ...formData, codeMessages: newMessages })
+  }
+
   const validateImageUpload = (files: FileList): { valid: File[]; errors: string[] } => {
     const validFiles: File[] = []
     const errors: string[] = []
@@ -286,6 +322,25 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
 
       setProductImages((prev) => [...prev, ...newImages])
     }
+  }
+
+  const handleCodesFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !file.name.endsWith(".txt")) {
+      alert("Please select a .txt file")
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const content = event.target?.result as string
+      const lines = content
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+      setFormData({ ...formData, digitalCodes: [...formData.digitalCodes, ...lines] })
+    }
+    reader.readAsText(file)
   }
 
   const setPrimaryImage = (imageId: string) => {
@@ -349,7 +404,13 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
       type,
       label: `${type.charAt(0).toUpperCase() + type.slice(1)} Field`,
       required: false,
-      options: type === "dropdown" ? ["Option 1", "Option 2"] : undefined,
+      options:
+        type === "dropdown"
+          ? [
+              { label: "Option 1", price: 0 },
+              { label: "Option 2", price: 0 },
+            ]
+          : undefined,
     }
 
     setFormData((prev) => ({
@@ -370,6 +431,31 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
       ...prev,
       customFields: prev.customFields.map((f) => (f.id === fieldId ? { ...f, ...updates } : f)),
     }))
+  }
+
+  const addDropdownOption = (fieldId: string) => {
+    const field = formData.customFields.find((f) => f.id === fieldId)
+    if (field && field.type === "dropdown") {
+      const newOptions = [...(field.options || []), { label: "New Option", price: 0 }]
+      updateCustomField(fieldId, { options: newOptions })
+    }
+  }
+
+  const updateDropdownOption = (fieldId: string, optionIndex: number, updates: { label?: string; price?: number }) => {
+    const field = formData.customFields.find((f) => f.id === fieldId)
+    if (field && field.options) {
+      const newOptions = [...field.options]
+      newOptions[optionIndex] = { ...newOptions[optionIndex], ...updates }
+      updateCustomField(fieldId, { options: newOptions })
+    }
+  }
+
+  const removeDropdownOption = (fieldId: string, optionIndex: number) => {
+    const field = formData.customFields.find((f) => f.id === fieldId)
+    if (field && field.options) {
+      const newOptions = field.options.filter((_, i) => i !== optionIndex)
+      updateCustomField(fieldId, { options: newOptions })
+    }
   }
 
   return (
@@ -558,27 +644,92 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                     </div>
                   )}
 
-                  {(formData.deliveryMethod === "code" || formData.deliveryMethod === "email") &&
-                    productType === "digital-card" && (
-                      <div className="space-y-2">
-                        <Label>Codes</Label>
-                        {formData.codes.map((code, index) => (
-                          <div key={index} className="flex gap-2">
-                            <Input
-                              value={code}
-                              onChange={(e) => updateCode(index, e.target.value)}
-                              placeholder="Enter code"
-                            />
-                            <Button type="button" variant="outline" size="icon" onClick={() => removeCode(index)}>
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                        <Button type="button" variant="outline" onClick={addCode}>
-                          Add Code
-                        </Button>
+                  {(formData.deliveryMethod === "order-page" || formData.deliveryMethod === "code") && (
+                    <div className="space-y-4 border rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-base font-medium">Digital Codes & Messages</Label>
+                        <div className="flex gap-2">
+                          <Button type="button" variant="outline" size="sm" onClick={addDigitalCode}>
+                            + Add Code
+                          </Button>
+                          <Button type="button" variant="outline" size="sm" onClick={addCodeMessage}>
+                            + Add Message
+                          </Button>
+                        </div>
                       </div>
-                    )}
+
+                      {formData.digitalCodes.length > 0 && (
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">Codes</Label>
+                          {formData.digitalCodes.map((code, index) => (
+                            <div key={index} className="flex gap-2">
+                              <Input
+                                value={code}
+                                onChange={(e) => updateDigitalCode(index, e.target.value)}
+                                placeholder="Enter digital code"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={() => removeDigitalCode(index)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {formData.codeMessages.length > 0 && (
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">Messages</Label>
+                          {formData.codeMessages.map((message, index) => (
+                            <div key={index} className="flex gap-2">
+                              <Textarea
+                                value={message}
+                                onChange={(e) => updateCodeMessage(index, e.target.value)}
+                                placeholder="Enter message or instructions"
+                                rows={2}
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={() => removeCodeMessage(index)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4">
+                        <div className="text-center">
+                          <Upload className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground mb-2">
+                            Upload .txt file (each line becomes a separate code)
+                          </p>
+                          <input
+                            type="file"
+                            accept=".txt"
+                            onChange={handleCodesFileUpload}
+                            className="hidden"
+                            id="codes-file-upload"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => document.getElementById("codes-file-upload")?.click()}
+                          >
+                            Choose .txt File
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {productType === "service" && (
                     <div className="space-y-2">
@@ -616,6 +767,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                       <p>• Maximum 7 text fields</p>
                       <p>• Only 1 textarea, 1 image upload, and 1 dropdown allowed</p>
                       <p>• If using textarea/image/dropdown, maximum 3 text fields</p>
+                      <p>• Dropdown options can have additional pricing</p>
                     </div>
 
                     {formData.customFields.length > 0 && (
@@ -653,21 +805,59 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                               </div>
                             </div>
                             {field.type === "dropdown" && (
-                              <div>
-                                <Label className="text-xs">Options (comma-separated)</Label>
-                                <Input
-                                  value={field.options?.join(", ") || ""}
-                                  onChange={(e) =>
-                                    updateCustomField(field.id, {
-                                      options: e.target.value
-                                        .split(",")
-                                        .map((s) => s.trim())
-                                        .filter(Boolean),
-                                    })
-                                  }
-                                  placeholder="Option 1, Option 2, Option 3"
-                                  size="sm"
-                                />
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <Label className="text-xs">Options with Pricing</Label>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => addDropdownOption(field.id)}
+                                  >
+                                    + Add Option
+                                  </Button>
+                                </div>
+                                {field.options &&
+                                  field.options.map((option, optionIndex) => (
+                                    <div key={optionIndex} className="flex gap-2 items-center">
+                                      <Input
+                                        value={option.label}
+                                        onChange={(e) =>
+                                          updateDropdownOption(field.id, optionIndex, { label: e.target.value })
+                                        }
+                                        placeholder="Option label"
+                                        size="sm"
+                                        className="flex-1"
+                                      />
+                                      <div className="flex items-center gap-1">
+                                        <span className="text-xs">+$</span>
+                                        <Input
+                                          type="number"
+                                          step="0.01"
+                                          value={option.price}
+                                          onChange={(e) =>
+                                            updateDropdownOption(field.id, optionIndex, {
+                                              price: Number.parseFloat(e.target.value) || 0,
+                                            })
+                                          }
+                                          placeholder="0.00"
+                                          size="sm"
+                                          className="w-20"
+                                        />
+                                      </div>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => removeDropdownOption(field.id, optionIndex)}
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  ))}
+                                {(!field.options || field.options.length === 0) && (
+                                  <p className="text-xs text-muted-foreground">No options added yet</p>
+                                )}
                               </div>
                             )}
                           </div>
