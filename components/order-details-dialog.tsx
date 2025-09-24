@@ -209,7 +209,7 @@ export function OrderDetailsDialog({ open, onOpenChange, order, onUpdateStatus }
                       {(product.deliveryMethod === "Code shown on Order Page" ||
                         product.deliveryMethod === "order-page") &&
                         product.digitalCodes && (
-                          <div className="bg-indigo-50 dark:bg-indigo-950/20 p-3 rounded-lg">
+                          <div className="dark:bg-indigo-950/20 p-3 rounded-lg font-thin bg-sidebar">
                             <div className="flex items-center gap-2 mb-3">
                               <Hash className="h-4 w-4 text-indigo-600" />
                               <span className="text-sm font-medium">Digital Codes</span>
@@ -219,7 +219,7 @@ export function OrderDetailsDialog({ open, onOpenChange, order, onUpdateStatus }
                               {product.digitalCodes.map((code: string, codeIndex: number) => (
                                 <div
                                   key={codeIndex}
-                                  className="flex items-center justify-between bg-white dark:bg-gray-800 p-2 rounded border"
+                                  className="flex items-center justify-between dark:bg-gray-800 p-2 rounded border bg-background"
                                 >
                                   <div className="font-mono text-sm">{code}</div>
                                   <Button
@@ -241,14 +241,14 @@ export function OrderDetailsDialog({ open, onOpenChange, order, onUpdateStatus }
                         )}
 
                       {product.codeMessages && product.codeMessages.length > 0 && (
-                        <div className="bg-yellow-50 dark:bg-yellow-950/20 p-3 rounded-lg">
+                        <div className="dark:bg-yellow-950/20 p-3 rounded-lg bg-sidebar">
                           <div className="flex items-center gap-2 mb-2">
                             <FileText className="h-4 w-4 text-yellow-600" />
                             <span className="text-sm font-medium">Instructions & Messages</span>
                           </div>
                           <div className="space-y-2">
                             {product.codeMessages.map((message: string, msgIndex: number) => (
-                              <div key={msgIndex} className="bg-white dark:bg-gray-800 p-2 rounded border text-sm">
+                              <div key={msgIndex} className="dark:bg-gray-800 p-2 rounded border text-sm bg-background">
                                 {message}
                               </div>
                             ))}
@@ -285,7 +285,7 @@ export function OrderDetailsDialog({ open, onOpenChange, order, onUpdateStatus }
 
                       {/* Files on Order Page */}
                       {product.files && product.files.length > 0 && (
-                        <div className="bg-purple-50 dark:bg-purple-950/20 p-3 rounded-lg">
+                        <div className="dark:bg-purple-950/20 p-3 rounded-lg bg-sidebar">
                           <div className="flex items-center gap-2 mb-2">
                             <FileText className="h-4 w-4 text-purple-600" />
                             <span className="text-sm font-medium">Order Files</span>
@@ -294,7 +294,7 @@ export function OrderDetailsDialog({ open, onOpenChange, order, onUpdateStatus }
                             {product.files.map((file, fileIndex) => (
                               <div
                                 key={fileIndex}
-                                className="flex items-center justify-between bg-white dark:bg-gray-800 p-2 rounded border"
+                                className="flex items-center justify-between dark:bg-gray-800 p-2 rounded border bg-background"
                               >
                                 <div className="flex items-center gap-2">
                                   <FileText className="h-4 w-4" />
@@ -319,7 +319,7 @@ export function OrderDetailsDialog({ open, onOpenChange, order, onUpdateStatus }
 
                       {/* Customer Uploaded Files */}
                       {product.customerFiles && product.customerFiles.length > 0 && (
-                        <div className="bg-orange-50 dark:bg-orange-950/20 p-3 rounded-lg">
+                        <div className="dark:bg-orange-950/20 p-3 rounded-lg bg-sidebar">
                           <div className="flex items-center gap-2 mb-2">
                             <Package className="h-4 w-4 text-orange-600" />
                             <span className="text-sm font-medium">Customer Files</span>
@@ -329,7 +329,7 @@ export function OrderDetailsDialog({ open, onOpenChange, order, onUpdateStatus }
                             {product.customerFiles.map((file, fileIndex) => (
                               <div
                                 key={fileIndex}
-                                className="flex items-center justify-between bg-white dark:bg-gray-800 p-2 rounded border"
+                                className="flex items-center justify-between dark:bg-gray-800 p-2 rounded border bg-background"
                               >
                                 <div className="flex items-center gap-2">
                                   <FileText className="h-4 w-4" />
