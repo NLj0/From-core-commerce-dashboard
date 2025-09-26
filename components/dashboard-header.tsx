@@ -106,7 +106,7 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-4 min-w-[0.75rem] px-1 bg-rose-500/50 rounded-full text-xs flex items-center justify-center text-gray-200">
+                <span className="absolute -top-1 -right-1 h-4 min-w-[0.75rem] px-1 rounded-full text-xs flex items-center justify-center text-gray-200 bg-rose-700">
                   {unreadCount}
                 </span>
               )}

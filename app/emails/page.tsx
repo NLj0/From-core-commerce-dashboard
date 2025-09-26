@@ -44,43 +44,107 @@ import { EmailCampaignEditor } from "@/components/email-campaign-editor"
 const emailTemplates = [
   {
     id: 1,
-    name: "Order Confirmation",
+    name: "Welcome & Account Activation",
     type: "transactional",
-    subject: "Your order #{OrderID} has been confirmed",
+    subject: "Welcome to our store, {username}!",
     lastModified: "2024-01-15",
     status: "active",
+    requiredPlaceholders: ["{username}", "{activation_link}"],
+    content: "Welcome {username}! Please activate your account by clicking {activation_link}.",
   },
   {
     id: 2,
-    name: "Product Delivery",
+    name: "Order Confirmation",
     type: "transactional",
-    subject: "Your order #{OrderID} has been delivered",
+    subject: "Your order {order_id} has been confirmed",
     lastModified: "2024-01-14",
     status: "active",
+    requiredPlaceholders: ["{username}", "{order_id}", "{order_summary}", "{total_amount}", "{delivery_link}"],
+    content:
+      "Hi {username}, your order {order_id} has been confirmed. Order summary: {order_summary}. Total: {total_amount}. Track delivery: {delivery_link}.",
   },
   {
     id: 3,
-    name: "Password Reset",
+    name: "Order Status Updates",
     type: "transactional",
-    subject: "Reset your password",
+    subject: "Order {order_id} status update",
     lastModified: "2024-01-13",
     status: "active",
+    requiredPlaceholders: ["{username}", "{order_id}", "{order_status}", "{tracking_link}"],
+    content: "Hi {username}, your order {order_id} status is now: {order_status}. Track your order: {tracking_link}.",
   },
   {
     id: 4,
-    name: "Welcome Email",
-    type: "marketing",
-    subject: "Welcome to our store, {CustomerName}!",
+    name: "Password Reset",
+    type: "transactional",
+    subject: "Reset your password",
     lastModified: "2024-01-12",
     status: "active",
+    requiredPlaceholders: ["{username}", "{reset_link}"],
+    content: "Hi {username}, click here to reset your password: {reset_link}.",
   },
   {
     id: 5,
-    name: "Abandoned Cart",
-    type: "marketing",
-    subject: "Don't forget your items, {CustomerName}",
+    name: "Security & Account Notifications",
+    type: "transactional",
+    subject: "Security notification for your account",
     lastModified: "2024-01-11",
-    status: "draft",
+    status: "active",
+    requiredPlaceholders: ["{username}", "{notification_type}", "{notification_time}"],
+    content: "Hi {username}, security notification: {notification_type} at {notification_time}.",
+  },
+  {
+    id: 6,
+    name: "Invoices & Receipts",
+    type: "transactional",
+    subject: "Invoice for order {order_id}",
+    lastModified: "2024-01-10",
+    status: "active",
+    requiredPlaceholders: ["{username}", "{order_id}", "{invoice_link}", "{invoice_date}", "{total_amount}"],
+    content:
+      "Hi {username}, your invoice for order {order_id} is ready. Date: {invoice_date}. Amount: {total_amount}. Download: {invoice_link}.",
+  },
+  {
+    id: 7,
+    name: "Review Request",
+    type: "marketing",
+    subject: "How was your {product_name}?",
+    lastModified: "2024-01-09",
+    status: "active",
+    requiredPlaceholders: ["{username}", "{product_name}", "{review_link}"],
+    content: "Hi {username}, please review your recent purchase of {product_name}: {review_link}.",
+  },
+  {
+    id: 8,
+    name: "Promotional & Marketing Emails",
+    type: "marketing",
+    subject: "Special offer just for you, {username}!",
+    lastModified: "2024-01-08",
+    status: "active",
+    requiredPlaceholders: ["{username}", "{promo_code}", "{promo_link}", "{offer_expiry}"],
+    content:
+      "Hi {username}, use code {promo_code} for a special discount! Shop now: {promo_link}. Expires: {offer_expiry}.",
+  },
+  {
+    id: 9,
+    name: "Abandoned Cart Emails",
+    type: "marketing",
+    subject: "Don't forget your items, {username}",
+    lastModified: "2024-01-07",
+    status: "active",
+    requiredPlaceholders: ["{username}", "{cart_items}", "{cart_link}", "{discount_offer}"],
+    content:
+      "Hi {username}, you left these items in your cart: {cart_items}. Complete your purchase: {cart_link}. Special offer: {discount_offer}.",
+  },
+  {
+    id: 10,
+    name: "Customer Support Emails",
+    type: "transactional",
+    subject: "Support ticket {ticket_id} update",
+    lastModified: "2024-01-06",
+    status: "active",
+    requiredPlaceholders: ["{username}", "{ticket_id}", "{support_message}", "{ticket_status}"],
+    content: "Hi {username}, update on ticket {ticket_id}: {support_message}. Status: {ticket_status}.",
   },
 ]
 
@@ -533,17 +597,6 @@ export default function EmailsPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Email Templates</CardTitle>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setSelectedTemplate(null)
-                  setIsTemplateEditorOpen(true)
-                }}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                New Template
-              </Button>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -570,7 +623,6 @@ export default function EmailsPage() {
                       <TableHead>Template Name</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Subject</TableHead>
-                      <TableHead>Status</TableHead>
                       <TableHead>Last Modified</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -581,7 +633,6 @@ export default function EmailsPage() {
                         <TableCell className="font-medium">{template.name}</TableCell>
                         <TableCell>{getTypeBadge(template.type)}</TableCell>
                         <TableCell className="max-w-xs truncate">{template.subject}</TableCell>
-                        <TableCell>{getStatusBadge(template.status)}</TableCell>
                         <TableCell className="text-muted-foreground">{template.lastModified}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">

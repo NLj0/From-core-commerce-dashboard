@@ -78,6 +78,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
     deliveryTime: "",
     bundleProducts: [] as string[],
     bundleDelivery: "combined",
+    uploadedFile: null as File | null,
     customFields: [] as Array<{
       id: string
       type: "text" | "textarea" | "image" | "dropdown"
@@ -109,6 +110,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
         deliveryTime: "",
         bundleProducts: [],
         bundleDelivery: "combined",
+        uploadedFile: null,
         customFields: [],
       })
       setProductImages(product.images || [])
@@ -133,6 +135,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
         deliveryTime: "",
         bundleProducts: [],
         bundleDelivery: "combined",
+        uploadedFile: null,
         customFields: [],
       })
       setProductImages([])
@@ -341,6 +344,19 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
       setFormData({ ...formData, digitalCodes: [...formData.digitalCodes, ...lines] })
     }
     reader.readAsText(file)
+  }
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      alert("File size must be less than 10MB")
+      return
+    }
+
+    setFormData({ ...formData, uploadedFile: file })
   }
 
   const setPrimaryImage = (imageId: string) => {
@@ -727,6 +743,49 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                             Choose .txt File
                           </Button>
                         </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {formData.deliveryMethod === "file" && (
+                    <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
+                      <div className="space-y-2">
+                        <Label>Upload File *</Label>
+                        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                          <Upload className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground mb-2">
+                            {productType === "digital-card"
+                              ? "Upload file containing multiple codes"
+                              : "Upload file to be displayed on order page"}
+                          </p>
+                          <input
+                            type="file"
+                            onChange={handleFileUpload}
+                            className="hidden"
+                            id="file-upload"
+                            accept=".txt,.pdf,.zip,.rar"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => document.getElementById("file-upload")?.click()}
+                          >
+                            Choose File
+                          </Button>
+                          {formData.uploadedFile && (
+                            <p className="text-sm text-green-600 mt-2">Selected: {formData.uploadedFile.name}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="fileExpiration">File Expiration (days)</Label>
+                        <Input
+                          id="fileExpiration"
+                          type="number"
+                          value={formData.expirationDays}
+                          onChange={(e) => setFormData({ ...formData, expirationDays: e.target.value })}
+                          placeholder="30"
+                        />
                       </div>
                     </div>
                   )}

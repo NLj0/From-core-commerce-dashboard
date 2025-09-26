@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,7 +16,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Save, Eye, Code, Type, X } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Save, Eye, Code, Type, X, AlertTriangle } from "lucide-react"
 
 interface EmailTemplate {
   id: number
@@ -27,6 +28,7 @@ interface EmailTemplate {
   htmlContent: string
   lastModified: string
   status: "active" | "draft"
+  requiredPlaceholders?: string[]
 }
 
 interface EmailTemplateEditorProps {
@@ -36,16 +38,68 @@ interface EmailTemplateEditorProps {
   onSave: (template: Partial<EmailTemplate>) => void
 }
 
-const placeholders = [
-  { key: "{CustomerName}", description: "Customer's full name" },
-  { key: "{CustomerEmail}", description: "Customer's email address" },
-  { key: "{OrderID}", description: "Order identification number" },
-  { key: "{OrderTotal}", description: "Total order amount" },
-  { key: "{ProductName}", description: "Product name" },
-  { key: "{CompanyName}", description: "Your company name" },
-  { key: "{SupportEmail}", description: "Support email address" },
-  { key: "{UnsubscribeLink}", description: "Unsubscribe link" },
-]
+const getPlaceholdersForTemplate = (templateName: string) => {
+  const placeholderMap: Record<string, Array<{ key: string; description: string }>> = {
+    "Welcome & Account Activation": [
+      { key: "{username}", description: "Customer's username" },
+      { key: "{activation_link}", description: "Account activation link" },
+    ],
+    "Order Confirmation": [
+      { key: "{username}", description: "Customer's username" },
+      { key: "{order_id}", description: "Order identification number" },
+      { key: "{order_summary}", description: "Summary of ordered items" },
+      { key: "{total_amount}", description: "Total order amount" },
+      { key: "{delivery_link}", description: "Order delivery tracking link" },
+    ],
+    "Order Status Updates": [
+      { key: "{username}", description: "Customer's username" },
+      { key: "{order_id}", description: "Order identification number" },
+      { key: "{order_status}", description: "Current order status" },
+      { key: "{tracking_link}", description: "Package tracking link" },
+    ],
+    "Password Reset": [
+      { key: "{username}", description: "Customer's username" },
+      { key: "{reset_link}", description: "Password reset link" },
+    ],
+    "Security & Account Notifications": [
+      { key: "{username}", description: "Customer's username" },
+      { key: "{notification_type}", description: "Type of security notification" },
+      { key: "{notification_time}", description: "Time of the notification" },
+    ],
+    "Invoices & Receipts": [
+      { key: "{username}", description: "Customer's username" },
+      { key: "{order_id}", description: "Order identification number" },
+      { key: "{invoice_link}", description: "Link to download invoice" },
+      { key: "{invoice_date}", description: "Invoice generation date" },
+      { key: "{total_amount}", description: "Total invoice amount" },
+    ],
+    "Review Request": [
+      { key: "{username}", description: "Customer's username" },
+      { key: "{product_name}", description: "Name of the product to review" },
+      { key: "{review_link}", description: "Link to leave a review" },
+    ],
+    "Promotional & Marketing Emails": [
+      { key: "{username}", description: "Customer's username" },
+      { key: "{promo_code}", description: "Promotional discount code" },
+      { key: "{promo_link}", description: "Link to promotional offer" },
+      { key: "{offer_expiry}", description: "Expiration date of the offer" },
+    ],
+    "Abandoned Cart Emails": [
+      { key: "{username}", description: "Customer's username" },
+      { key: "{cart_items}", description: "List of items in abandoned cart" },
+      { key: "{cart_link}", description: "Link to return to cart" },
+      { key: "{discount_offer}", description: "Special discount offer" },
+    ],
+    "Customer Support Emails": [
+      { key: "{username}", description: "Customer's username" },
+      { key: "{ticket_id}", description: "Support ticket ID" },
+      { key: "{support_message}", description: "Support team message" },
+      { key: "{ticket_status}", description: "Current ticket status" },
+    ],
+  }
+
+  return placeholderMap[templateName] || []
+}
 
 export function EmailTemplateEditor({ template, isOpen, onClose, onSave }: EmailTemplateEditorProps) {
   const [formData, setFormData] = useState({
@@ -54,12 +108,43 @@ export function EmailTemplateEditor({ template, isOpen, onClose, onSave }: Email
     subject: template?.subject || "",
     content: template?.content || "",
     htmlContent: template?.htmlContent || "",
-    status: template?.status || ("draft" as const),
   })
 
-  const [activeTab, setActiveTab] = useState("visual")
+  const [activeTab, setActiveTab] = useState("subject")
+  const [validationErrors, setValidationErrors] = useState<string[]>([])
+
+  const requiredPlaceholders = template?.requiredPlaceholders || []
+  const availablePlaceholders = getPlaceholdersForTemplate(formData.name)
+
+  const validateContent = (content: string) => {
+    const errors: string[] = []
+    const missingPlaceholders: string[] = []
+
+    requiredPlaceholders.forEach((placeholder) => {
+      if (!content.includes(placeholder)) {
+        missingPlaceholders.push(placeholder)
+      }
+    })
+
+    if (missingPlaceholders.length > 0) {
+      errors.push(`Missing required placeholders: ${missingPlaceholders.join(", ")}`)
+    }
+
+    setValidationErrors(errors)
+    return errors.length === 0
+  }
+
+  useEffect(() => {
+    if (formData.content && requiredPlaceholders.length > 0) {
+      validateContent(formData.content)
+    }
+  }, [formData.content, requiredPlaceholders])
 
   const handleSave = () => {
+    if (!validateContent(formData.content)) {
+      return
+    }
+
     onSave({
       ...formData,
       lastModified: new Date().toISOString().split("T")[0],
@@ -68,38 +153,40 @@ export function EmailTemplateEditor({ template, isOpen, onClose, onSave }: Email
   }
 
   const insertPlaceholder = (placeholder: string) => {
-    if (activeTab === "visual") {
+    if (activeTab === "subject") {
       setFormData((prev) => ({
         ...prev,
-        content: prev.content + placeholder,
+        subject: prev.subject + placeholder,
+      }))
+    } else if (activeTab === "html") {
+      setFormData((prev) => ({
+        ...prev,
+        htmlContent: prev.htmlContent + placeholder,
       }))
     } else {
       setFormData((prev) => ({
         ...prev,
-        htmlContent: prev.htmlContent + placeholder,
+        content: prev.content + placeholder,
       }))
     }
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
-        <DialogHeader>
-          <DialogTitle>{template ? "Edit Email Template" : "Create New Email Template"}</DialogTitle>
-          <DialogDescription>Design your email template with support for dynamic placeholders.</DialogDescription>
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle>Edit Email Template: {template?.name}</DialogTitle>
+          <DialogDescription>
+            Edit your email template content. Required placeholders must be included in the template.
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-3 gap-6 h-[600px]">
+        <div className="grid grid-cols-3 gap-6 flex-1 min-h-0">
           {/* Left Panel - Template Settings */}
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto">
             <div className="space-y-2">
               <Label htmlFor="template-name">Template Name</Label>
-              <Input
-                id="template-name"
-                value={formData.name}
-                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                placeholder="Enter template name"
-              />
+              <Input id="template-name" value={formData.name} disabled className="bg-muted" />
             </div>
 
             <div className="space-y-2">
@@ -109,8 +196,9 @@ export function EmailTemplateEditor({ template, isOpen, onClose, onSave }: Email
                 onValueChange={(value: "transactional" | "marketing") =>
                   setFormData((prev) => ({ ...prev, type: value }))
                 }
+                disabled
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-muted">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -120,58 +208,61 @@ export function EmailTemplateEditor({ template, isOpen, onClose, onSave }: Email
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="template-subject">Subject Line</Label>
-              <Input
-                id="template-subject"
-                value={formData.subject}
-                onChange={(e) => setFormData((prev) => ({ ...prev, subject: e.target.value }))}
-                placeholder="Enter email subject"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="template-status">Status</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value: "active" | "draft") => setFormData((prev) => ({ ...prev, status: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Placeholders */}
-            <div className="space-y-2">
-              <Label>Available Placeholders</Label>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {placeholders.map((placeholder) => (
-                  <div key={placeholder.key} className="flex items-center justify-between p-2 border rounded-md">
-                    <div className="flex-1">
-                      <code className="text-xs font-mono bg-muted px-1 py-0.5 rounded">{placeholder.key}</code>
-                      <p className="text-xs text-muted-foreground mt-1">{placeholder.description}</p>
-                    </div>
-                    <Button variant="ghost" size="sm" onClick={() => insertPlaceholder(placeholder.key)}>
-                      <X className="h-3 w-3 rotate-45" />
-                    </Button>
-                  </div>
-                ))}
+            {requiredPlaceholders.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-red-600 font-semibold">Required Placeholders</Label>
+                <div className="space-y-2 p-3 border rounded-md bg-background border-secondary">
+                  {requiredPlaceholders.map((placeholder) => {
+                    const placeholderInfo = availablePlaceholders.find((p) => p.key === placeholder)
+                    return (
+                      <div key={placeholder} className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <code className="text-xs font-mono px-2 py-1 rounded bg-secondary text-foreground">
+                            {placeholder}
+                          </code>
+                          {placeholderInfo && (
+                            <p className="text-xs text-muted-foreground mt-1">{placeholderInfo.description}</p>
+                          )}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => insertPlaceholder(placeholder)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <X className="h-3 w-3 rotate-45" />
+                        </Button>
+                      </div>
+                    )
+                  })}
+                  <p className="text-xs text-red-600 mt-2">
+                    These placeholders must be included in your template content.
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Right Panel - Content Editor */}
-          <div className="col-span-2 space-y-4">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="visual">
+          <div className="col-span-2 flex flex-col min-h-0">
+            {validationErrors.length > 0 && (
+              <Alert variant="destructive" className="mb-4 flex-shrink-0">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  <ul className="list-disc list-inside">
+                    {validationErrors.map((error, index) => (
+                      <li key={index}>{error}</li>
+                    ))}
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">
+              <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
+                <TabsTrigger value="subject">
                   <Type className="mr-2 h-4 w-4" />
-                  Visual
+                  Subject
                 </TabsTrigger>
                 <TabsTrigger value="html">
                   <Code className="mr-2 h-4 w-4" />
@@ -183,31 +274,37 @@ export function EmailTemplateEditor({ template, isOpen, onClose, onSave }: Email
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="visual" className="space-y-2">
-                <Label htmlFor="visual-content">Email Content</Label>
+              <TabsContent value="subject" className="flex-1 flex flex-col space-y-2 min-h-0">
+                <Label htmlFor="template-subject">Subject Line</Label>
+                <Input
+                  id="template-subject"
+                  value={formData.subject}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, subject: e.target.value }))}
+                  placeholder="Enter email subject"
+                  className="text-base flex-shrink-0"
+                />
                 <Textarea
-                  id="visual-content"
                   value={formData.content}
                   onChange={(e) => setFormData((prev) => ({ ...prev, content: e.target.value }))}
                   placeholder="Write your email content here..."
-                  className="min-h-[400px] font-mono text-sm"
+                  className="flex-1 font-mono text-sm resize-none"
                 />
               </TabsContent>
 
-              <TabsContent value="html" className="space-y-2">
+              <TabsContent value="html" className="flex-1 flex flex-col space-y-2 min-h-0">
                 <Label htmlFor="html-content">HTML Content</Label>
                 <Textarea
                   id="html-content"
                   value={formData.htmlContent}
                   onChange={(e) => setFormData((prev) => ({ ...prev, htmlContent: e.target.value }))}
                   placeholder="Enter HTML content here..."
-                  className="min-h-[400px] font-mono text-sm"
+                  className="flex-1 font-mono text-sm resize-none overflow-auto"
                 />
               </TabsContent>
 
-              <TabsContent value="preview" className="space-y-2">
+              <TabsContent value="preview" className="flex-1 flex flex-col space-y-2 min-h-0">
                 <Label>Email Preview</Label>
-                <Card className="min-h-[400px]">
+                <Card className="flex-1 overflow-auto">
                   <CardHeader>
                     <CardTitle className="text-lg">{formData.subject || "Email Subject"}</CardTitle>
                   </CardHeader>
@@ -228,11 +325,11 @@ export function EmailTemplateEditor({ template, isOpen, onClose, onSave }: Email
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0 mt-6">
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleSave}>
+          <Button onClick={handleSave} disabled={validationErrors.length > 0}>
             <Save className="mr-2 h-4 w-4" />
             Save Template
           </Button>
