@@ -671,6 +671,19 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                     </div>
                   )}
 
+                  {productType === "service" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="deliveryTime">Delivery Time (days)</Label>
+                      <Input
+                        id="deliveryTime"
+                        type="number"
+                        value={formData.deliveryTime}
+                        onChange={(e) => setFormData({ ...formData, deliveryTime: e.target.value })}
+                        placeholder="3"
+                      />
+                    </div>
+                  )}
+
                   {formData.deliveryMethod === "custom-fields" && (
                     <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
                       <div className="flex items-center justify-between">
