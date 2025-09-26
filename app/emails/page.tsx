@@ -330,7 +330,7 @@ export default function EmailsPage() {
         </div>
         <Dialog open={isComposeOpen} onOpenChange={setIsComposeOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="text-white bg-emerald-600 hover:bg-emerald-700">
               <Plus className="mr-2 h-4 w-4" />
               Compose Email
             </Button>

@@ -162,7 +162,7 @@ export default function ProductsPage() {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button className="gap-2 w-full md:w-auto bg-primary text-white rounded-xl shadow-md hover:bg-primary/90" size="sm">
+            <Button className="text-white">
               <Plus className="h-4 w-4" />
               Add Product
               <ChevronDown className="h-4 w-4" />

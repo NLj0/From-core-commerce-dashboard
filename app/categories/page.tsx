@@ -198,9 +198,15 @@ export default function CategoriesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Categories</h1>
-        <p className="text-muted-foreground mt-2">Organize and manage your product categories.</p>
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Categories</h1>
+          <p className="text-muted-foreground mt-2">Organize and manage your product categories.</p>
+        </div>
+        <Button className="text-white" onClick={handleAddCategory}>
+          <Plus className="mr-2 h-4 w-4 text-white" />
+          Add Category
+        </Button>
       </div>
 
       {/* Summary Cards */}
@@ -237,13 +243,7 @@ export default function CategoriesPage() {
       {/* Filters and Search */}
       <Card>
         <CardHeader>
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <CardTitle>Category Management</CardTitle>
-            <Button className="text-white" onClick={handleAddCategory}>
-              <Plus className="mr-2 h-4 w-4 text-white" />
-              Add Category
-            </Button>
-          </div>
+          <CardTitle>Category Management</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
