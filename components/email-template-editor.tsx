@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Save, Eye, Code, AlertTriangle } from "lucide-react"
+import { Save, Eye, Code, AlertTriangle, Type } from "lucide-react"
 
 interface EmailTemplate {
   id: number
@@ -152,9 +152,7 @@ export function EmailTemplateEditor({ template, isOpen, onClose, onSave }: Email
 
     if (requiredPlaceholders.length > 0) {
       const combinedContent = `${formData.htmlContent}\n${formData.content}`
-      const missingPlaceholders = requiredPlaceholders.filter(
-        (placeholder) => !combinedContent.includes(placeholder)
-      )
+      const missingPlaceholders = requiredPlaceholders.filter((placeholder) => !combinedContent.includes(placeholder))
 
       if (missingPlaceholders.length > 0) {
         errors.push(`Missing required placeholders: ${missingPlaceholders.join(", ")}`)
@@ -221,7 +219,7 @@ The Team`,
   </div>
   <p>If you have any questions, simply reply to this email and we'll be happy to help.</p>
   <p>Warm regards,<br>The Team</p>
-</div>`
+</div>`,
       },
       "Order Confirmation": {
         subject: "Your order {order_id} is confirmed",
@@ -252,7 +250,7 @@ The Team`,
   </div>
   <p>If you need any assistance, just reply to this email.</p>
   <p>Warm regards,<br>The Team</p>
-</div>`
+</div>`,
       },
       "Order Status Updates": {
         subject: "Order {order_id} update: {order_status}",
@@ -276,7 +274,7 @@ The Team`,
   </div>
   <p>We're standing by if you need any help.</p>
   <p>Best regards,<br>The Team</p>
-</div>`
+</div>`,
       },
       "Password Reset": {
         subject: "Password reset instructions for {username}",
@@ -298,7 +296,7 @@ The Team`,
   </div>
   <p>If you didn't request this change, no action is needed and your account is still secure.</p>
   <p>Stay secure,<br>The Team</p>
-</div>`
+</div>`,
       },
       "Security & Account Notifications": {
         subject: "{notification_type} detected on your account",
@@ -317,7 +315,7 @@ The Team`,
   <p>If this activity was not initiated by you, please secure your account right away.</p>
   <p>Need help? Just reply to this email and our security team will jump in.</p>
   <p>Stay safe,<br>The Team</p>
-</div>`
+</div>`,
       },
       "Invoices & Receipts": {
         subject: "Invoice {order_id} dated {invoice_date}",
@@ -341,7 +339,7 @@ The Team`,
   </div>
   <p>If you need a different format or have questions, just let us know.</p>
   <p>Thank you for your business,<br>The Team</p>
-</div>`
+</div>`,
       },
       "Review Request": {
         subject: "How was {product_name}, {username}?",
@@ -363,7 +361,7 @@ The Team`,
   </div>
   <p>Thanks for being part of our community!</p>
   <p>Warm regards,<br>The Team</p>
-</div>`
+</div>`,
       },
       "Promotional & Marketing Emails": {
         subject: "Exclusive offer just for you, {username}!",
@@ -384,7 +382,7 @@ The Team`,
     <a href="{promo_link}" style="background-color: #ffffff; color: #ef4444; padding: 12px 24px; text-decoration: none; border-radius: 9999px; display: inline-block; font-weight: bold;">Claim your offer</a>
   </div>
   <p>See you there!</p>
-</div>`
+</div>`,
       },
       "Abandoned Cart Emails": {
         subject: "Still thinking it over, {username}?",
@@ -412,7 +410,7 @@ The Team`,
   </div>
   <p>Need help? Reply to this email and we'll lend a hand.</p>
   <p>See you soon,<br>The Team</p>
-</div>`
+</div>`,
       },
       "Customer Support Emails": {
         subject: "Update on ticket {ticket_id}",
@@ -438,7 +436,7 @@ The Support Team`,
   </div>
   <p>If you have any follow-up questions, simply reply to this message.</p>
   <p>Best regards,<br>The Support Team</p>
-</div>`
+</div>`,
       },
     }
 
@@ -460,7 +458,7 @@ The Support Team`,
       (placeholder) =>
         !defaultTemplate.htmlContent.includes(placeholder) &&
         !defaultTemplate.content.includes(placeholder) &&
-        !defaultTemplate.subject.includes(placeholder)
+        !defaultTemplate.subject.includes(placeholder),
     )
 
     if (missingPlaceholders.length > 0) {
@@ -511,28 +509,25 @@ The Support Team`,
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-[95vw] md:max-w-4xl max-h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>Edit Email Template: {template?.name}</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-lg md:text-xl">Edit Email Template: {template?.name}</DialogTitle>
+          <DialogDescription className="text-sm">
             Edit your email template content. Required placeholders must be included in the template.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-3 gap-6 flex-1 min-h-0">
-          {/* Left Panel - Template Settings */}
-          <div className="space-y-4 overflow-y-auto">
-              {/* Removed Template Name and Template Type fields */}
-
+        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 md:gap-6 flex-1 min-h-0">
+          <div className="space-y-4 overflow-y-auto lg:col-span-1 max-h-[300px] lg:max-h-none">
             {requiredPlaceholders.length > 0 && (
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-red-600 font-semibold">Required Placeholders</Label>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <Label className="text-red-600 font-semibold text-sm">Required Placeholders</Label>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={applyDefaultTemplate}
-                    className="text-xs"
+                    className="text-xs w-full sm:w-auto bg-transparent"
                   >
                     Reset to Default
                   </Button>
@@ -542,13 +537,15 @@ The Support Team`,
                     const placeholderInfo = availablePlaceholders.find((p) => p.key === placeholder)
                     const isInserted = insertedPlaceholders.has(placeholder)
                     return (
-                      <div key={placeholder} className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <code className={`text-xs font-mono px-2 py-1 rounded ${
-                            isInserted 
-                              ? 'bg-green-100 text-green-800 border border-green-300' 
-                              : 'bg-red-100 text-red-800 border border-red-300'
-                          }`}>
+                      <div key={placeholder} className="flex items-center justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <code
+                            className={`text-xs font-mono px-2 py-1 rounded block truncate ${
+                              isInserted
+                                ? "bg-green-100 text-green-800 border border-green-300"
+                                : "bg-red-100 text-red-800 border border-red-300"
+                            }`}
+                          >
                             {placeholder}
                           </code>
                           {placeholderInfo && (
@@ -559,10 +556,12 @@ The Support Team`,
                           variant="ghost"
                           size="sm"
                           onClick={() => insertPlaceholder(placeholder)}
-                          className={isInserted ? "text-green-600 hover:text-green-700" : "text-red-600 hover:text-red-700"}
-                          title={isInserted ? "Already inserted - click to insert again" : "Click to insert placeholder"}
+                          className={`h-8 w-8 p-0 flex-shrink-0 ${isInserted ? "text-green-600 hover:text-green-700" : "text-red-600 hover:text-red-700"}`}
+                          title={
+                            isInserted ? "Already inserted - click to insert again" : "Click to insert placeholder"
+                          }
                         >
-                          {isInserted ? "+" : "+"}
+                          +
                         </Button>
                       </div>
                     )
@@ -574,11 +573,10 @@ The Support Team`,
               </div>
             )}
 
-            {/* Template Code Section */}
             <div className="space-y-2">
-              <Label className="font-semibold">Template Code</Label>
+              <Label className="font-semibold text-sm">Template Code</Label>
               <div className="p-3 border rounded-md bg-muted/20">
-                <p className="text-sm text-muted-foreground mb-2">
+                <p className="text-xs text-muted-foreground mb-2">
                   Use this section to edit the template code directly or reset to default template.
                 </p>
                 <div className="flex flex-col gap-2">
@@ -586,7 +584,7 @@ The Support Team`,
                     variant="outline"
                     size="sm"
                     onClick={applyDefaultTemplate}
-                    className="w-full"
+                    className="w-full text-xs bg-transparent"
                   >
                     Load Default Template
                   </Button>
@@ -594,7 +592,7 @@ The Support Team`,
                     variant="outline"
                     size="sm"
                     onClick={resetToOriginal}
-                    className="w-full"
+                    className="w-full text-xs bg-transparent"
                   >
                     Reset Changes
                   </Button>
@@ -612,15 +610,16 @@ The Support Team`,
             </div>
           </div>
 
-          {/* Right Panel - Content Editor */}
-          <div className="col-span-2 flex flex-col min-h-0">
+          <div className="lg:col-span-2 flex flex-col min-h-0">
             {validationErrors.length > 0 && (
               <Alert variant="destructive" className="mb-4 flex-shrink-0">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
                   <ul className="list-disc list-inside">
                     {validationErrors.map((error, index) => (
-                      <li key={index}>{error}</li>
+                      <li key={index} className="text-sm">
+                        {error}
+                      </li>
                     ))}
                   </ul>
                 </AlertDescription>
@@ -628,51 +627,103 @@ The Support Team`,
             )}
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">
-              <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
-                <TabsTrigger value="html">
-                  <Code className="mr-2 h-4 w-4" />
-                  HTML
+              <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
+                <TabsTrigger value="subject" className="text-xs md:text-sm">
+                  <Type className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+                  <span className="hidden sm:inline">Subject</span>
+                  <span className="sm:hidden">Subject</span>
                 </TabsTrigger>
-                <TabsTrigger value="preview">
-                  <Eye className="mr-2 h-4 w-4" />
-                  Preview
+                <TabsTrigger value="html" className="text-xs md:text-sm">
+                  <Code className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+                  <span className="hidden sm:inline">HTML</span>
+                  <span className="sm:hidden">HTML</span>
+                </TabsTrigger>
+                <TabsTrigger value="preview" className="text-xs md:text-sm">
+                  <Eye className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+                  <span className="hidden sm:inline">Preview</span>
+                  <span className="sm:hidden">Preview</span>
                 </TabsTrigger>
               </TabsList>
-              <TabsContent value="html" className="flex-1 flex flex-col space-y-2 min-h-0">
-                <Label htmlFor="template-subject">Subject Line</Label>
+
+              <TabsContent value="subject" className="flex-1 flex flex-col space-y-2 min-h-0">
+                <Label htmlFor="template-subject" className="text-sm">
+                  Subject Line
+                </Label>
                 <Input
                   id="template-subject"
                   value={formData.subject}
                   onChange={(e) => setFormData((prev) => ({ ...prev, subject: e.target.value }))}
                   placeholder="Enter email subject"
-                  className="text-base flex-shrink-0"
+                  className="text-sm md:text-base flex-shrink-0"
                 />
-                <Label htmlFor="html-content">HTML Content</Label>
+                <div className="flex-1 p-4 border rounded-md bg-muted/20">
+                  <p className="text-sm text-muted-foreground">
+                    The subject line is the first thing recipients see. Make it compelling and include relevant
+                    placeholders.
+                  </p>
+                  {requiredPlaceholders.length > 0 && (
+                    <div className="mt-3">
+                      <p className="text-xs font-medium text-muted-foreground mb-2">
+                        Available placeholders for subject:
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {requiredPlaceholders.map((placeholder) => (
+                          <Button
+                            key={placeholder}
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const input = document.getElementById("template-subject") as HTMLInputElement
+                              if (input) {
+                                const start = input.selectionStart || 0
+                                const end = input.selectionEnd || 0
+                                const newValue =
+                                  formData.subject.substring(0, start) + placeholder + formData.subject.substring(end)
+                                setFormData((prev) => ({ ...prev, subject: newValue }))
+                                setTimeout(() => {
+                                  input.focus()
+                                  input.setSelectionRange(start + placeholder.length, start + placeholder.length)
+                                }, 0)
+                              }
+                            }}
+                            className="text-xs h-6"
+                          >
+                            {placeholder}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="html" className="flex-1 flex flex-col space-y-2 min-h-0">
+                <Label htmlFor="html-content" className="text-sm">
+                  HTML Content
+                </Label>
                 <Textarea
                   id="html-content"
                   value={formData.htmlContent}
                   onChange={(e) => setFormData((prev) => ({ ...prev, htmlContent: e.target.value }))}
                   placeholder="Enter HTML content here..."
-                  className="flex-1 font-mono text-sm resize-none overflow-x-auto overflow-y-auto whitespace-pre"
+                  className="flex-1 font-mono text-xs md:text-sm resize-none overflow-auto whitespace-pre min-h-[300px] md:min-h-[400px]"
                 />
               </TabsContent>
 
               <TabsContent value="preview" className="flex-1 flex flex-col space-y-2 min-h-0">
-                <Label>Email Preview</Label>
-                <Card className="flex-1 flex flex-col overflow-hidden min-h-[500px]">
-                  <CardHeader className="pb-3">
+                <Label className="text-sm">Email Preview</Label>
+                <Card className="flex-1 flex flex-col overflow-hidden min-h-[300px] md:min-h-[500px]">
+                  <CardHeader className="pb-3 flex-shrink-0">
                     <div className="space-y-1">
                       <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wide">
                         Email Subject
                       </Label>
                       <div className="border border-secondary rounded-md bg-muted/40 px-3 py-2">
-                        <CardTitle className="text-lg m-0">
-                          {formData.subject || "Email Subject"}
-                        </CardTitle>
+                        <CardTitle className="text-sm md:text-lg m-0">{formData.subject || "Email Subject"}</CardTitle>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-0 flex-1">
+                  <CardContent className="p-0 flex-1 overflow-hidden">
                     <iframe
                       srcDoc={`
                         <!DOCTYPE html>
@@ -697,7 +748,7 @@ The Support Team`,
                           </head>
                           <body>
                             <div class="email-content">
-                              ${formData.htmlContent || formData.content.replace(/\n/g, '<br>') || "Email content will appear here..."}
+                              ${formData.htmlContent || formData.content.replace(/\n/g, "<br>") || "Email content will appear here..."}
                             </div>
                           </body>
                         </html>
@@ -713,11 +764,11 @@ The Support Team`,
           </div>
         </div>
 
-        <DialogFooter className="flex-shrink-0 mt-6">
-          <Button variant="outline" onClick={onClose}>
+        <DialogFooter className="flex-shrink-0 mt-4 md:mt-6 flex-col sm:flex-row gap-2">
+          <Button variant="outline" onClick={onClose} className="w-full sm:w-auto bg-transparent">
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={validationErrors.length > 0}>
+          <Button onClick={handleSave} disabled={validationErrors.length > 0} className="w-full sm:w-auto">
             <Save className="mr-2 h-4 w-4" />
             Save Template
           </Button>

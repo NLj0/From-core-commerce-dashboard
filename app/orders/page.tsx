@@ -527,57 +527,78 @@ export default function OrdersPage() {
             </Table>
           </div>
 
-          <div className="md:hidden">
-            <div className="divide-y">
-              {filteredOrders.map((order) => (
-                <div key={order.id} className="p-4 space-y-3">
-                  {/* Line 1: Order ID + Customer Name + Status */}
+          <div className="md:hidden space-y-4 p-4">
+            {filteredOrders.map((order) => (
+              <Card key={order.id} className="p-4">
+                <div className="space-y-3">
+                  {/* Header with order ID, customer, and status */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="font-mono font-medium text-sm">{order.id}</span>
-                      <span className="font-medium">{order.customer.name}</span>
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={order.customer.avatar || "/placeholder.svg"} alt={order.customer.name} />
+                        <AvatarFallback>
+                          {order.customer.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium">{order.customer.name}</div>
+                        <div className="text-xs text-muted-foreground font-mono">{order.id}</div>
+                      </div>
                     </div>
                     {getStatusBadge(order.status)}
                   </div>
 
-                  {/* Line 2: Date + Total Price + Delivery Method */}
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <div className="flex items-center gap-4">
-                      <span>{order.date}</span>
-                      <span className="font-medium text-foreground">${order.total.toFixed(2)}</span>
+                  {/* Products */}
+                  <div className="space-y-1">
+                    {order.products.slice(0, 2).map((product, index) => (
+                      <div key={index} className="text-sm text-muted-foreground">
+                        {product.quantity}x {product.name}
+                      </div>
+                    ))}
+                    {order.products.length > 2 && (
+                      <div className="text-xs text-muted-foreground">+{order.products.length - 2} more products</div>
+                    )}
+                  </div>
+
+                  {/* Stats row */}
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <div className="flex items-center gap-4 text-sm">
+                      <div className="font-medium text-lg">${order.total.toFixed(2)}</div>
+                      <div className="text-muted-foreground">{order.date}</div>
+                      <div className="text-xs bg-muted px-2 py-1 rounded">{order.deliveryMethod}</div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs bg-muted px-2 py-1 rounded">{order.deliveryMethod}</span>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleViewOrder(order)}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "processing")}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Mark Processing
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "delivered")}>
-                            <Download className="mr-2 h-4 w-4" />
-                            Mark Delivered
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "completed")}>
-                            <CheckCircle className="mr-2 h-4 w-4" />
-                            Mark Completed
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleViewOrder(order)}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "processing")}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Mark Processing
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "delivered")}>
+                          <Download className="mr-2 h-4 w-4" />
+                          Mark Delivered
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "completed")}>
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                          Mark Completed
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
-              ))}
-            </div>
+              </Card>
+            ))}
           </div>
         </CardContent>
       </Card>

@@ -351,33 +351,38 @@ export default function CategoriesPage() {
           </div>
 
           {/* Mobile Layout */}
-          <div className="md:hidden">
-            <div className="divide-y">
-              {filteredCategories.map((category) => (
-                <div key={category.id} className="p-4 space-y-3">
-                  {/* Line 1: Category Image + Name + Status */}
+          <div className="md:hidden space-y-4 p-4">
+            {filteredCategories.map((category) => (
+              <Card key={category.id} className="p-4">
+                <div className="space-y-3">
+                  {/* Header with image, name, and status */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <img
                         src={category.image || "/placeholder.svg"}
                         alt={category.name}
-                        className="h-10 w-10 rounded-lg object-cover"
+                        className="h-12 w-12 rounded-lg object-cover"
                       />
                       <div>
-                        <div className="font-medium">{category.name}</div>
-                        <div className="text-xs text-muted-foreground">{category.id}</div>
+                        <div className="font-medium text-base">{category.name}</div>
+                        <div className="text-xs text-muted-foreground font-mono">{category.id}</div>
                       </div>
                     </div>
                     {getStatusBadge(category.status)}
                   </div>
 
-                  {/* Line 2: Description + Products Count + Actions */}
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex-1 mr-4">
-                      <div className="text-muted-foreground truncate">{category.description}</div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {category.productsCount} products • {category.createdDate}
+                  {/* Description */}
+                  <div className="text-sm text-muted-foreground">{category.description}</div>
+
+                  {/* Stats row */}
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <div className="flex items-center gap-4 text-sm">
+                      <div className="flex items-center gap-1">
+                        <Package className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium">{category.productsCount}</span>
+                        <span className="text-muted-foreground">products</span>
                       </div>
+                      <div className="text-muted-foreground">Created {category.createdDate}</div>
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -398,8 +403,8 @@ export default function CategoriesPage() {
                     </DropdownMenu>
                   </div>
                 </div>
-              ))}
-            </div>
+              </Card>
+            ))}
           </div>
         </CardContent>
       </Card>

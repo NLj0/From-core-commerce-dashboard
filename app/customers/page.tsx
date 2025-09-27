@@ -150,29 +150,13 @@ const mockCustomers = [
 function getStatusBadge(status: string) {
   switch (status) {
     case "vip":
-      return (
-        <Badge variant="violet">
-          VIP
-        </Badge>
-      )
+      return <Badge variant="violet">VIP</Badge>
     case "active":
-      return (
-        <Badge variant="success">
-          Active
-        </Badge>
-      )
+      return <Badge variant="success">Active</Badge>
     case "new":
-      return (
-        <Badge variant="info">
-          New
-        </Badge>
-      )
+      return <Badge variant="info">New</Badge>
     case "inactive":
-      return (
-        <Badge variant="gray">
-          Inactive
-        </Badge>
-      )
+      return <Badge variant="gray">Inactive</Badge>
     default:
       return <Badge variant="outline">{status}</Badge>
   }
@@ -373,11 +357,11 @@ export default function CustomersPage() {
             </Table>
           </div>
 
-          <div className="md:hidden">
-            <div className="divide-y">
-              {filteredCustomers.map((customer) => (
-                <div key={customer.id} className="p-4 space-y-3">
-                  {/* Line 1: Customer Name + Email */}
+          <div className="md:hidden space-y-4 p-4">
+            {filteredCustomers.map((customer) => (
+              <Card key={customer.id} className="p-4">
+                <div className="space-y-3">
+                  {/* Customer Header */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10">
@@ -391,23 +375,33 @@ export default function CustomersPage() {
                       </Avatar>
                       <div>
                         <div className="font-medium">{customer.name}</div>
-                        <div className="text-sm text-muted-foreground">{customer.email}</div>
+                        <div className="text-xs text-muted-foreground">{customer.id}</div>
                       </div>
                     </div>
                     {getStatusBadge(customer.status)}
                   </div>
 
-                  {/* Line 2: Orders Count + Last Activity */}
-                  <div className="flex items-center justify-between text-sm">
+                  {/* Contact Information */}
+                  <div className="space-y-1">
+                    <div className="text-sm">{customer.email}</div>
+                    <div className="text-xs text-muted-foreground">{customer.phone}</div>
+                  </div>
+
+                  {/* Stats Row */}
+                  <div className="flex items-center justify-between pt-2 border-t">
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-1">
                         <ShoppingBag className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{customer.totalOrders} orders</span>
+                        <span className="text-sm font-medium">{customer.totalOrders}</span>
+                        <span className="text-xs text-muted-foreground">orders</span>
                       </div>
-                      <span className="text-muted-foreground">Last: {customer.lastActivity}</span>
+                      <div className="flex items-center gap-1">
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">${customer.totalSpent.toFixed(2)}</span>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">${customer.totalSpent.toFixed(2)}</span>
+                      <span className="text-xs text-muted-foreground">Last: {customer.lastActivity}</span>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -432,8 +426,8 @@ export default function CustomersPage() {
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              </Card>
+            ))}
           </div>
         </CardContent>
       </Card>

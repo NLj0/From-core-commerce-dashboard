@@ -384,29 +384,30 @@ export default function EmailsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Email Management</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Email Management</h1>
+          <p className="text-muted-foreground mt-1 md:mt-2">
             Manage email templates, campaigns, and track all email communications.
           </p>
         </div>
         <Dialog open={isComposeOpen} onOpenChange={setIsComposeOpen}>
           <DialogTrigger asChild>
-            <Button className="text-white bg-emerald-600 hover:bg-emerald-700">
+            <Button className="text-white bg-emerald-600 hover:bg-emerald-700 w-full md:w-auto">
               <Plus className="mr-2 h-4 w-4" />
-              Compose Email
+              <span className="hidden sm:inline">Compose Email</span>
+              <span className="sm:hidden">Compose</span>
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+          <DialogContent className="max-w-[95vw] md:max-w-4xl max-h-[90vh] overflow-hidden">
             <DialogHeader>
-              <DialogTitle>Compose New Email</DialogTitle>
-              <DialogDescription>Create and send a new email to your customers.</DialogDescription>
+              <DialogTitle className="text-lg md:text-xl">Compose New Email</DialogTitle>
+              <DialogDescription className="text-sm">Create and send a new email to your customers.</DialogDescription>
             </DialogHeader>
-            <div className="grid grid-cols-3 gap-6 h-[600px]">
+            <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 md:gap-6 h-[500px] md:h-[600px]">
               {/* Left Panel - Recipients & Settings */}
-              <div className="space-y-4 overflow-y-auto">
+              <div className="space-y-4 overflow-y-auto lg:col-span-1">
                 <div className="space-y-2">
                   <Label htmlFor="recipients">Recipients</Label>
                   <Select value={selectedRecipients} onValueChange={setSelectedRecipients}>
@@ -432,7 +433,7 @@ export default function EmailsPage() {
                 {selectedRecipients === "multiple" && (
                   <div className="space-y-2">
                     <Label>Select Customers</Label>
-                    <div className="border rounded-md p-3 max-h-48 overflow-y-auto space-y-2">
+                    <div className="border rounded-md p-3 max-h-32 md:max-h-48 overflow-y-auto space-y-2">
                       {customers.map((customer) => (
                         <div key={customer.id} className="flex items-center space-x-2">
                           <Checkbox
@@ -441,7 +442,7 @@ export default function EmailsPage() {
                             onCheckedChange={(checked) => handleCustomerSelection(customer.id, checked as boolean)}
                           />
                           <Label htmlFor={`customer-${customer.id}`} className="flex-1 text-sm">
-                            <div>{customer.name}</div>
+                            <div className="font-medium">{customer.name}</div>
                             <div className="text-xs text-muted-foreground">{customer.email}</div>
                           </Label>
                           <Badge variant="outline" className="text-xs">
@@ -526,7 +527,7 @@ export default function EmailsPage() {
               </div>
 
               {/* Right Panel - Email Content */}
-              <div className="col-span-2 space-y-4">
+              <div className="lg:col-span-2 space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="subject">Subject Line</Label>
                   <Input
@@ -542,7 +543,7 @@ export default function EmailsPage() {
                   <Textarea
                     id="message"
                     placeholder="Write your email message here..."
-                    className="min-h-[400px]"
+                    className="min-h-[200px] md:min-h-[400px]"
                     value={emailContent}
                     onChange={(e) => setEmailContent(e.target.value)}
                   />
@@ -560,11 +561,11 @@ export default function EmailsPage() {
                 </div>
               </div>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsComposeOpen(false)}>
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              <Button variant="outline" onClick={() => setIsComposeOpen(false)} className="w-full sm:w-auto">
                 Cancel
               </Button>
-              <Button onClick={handleSendEmail}>
+              <Button onClick={handleSendEmail} className="w-full sm:w-auto">
                 <Send className="mr-2 h-4 w-4" />
                 {sendOption === "now" ? "Send Now" : "Schedule Email"}
               </Button>
@@ -573,40 +574,44 @@ export default function EmailsPage() {
         </Dialog>
       </div>
 
-      <Tabs defaultValue="templates" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="templates">
-            <FileText className="mr-2 h-4 w-4" />
-            Templates
+      <Tabs defaultValue="templates" className="space-y-4 md:space-y-6">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
+          <TabsTrigger value="templates" className="text-xs md:text-sm">
+            <FileText className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+            <span className="hidden sm:inline">Templates</span>
+            <span className="sm:hidden">Templates</span>
           </TabsTrigger>
-          <TabsTrigger value="campaigns">
-            <Users className="mr-2 h-4 w-4" />
-            Campaigns
+          <TabsTrigger value="campaigns" className="text-xs md:text-sm">
+            <Users className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+            <span className="hidden sm:inline">Campaigns</span>
+            <span className="sm:hidden">Campaigns</span>
           </TabsTrigger>
-          <TabsTrigger value="logs">
-            <Mail className="mr-2 h-4 w-4" />
-            Email Logs
+          <TabsTrigger value="logs" className="text-xs md:text-sm">
+            <Mail className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+            <span className="hidden sm:inline">Email Logs</span>
+            <span className="sm:hidden">Logs</span>
           </TabsTrigger>
-          <TabsTrigger value="analytics">
-            <Calendar className="mr-2 h-4 w-4" />
-            Analytics
+          <TabsTrigger value="analytics" className="text-xs md:text-sm">
+            <Calendar className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+            <span className="hidden sm:inline">Analytics</span>
+            <span className="sm:hidden">Analytics</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="templates" className="space-y-6">
+        <TabsContent value="templates" className="space-y-4 md:space-y-6">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Email Templates</CardTitle>
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+              <CardTitle className="text-lg md:text-xl">Email Templates</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input placeholder="Search templates..." className="pl-10" />
                   </div>
                   <Select defaultValue="all">
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-full sm:w-[180px]">
                       <SelectValue placeholder="Filter by type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -617,23 +622,126 @@ export default function EmailsPage() {
                   </Select>
                 </div>
 
+                <div className="hidden md:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Template Name</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead className="hidden lg:table-cell">Subject</TableHead>
+                        <TableHead>Last Modified</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {emailTemplates.map((template) => (
+                        <TableRow key={template.id}>
+                          <TableCell className="font-medium">{template.name}</TableCell>
+                          <TableCell>{getTypeBadge(template.type)}</TableCell>
+                          <TableCell className="max-w-xs truncate hidden lg:table-cell">{template.subject}</TableCell>
+                          <TableCell className="text-muted-foreground text-sm">{template.lastModified}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Button variant="ghost" size="sm">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedTemplate(template)
+                                  setIsTemplateEditorOpen(true)
+                                }}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="md:hidden space-y-4">
+                  {emailTemplates.map((template) => (
+                    <Card key={template.id}>
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-medium text-sm truncate">{template.name}</h3>
+                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{template.subject}</p>
+                          </div>
+                          <div className="flex items-center gap-1 ml-2">
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              onClick={() => {
+                                setSelectedTemplate(template)
+                                setIsTemplateEditorOpen(true)
+                              }}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">{getTypeBadge(template.type)}</div>
+                          <span className="text-xs text-muted-foreground">{template.lastModified}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="campaigns" className="space-y-4 md:space-y-6">
+          <Card>
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+              <CardTitle className="text-lg md:text-xl">Email Campaigns</CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSelectedCampaign(null)
+                  setIsCampaignEditorOpen(true)
+                }}
+                className="w-full sm:w-auto"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                New Campaign
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="hidden md:block">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Template Name</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Subject</TableHead>
-                      <TableHead>Last Modified</TableHead>
+                      <TableHead>Campaign Name</TableHead>
+                      <TableHead>Recipients</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="hidden lg:table-cell">Open Rate</TableHead>
+                      <TableHead className="hidden lg:table-cell">Click Rate</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {emailTemplates.map((template) => (
-                      <TableRow key={template.id}>
-                        <TableCell className="font-medium">{template.name}</TableCell>
-                        <TableCell>{getTypeBadge(template.type)}</TableCell>
-                        <TableCell className="max-w-xs truncate">{template.subject}</TableCell>
-                        <TableCell className="text-muted-foreground">{template.lastModified}</TableCell>
+                    {emailCampaigns.map((campaign) => (
+                      <TableRow key={campaign.id}>
+                        <TableCell className="font-medium">{campaign.name}</TableCell>
+                        <TableCell>{campaign.recipients.toLocaleString()}</TableCell>
+                        <TableCell>{getStatusBadge(campaign.status)}</TableCell>
+                        <TableCell className="text-muted-foreground text-sm">{campaign.date}</TableCell>
+                        <TableCell className="hidden lg:table-cell">{campaign.openRate}</TableCell>
+                        <TableCell className="hidden lg:table-cell">{campaign.clickRate}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Button variant="ghost" size="sm">
@@ -643,8 +751,8 @@ export default function EmailsPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => {
-                                setSelectedTemplate(template)
-                                setIsTemplateEditorOpen(true)
+                                setSelectedCampaign(campaign)
+                                setIsCampaignEditorOpen(true)
                               }}
                             >
                               <Edit className="h-4 w-4" />
@@ -656,56 +764,26 @@ export default function EmailsPage() {
                   </TableBody>
                 </Table>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
-        <TabsContent value="campaigns" className="space-y-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Email Campaigns</CardTitle>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setSelectedCampaign(null)
-                  setIsCampaignEditorOpen(true)
-                }}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                New Campaign
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Campaign Name</TableHead>
-                    <TableHead>Recipients</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Open Rate</TableHead>
-                    <TableHead>Click Rate</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {emailCampaigns.map((campaign) => (
-                    <TableRow key={campaign.id}>
-                      <TableCell className="font-medium">{campaign.name}</TableCell>
-                      <TableCell>{campaign.recipients.toLocaleString()}</TableCell>
-                      <TableCell>{getStatusBadge(campaign.status)}</TableCell>
-                      <TableCell className="text-muted-foreground">{campaign.date}</TableCell>
-                      <TableCell>{campaign.openRate}</TableCell>
-                      <TableCell>{campaign.clickRate}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm">
+              <div className="md:hidden space-y-4">
+                {emailCampaigns.map((campaign) => (
+                  <Card key={campaign.id}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-sm">{campaign.name}</h3>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {campaign.recipients.toLocaleString()} recipients
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1 ml-2">
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                             <Eye className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
+                            className="h-8 w-8 p-0"
                             onClick={() => {
                               setSelectedCampaign(campaign)
                               setIsCampaignEditorOpen(true)
@@ -714,26 +792,46 @@ export default function EmailsPage() {
                             <Edit className="h-4 w-4" />
                           </Button>
                         </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">{getStatusBadge(campaign.status)}</div>
+                        <div className="text-right">
+                          <div className="text-xs text-muted-foreground">{campaign.date}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {campaign.openRate} open • {campaign.clickRate} click
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="logs" className="space-y-6">
+        <TabsContent value="logs" className="space-y-4 md:space-y-6">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Email Logs</CardTitle>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+              <CardTitle className="text-lg md:text-xl">Email Logs</CardTitle>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.location.reload()}
+                  className="w-full sm:w-auto"
+                >
                   <RefreshCw className="mr-2 h-4 w-4" />
-                  Refresh
+                  <span className="hidden sm:inline">Refresh</span>
+                  <span className="sm:hidden">Refresh</span>
                 </Button>
                 {selectedLogEntries.length > 0 && (
-                  <Button variant="outline" size="sm" onClick={exportSelectedLogs}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={exportSelectedLogs}
+                    className="w-full sm:w-auto bg-transparent"
+                  >
                     <Download className="mr-2 h-4 w-4" />
                     Export ({selectedLogEntries.length})
                   </Button>
@@ -742,7 +840,7 @@ export default function EmailsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
@@ -752,119 +850,200 @@ export default function EmailsPage() {
                       onChange={(e) => setLogSearchTerm(e.target.value)}
                     />
                   </div>
-                  <Select value={logTypeFilter} onValueChange={setLogTypeFilter}>
-                    <SelectTrigger className="w-[150px]">
-                      <SelectValue placeholder="Filter by type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
-                      <SelectItem value="transactional">Transactional</SelectItem>
-                      <SelectItem value="marketing">Marketing</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select value={logStatusFilter} onValueChange={setLogStatusFilter}>
-                    <SelectTrigger className="w-[150px]">
-                      <SelectValue placeholder="Filter by status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all-status">All Status</SelectItem>
-                      <SelectItem value="sent">Sent</SelectItem>
-                      <SelectItem value="failed">Failed</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="flex gap-2">
+                    <Select value={logTypeFilter} onValueChange={setLogTypeFilter}>
+                      <SelectTrigger className="w-full sm:w-[150px]">
+                        <SelectValue placeholder="Filter by type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Types</SelectItem>
+                        <SelectItem value="transactional">Transactional</SelectItem>
+                        <SelectItem value="marketing">Marketing</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={logStatusFilter} onValueChange={setLogStatusFilter}>
+                      <SelectTrigger className="w-full sm:w-[150px]">
+                        <SelectValue placeholder="Filter by status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all-status">All Status</SelectItem>
+                        <SelectItem value="sent">Sent</SelectItem>
+                        <SelectItem value="failed">Failed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-12">
-                          <Checkbox
-                            checked={
-                              selectedLogEntries.length === filteredEmailLogs.length && filteredEmailLogs.length > 0
-                            }
-                            onCheckedChange={handleSelectAllLogs}
-                          />
-                        </TableHead>
-                        <TableHead>Recipient</TableHead>
-                        <TableHead>Subject</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Template</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Sent</TableHead>
-                        <TableHead>Engagement</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredEmailLogs.map((log) => (
-                        <TableRow key={log.id}>
-                          <TableCell>
+                <div className="hidden md:block">
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-12">
                             <Checkbox
-                              checked={selectedLogEntries.includes(log.id)}
-                              onCheckedChange={(checked) => handleLogEntrySelection(log.id, checked as boolean)}
+                              checked={
+                                selectedLogEntries.length === filteredEmailLogs.length && filteredEmailLogs.length > 0
+                              }
+                              onCheckedChange={handleSelectAllLogs}
                             />
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">{log.recipientName}</div>
-                              <div className="text-sm text-muted-foreground">{log.recipient}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="max-w-xs">
-                            <div className="truncate" title={log.subject}>
-                              {log.subject}
-                            </div>
-                          </TableCell>
-                          <TableCell>{getTypeBadge(log.type)}</TableCell>
-                          <TableCell className="text-muted-foreground">{log.template}</TableCell>
-                          <TableCell>
-                            <div className="space-y-1">
-                              {getStatusBadge(log.status)}
-                              {log.status === "failed" && log.failureReason && (
-                                <div className="text-xs text-red-600">{log.failureReason}</div>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground text-sm">{log.date}</TableCell>
-                          <TableCell>
-                            <div className="space-y-1">
-                              {log.openedAt && (
-                                <div className="flex items-center gap-1 text-xs text-green-600">
-                                  <Eye className="h-3 w-3" />
-                                  Opened
-                                </div>
-                              )}
-                              {log.clickedAt && (
-                                <div className="flex items-center gap-1 text-xs text-blue-600">
-                                  <Mail className="h-3 w-3" />
-                                  Clicked
-                                </div>
-                              )}
-                              {log.bounced && (
-                                <div className="flex items-center gap-1 text-xs text-red-600">
-                                  <RefreshCw className="h-3 w-3" />
-                                  Bounced
-                                </div>
-                              )}
-                              {log.unsubscribed && (
-                                <div className="flex items-center gap-1 text-xs text-orange-600">
-                                  <Users className="h-3 w-3" />
-                                  Unsubscribed
-                                </div>
-                              )}
-                              {!log.openedAt &&
-                                !log.clickedAt &&
-                                !log.bounced &&
-                                !log.unsubscribed &&
-                                log.status === "sent" && (
-                                  <div className="text-xs text-muted-foreground">No activity</div>
-                                )}
-                            </div>
-                          </TableCell>
+                          </TableHead>
+                          <TableHead>Recipient</TableHead>
+                          <TableHead className="hidden lg:table-cell">Subject</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead className="hidden lg:table-cell">Template</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="hidden lg:table-cell">Sent</TableHead>
+                          <TableHead className="hidden xl:table-cell">Engagement</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredEmailLogs.map((log) => (
+                          <TableRow key={log.id}>
+                            <TableCell>
+                              <Checkbox
+                                checked={selectedLogEntries.includes(log.id)}
+                                onCheckedChange={(checked) => handleLogEntrySelection(log.id, checked as boolean)}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <div className="font-medium text-sm">{log.recipientName}</div>
+                                <div className="text-xs text-muted-foreground">{log.recipient}</div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-xs hidden lg:table-cell">
+                              <div className="truncate" title={log.subject}>
+                                {log.subject}
+                              </div>
+                            </TableCell>
+                            <TableCell>{getTypeBadge(log.type)}</TableCell>
+                            <TableCell className="text-muted-foreground text-sm hidden lg:table-cell">
+                              {log.template}
+                            </TableCell>
+                            <TableCell>
+                              <div className="space-y-1">
+                                {getStatusBadge(log.status)}
+                                {log.status === "failed" && log.failureReason && (
+                                  <div className="text-xs text-red-600">{log.failureReason}</div>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-muted-foreground text-xs hidden lg:table-cell">
+                              {log.date}
+                            </TableCell>
+                            <TableCell className="hidden xl:table-cell">
+                              <div className="space-y-1">
+                                {log.openedAt && (
+                                  <div className="flex items-center gap-1 text-xs text-green-600">
+                                    <Eye className="h-3 w-3" />
+                                    Opened
+                                  </div>
+                                )}
+                                {log.clickedAt && (
+                                  <div className="flex items-center gap-1 text-xs text-blue-600">
+                                    <Mail className="h-3 w-3" />
+                                    Clicked
+                                  </div>
+                                )}
+                                {log.bounced && (
+                                  <div className="flex items-center gap-1 text-xs text-red-600">
+                                    <RefreshCw className="h-3 w-3" />
+                                    Bounced
+                                  </div>
+                                )}
+                                {log.unsubscribed && (
+                                  <div className="flex items-center gap-1 text-xs text-orange-600">
+                                    <Users className="h-3 w-3" />
+                                    Unsubscribed
+                                  </div>
+                                )}
+                                {!log.openedAt &&
+                                  !log.clickedAt &&
+                                  !log.bounced &&
+                                  !log.unsubscribed &&
+                                  log.status === "sent" && (
+                                    <div className="text-xs text-muted-foreground">No activity</div>
+                                  )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+
+                <div className="md:hidden space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Checkbox
+                      checked={selectedLogEntries.length === filteredEmailLogs.length && filteredEmailLogs.length > 0}
+                      onCheckedChange={handleSelectAllLogs}
+                    />
+                    <span className="text-sm text-muted-foreground">
+                      {selectedLogEntries.length > 0 && `${selectedLogEntries.length} selected`}
+                    </span>
+                  </div>
+                  {filteredEmailLogs.map((log) => (
+                    <Card key={log.id}>
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-3">
+                          <Checkbox
+                            checked={selectedLogEntries.includes(log.id)}
+                            onCheckedChange={(checked) => handleLogEntrySelection(log.id, checked as boolean)}
+                            className="mt-1"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-medium text-sm">{log.recipientName}</h3>
+                                <p className="text-xs text-muted-foreground truncate">{log.recipient}</p>
+                              </div>
+                              <div className="ml-2">{getStatusBadge(log.status)}</div>
+                            </div>
+                            <p className="text-sm mb-2 line-clamp-2">{log.subject}</p>
+                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                              <div className="flex items-center gap-2">
+                                {getTypeBadge(log.type)}
+                                <span>{log.template}</span>
+                              </div>
+                              <span>{log.date}</span>
+                            </div>
+                            {(log.openedAt || log.clickedAt || log.bounced || log.unsubscribed) && (
+                              <div className="flex items-center gap-3 mt-2 text-xs">
+                                {log.openedAt && (
+                                  <div className="flex items-center gap-1 text-green-600">
+                                    <Eye className="h-3 w-3" />
+                                    Opened
+                                  </div>
+                                )}
+                                {log.clickedAt && (
+                                  <div className="flex items-center gap-1 text-blue-600">
+                                    <Mail className="h-3 w-3" />
+                                    Clicked
+                                  </div>
+                                )}
+                                {log.bounced && (
+                                  <div className="flex items-center gap-1 text-red-600">
+                                    <RefreshCw className="h-3 w-3" />
+                                    Bounced
+                                  </div>
+                                )}
+                                {log.unsubscribed && (
+                                  <div className="flex items-center gap-1 text-orange-600">
+                                    <Users className="h-3 w-3" />
+                                    Unsubscribed
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            {log.status === "failed" && log.failureReason && (
+                              <div className="text-xs text-red-600 mt-1">{log.failureReason}</div>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
 
                 {filteredEmailLogs.length === 0 && (
@@ -873,14 +1052,14 @@ export default function EmailsPage() {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <div>
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-muted-foreground">
+                  <div className="text-center sm:text-left">
                     Showing {filteredEmailLogs.length} of {emailLogs.length} email logs
                     {selectedLogEntries.length > 0 && (
                       <span className="ml-2">({selectedLogEntries.length} selected)</span>
                     )}
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 sm:gap-4">
                     <Button variant="outline" size="sm" disabled>
                       Previous
                     </Button>
@@ -895,8 +1074,8 @@ export default function EmailsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="analytics" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <TabsContent value="analytics" className="space-y-4 md:space-y-6">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Emails Sent</CardTitle>
@@ -944,10 +1123,10 @@ export default function EmailsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Email Performance Over Time</CardTitle>
+              <CardTitle className="text-lg md:text-xl">Email Performance Over Time</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+              <div className="h-[250px] md:h-[300px] flex items-center justify-center text-muted-foreground">
                 Email analytics chart would be displayed here
               </div>
             </CardContent>
