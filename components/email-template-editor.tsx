@@ -1,12 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -17,7 +16,7 @@ import {
 } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Save, Eye, Code, Type, X, AlertTriangle } from "lucide-react"
+import { Save, Eye, Code, AlertTriangle } from "lucide-react"
 
 interface EmailTemplate {
   id: number
@@ -110,24 +109,56 @@ export function EmailTemplateEditor({ template, isOpen, onClose, onSave }: Email
     htmlContent: template?.htmlContent || "",
   })
 
-  const [activeTab, setActiveTab] = useState("subject")
+  const [activeTab, setActiveTab] = useState("html")
   const [validationErrors, setValidationErrors] = useState<string[]>([])
+  const [defaultTemplateFeedback, setDefaultTemplateFeedback] = useState<{
+    type: "success" | "error"
+    message: string
+  } | null>(null)
 
   const requiredPlaceholders = template?.requiredPlaceholders || []
   const availablePlaceholders = getPlaceholdersForTemplate(formData.name)
 
-  const validateContent = (content: string) => {
-    const errors: string[] = []
-    const missingPlaceholders: string[] = []
+  useEffect(() => {
+    if (!isOpen) return
+
+    setFormData({
+      name: template?.name || "",
+      type: template?.type || ("marketing" as const),
+      subject: template?.subject || "",
+      content: template?.content || "",
+      htmlContent: template?.htmlContent || "",
+    })
+    setDefaultTemplateFeedback(null)
+    setValidationErrors([])
+  }, [template, isOpen])
+
+  // Memoize inserted placeholders to prevent infinite re-renders
+  const insertedPlaceholders = useMemo(() => {
+    const combinedContent = `${formData.htmlContent}\n${formData.content}`
+    const inserted = new Set<string>()
 
     requiredPlaceholders.forEach((placeholder) => {
-      if (!content.includes(placeholder)) {
-        missingPlaceholders.push(placeholder)
+      if (combinedContent.includes(placeholder)) {
+        inserted.add(placeholder)
       }
     })
 
-    if (missingPlaceholders.length > 0) {
-      errors.push(`Missing required placeholders: ${missingPlaceholders.join(", ")}`)
+    return inserted
+  }, [formData.content, formData.htmlContent, requiredPlaceholders])
+
+  const validatePlaceholders = () => {
+    const errors: string[] = []
+
+    if (requiredPlaceholders.length > 0) {
+      const combinedContent = `${formData.htmlContent}\n${formData.content}`
+      const missingPlaceholders = requiredPlaceholders.filter(
+        (placeholder) => !combinedContent.includes(placeholder)
+      )
+
+      if (missingPlaceholders.length > 0) {
+        errors.push(`Missing required placeholders: ${missingPlaceholders.join(", ")}`)
+      }
     }
 
     setValidationErrors(errors)
@@ -135,13 +166,339 @@ export function EmailTemplateEditor({ template, isOpen, onClose, onSave }: Email
   }
 
   useEffect(() => {
-    if (formData.content && requiredPlaceholders.length > 0) {
-      validateContent(formData.content)
+    if (requiredPlaceholders.length > 0) {
+      validatePlaceholders()
+    } else if (validationErrors.length > 0) {
+      setValidationErrors([])
     }
-  }, [formData.content, requiredPlaceholders])
+  }, [formData.htmlContent, formData.content, requiredPlaceholders, validationErrors.length])
+
+  const insertPlaceholder = (placeholder: string) => {
+    const textarea = document.getElementById("html-content") as HTMLTextAreaElement | null
+
+    if (textarea) {
+      const start = textarea.selectionStart
+      const end = textarea.selectionEnd
+      const text = formData.htmlContent
+      const newText = text.substring(0, start) + placeholder + text.substring(end)
+
+      setFormData((prev) => ({ ...prev, htmlContent: newText }))
+
+      // Focus back to textarea and set cursor position
+      setTimeout(() => {
+        textarea.focus()
+        textarea.setSelectionRange(start + placeholder.length, start + placeholder.length)
+      }, 0)
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        htmlContent: prev.htmlContent + placeholder,
+      }))
+    }
+  }
+
+  const getDefaultTemplate = (templateName: string) => {
+    const templates: Record<string, { subject: string; content: string; htmlContent: string }> = {
+      "Welcome & Account Activation": {
+        subject: "Welcome aboard, {username}!",
+        content: `Hi {username},
+
+Welcome to our platform! We're excited to have you join our community.
+
+To get started, please activate your account using the secure link below:
+{activation_link}
+
+If you have any questions, feel free to reach out to our support team anytime.
+
+Warm regards,
+The Team`,
+        htmlContent: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h2 style="color: #333;">Welcome aboard, {username}!</h2>
+  <p>Hi {username},</p>
+  <p>We're thrilled to have you join our community. Activate your account to start exploring.</p>
+  <div style="text-align: center; margin: 30px 0;">
+    <a href="{activation_link}" style="background-color: #2563eb; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Activate your account</a>
+  </div>
+  <p>If you have any questions, simply reply to this email and we'll be happy to help.</p>
+  <p>Warm regards,<br>The Team</p>
+</div>`
+      },
+      "Order Confirmation": {
+        subject: "Your order {order_id} is confirmed",
+        content: `Hi {username},
+
+Thank you for shopping with us! Your order {order_id} is confirmed and will be on its way soon.
+
+Order Summary:
+{order_summary}
+
+Total Amount: {total_amount}
+
+You can follow the delivery here: {delivery_link}
+
+Thanks again for choosing us!
+The Team`,
+        htmlContent: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h2 style="color: #333;">Order Confirmation</h2>
+  <p>Hi {username},</p>
+  <p>Thanks for shopping with us! Your order <strong>{order_id}</strong> is confirmed.</p>
+  <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <p style="margin: 0 0 12px;"><strong>Order Summary:</strong></p>
+    <div>{order_summary}</div>
+    <p style="margin-top: 12px;"><strong>Total Amount:</strong> {total_amount}</p>
+  </div>
+  <div style="text-align: center; margin: 30px 0;">
+    <a href="{delivery_link}" style="background-color: #16a34a; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Track delivery status</a>
+  </div>
+  <p>If you need any assistance, just reply to this email.</p>
+  <p>Warm regards,<br>The Team</p>
+</div>`
+      },
+      "Order Status Updates": {
+        subject: "Order {order_id} update: {order_status}",
+        content: `Hi {username},
+
+There's an update on your order {order_id}.
+
+Current status: {order_status}
+
+Track progress here: {tracking_link}
+
+We'll keep you posted with any new changes.
+The Team`,
+        htmlContent: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h2 style="color: #333;">Order Update</h2>
+  <p>Hi {username},</p>
+  <p>Your order <strong>{order_id}</strong> status has changed to <strong>{order_status}</strong>.</p>
+  <p>You can follow the live progress using the link below:</p>
+  <div style="text-align: center; margin: 30px 0;">
+    <a href="{tracking_link}" style="background-color: #2563eb; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Track your order</a>
+  </div>
+  <p>We're standing by if you need any help.</p>
+  <p>Best regards,<br>The Team</p>
+</div>`
+      },
+      "Password Reset": {
+        subject: "Password reset instructions for {username}",
+        content: `Hi {username},
+
+We received a request to reset your password. You can create a new one using the secure link below:
+{reset_link}
+
+If you didn't request this change, please ignore this message.
+
+Stay secure,
+The Team`,
+        htmlContent: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h2 style="color: #333;">Password reset requested</h2>
+  <p>Hi {username},</p>
+  <p>We received a request to reset your password. Click the button below to set a new one.</p>
+  <div style="text-align: center; margin: 30px 0;">
+    <a href="{reset_link}" style="background-color: #1d4ed8; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Reset your password</a>
+  </div>
+  <p>If you didn't request this change, no action is needed and your account is still secure.</p>
+  <p>Stay secure,<br>The Team</p>
+</div>`
+      },
+      "Security & Account Notifications": {
+        subject: "{notification_type} detected on your account",
+        content: `Hi {username},
+
+We detected a {notification_type} on your account at {notification_time}.
+
+If this was you, no action is needed. Otherwise, please review your account security settings immediately.
+
+Stay safe,
+The Team`,
+        htmlContent: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h2 style="color: #b91c1c;">Important security alert</h2>
+  <p>Hi {username},</p>
+  <p>We noticed a <strong>{notification_type}</strong> on your account at <strong>{notification_time}</strong>.</p>
+  <p>If this activity was not initiated by you, please secure your account right away.</p>
+  <p>Need help? Just reply to this email and our security team will jump in.</p>
+  <p>Stay safe,<br>The Team</p>
+</div>`
+      },
+      "Invoices & Receipts": {
+        subject: "Invoice {order_id} dated {invoice_date}",
+        content: `Hi {username},
+
+Here's your invoice for order {order_id} placed on {invoice_date}.
+
+Total Amount: {total_amount}
+
+Download your invoice here: {invoice_link}
+
+Thank you for your business,
+The Team`,
+        htmlContent: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h2 style="color: #333;">Your invoice is ready</h2>
+  <p>Hi {username},</p>
+  <p>Here are the details for your order <strong>{order_id}</strong> placed on <strong>{invoice_date}</strong>.</p>
+  <p><strong>Total Amount:</strong> {total_amount}</p>
+  <div style="text-align: center; margin: 30px 0;">
+    <a href="{invoice_link}" style="background-color: #0f766e; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Download invoice</a>
+  </div>
+  <p>If you need a different format or have questions, just let us know.</p>
+  <p>Thank you for your business,<br>The Team</p>
+</div>`
+      },
+      "Review Request": {
+        subject: "How was {product_name}, {username}?",
+        content: `Hi {username},
+
+We hope you're enjoying {product_name}!
+
+Your feedback helps other customers. Share your thoughts here: {review_link}
+
+Thanks for being part of our community,
+The Team`,
+        htmlContent: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h2 style="color: #333;">We'd love your feedback</h2>
+  <p>Hi {username},</p>
+  <p>We hope you're loving <strong>{product_name}</strong>.</p>
+  <p>Your review helps other shoppers make confident decisions.</p>
+  <div style="text-align: center; margin: 30px 0;">
+    <a href="{review_link}" style="background-color: #f97316; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Leave a quick review</a>
+  </div>
+  <p>Thanks for being part of our community!</p>
+  <p>Warm regards,<br>The Team</p>
+</div>`
+      },
+      "Promotional & Marketing Emails": {
+        subject: "Exclusive offer just for you, {username}!",
+        content: `Hi {username},
+
+We picked something special for you.
+
+Use promo code {promo_code} before {offer_expiry} and unlock exclusive savings.
+
+Explore the offer now: {promo_link}
+
+Enjoy!
+The Team`,
+        htmlContent: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: linear-gradient(135deg, #f97316, #ef4444); color: #ffffff; padding: 32px; border-radius: 16px;">
+  <h2 style="margin-top: 0;">An offer you can't miss, {username}!</h2>
+  <p>Use promo code <strong>{promo_code}</strong> before <strong>{offer_expiry}</strong> to unlock exclusive savings.</p>
+  <div style="text-align: center; margin: 30px 0;">
+    <a href="{promo_link}" style="background-color: #ffffff; color: #ef4444; padding: 12px 24px; text-decoration: none; border-radius: 9999px; display: inline-block; font-weight: bold;">Claim your offer</a>
+  </div>
+  <p>See you there!</p>
+</div>`
+      },
+      "Abandoned Cart Emails": {
+        subject: "Still thinking it over, {username}?",
+        content: `Hi {username},
+
+We saved your cart with these items:
+{cart_items}
+
+Come back to complete your purchase: {cart_link}
+
+Use {discount_offer} before it expires!
+
+See you soon,
+The Team`,
+        htmlContent: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h2 style="color: #333;">We saved your cart for you</h2>
+  <p>Hi {username},</p>
+  <p>You left a few things behind:</p>
+  <div style="background-color: #f1f5f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    {cart_items}
+  </div>
+  <p>Use your special offer <strong>{discount_offer}</strong> before it expires.</p>
+  <div style="text-align: center; margin: 30px 0;">
+    <a href="{cart_link}" style="background-color: #1f2937; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Return to your cart</a>
+  </div>
+  <p>Need help? Reply to this email and we'll lend a hand.</p>
+  <p>See you soon,<br>The Team</p>
+</div>`
+      },
+      "Customer Support Emails": {
+        subject: "Update on ticket {ticket_id}",
+        content: `Hi {username},
+
+We're reaching out with an update on support ticket {ticket_id}.
+
+Status: {ticket_status}
+
+Our latest note:
+{support_message}
+
+We'll keep you posted with any new information.
+The Support Team`,
+        htmlContent: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h2 style="color: #333;">Support ticket update</h2>
+  <p>Hi {username},</p>
+  <p>We're checking in about your support ticket <strong>{ticket_id}</strong>.</p>
+  <p><strong>Status:</strong> {ticket_status}</p>
+  <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <p style="margin: 0 0 8px; font-weight: 600;">Latest update:</p>
+    <p style="margin: 0;">{support_message}</p>
+  </div>
+  <p>If you have any follow-up questions, simply reply to this message.</p>
+  <p>Best regards,<br>The Support Team</p>
+</div>`
+      },
+    }
+
+    return templates[templateName] || null
+  }
+
+  const applyDefaultTemplate = () => {
+    const defaultTemplate = getDefaultTemplate(formData.name)
+
+    if (!defaultTemplate) {
+      setDefaultTemplateFeedback({
+        type: "error",
+        message: "No default template is available for this email type yet.",
+      })
+      return false
+    }
+
+    const missingPlaceholders = requiredPlaceholders.filter(
+      (placeholder) =>
+        !defaultTemplate.htmlContent.includes(placeholder) &&
+        !defaultTemplate.content.includes(placeholder) &&
+        !defaultTemplate.subject.includes(placeholder)
+    )
+
+    if (missingPlaceholders.length > 0) {
+      setDefaultTemplateFeedback({
+        type: "error",
+        message: `Default template is missing required placeholders: ${missingPlaceholders.join(", ")}`,
+      })
+      return false
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      subject: defaultTemplate.subject,
+      content: defaultTemplate.content,
+      htmlContent: defaultTemplate.htmlContent,
+    }))
+    setDefaultTemplateFeedback({
+      type: "success",
+      message: "Default template applied for this email.",
+    })
+    return true
+  }
+
+  const resetToOriginal = () => {
+    setFormData((prev) => ({
+      ...prev,
+      name: template?.name ?? prev.name,
+      type: template?.type ?? prev.type,
+      subject: template?.subject || "",
+      content: template?.content || "",
+      htmlContent: template?.htmlContent || "",
+    }))
+    setDefaultTemplateFeedback(null)
+    setValidationErrors([])
+  }
 
   const handleSave = () => {
-    if (!validateContent(formData.content)) {
+    if (!validatePlaceholders()) {
       return
     }
 
@@ -150,25 +507,6 @@ export function EmailTemplateEditor({ template, isOpen, onClose, onSave }: Email
       lastModified: new Date().toISOString().split("T")[0],
     })
     onClose()
-  }
-
-  const insertPlaceholder = (placeholder: string) => {
-    if (activeTab === "subject") {
-      setFormData((prev) => ({
-        ...prev,
-        subject: prev.subject + placeholder,
-      }))
-    } else if (activeTab === "html") {
-      setFormData((prev) => ({
-        ...prev,
-        htmlContent: prev.htmlContent + placeholder,
-      }))
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        content: prev.content + placeholder,
-      }))
-    }
   }
 
   return (
@@ -184,40 +522,33 @@ export function EmailTemplateEditor({ template, isOpen, onClose, onSave }: Email
         <div className="grid grid-cols-3 gap-6 flex-1 min-h-0">
           {/* Left Panel - Template Settings */}
           <div className="space-y-4 overflow-y-auto">
-            <div className="space-y-2">
-              <Label htmlFor="template-name">Template Name</Label>
-              <Input id="template-name" value={formData.name} disabled className="bg-muted" />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="template-type">Template Type</Label>
-              <Select
-                value={formData.type}
-                onValueChange={(value: "transactional" | "marketing") =>
-                  setFormData((prev) => ({ ...prev, type: value }))
-                }
-                disabled
-              >
-                <SelectTrigger className="bg-muted">
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="transactional">Transactional</SelectItem>
-                  <SelectItem value="marketing">Marketing</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              {/* Removed Template Name and Template Type fields */}
 
             {requiredPlaceholders.length > 0 && (
               <div className="space-y-2">
-                <Label className="text-red-600 font-semibold">Required Placeholders</Label>
+                <div className="flex items-center justify-between">
+                  <Label className="text-red-600 font-semibold">Required Placeholders</Label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={applyDefaultTemplate}
+                    className="text-xs"
+                  >
+                    Reset to Default
+                  </Button>
+                </div>
                 <div className="space-y-2 p-3 border rounded-md bg-background border-secondary">
                   {requiredPlaceholders.map((placeholder) => {
                     const placeholderInfo = availablePlaceholders.find((p) => p.key === placeholder)
+                    const isInserted = insertedPlaceholders.has(placeholder)
                     return (
                       <div key={placeholder} className="flex items-center justify-between">
                         <div className="flex-1">
-                          <code className="text-xs font-mono px-2 py-1 rounded bg-secondary text-foreground">
+                          <code className={`text-xs font-mono px-2 py-1 rounded ${
+                            isInserted 
+                              ? 'bg-green-100 text-green-800 border border-green-300' 
+                              : 'bg-red-100 text-red-800 border border-red-300'
+                          }`}>
                             {placeholder}
                           </code>
                           {placeholderInfo && (
@@ -228,19 +559,57 @@ export function EmailTemplateEditor({ template, isOpen, onClose, onSave }: Email
                           variant="ghost"
                           size="sm"
                           onClick={() => insertPlaceholder(placeholder)}
-                          className="text-red-600 hover:text-red-700"
+                          className={isInserted ? "text-green-600 hover:text-green-700" : "text-red-600 hover:text-red-700"}
+                          title={isInserted ? "Already inserted - click to insert again" : "Click to insert placeholder"}
                         >
-                          <X className="h-3 w-3 rotate-45" />
+                          {isInserted ? "+" : "+"}
                         </Button>
                       </div>
                     )
                   })}
-                  <p className="text-xs text-red-600 mt-2">
-                    These placeholders must be included in your template content.
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Click on placeholders to insert them at cursor position. Green placeholders are already inserted.
                   </p>
                 </div>
               </div>
             )}
+
+            {/* Template Code Section */}
+            <div className="space-y-2">
+              <Label className="font-semibold">Template Code</Label>
+              <div className="p-3 border rounded-md bg-muted/20">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Use this section to edit the template code directly or reset to default template.
+                </p>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={applyDefaultTemplate}
+                    className="w-full"
+                  >
+                    Load Default Template
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={resetToOriginal}
+                    className="w-full"
+                  >
+                    Reset Changes
+                  </Button>
+                </div>
+                {defaultTemplateFeedback && (
+                  <p
+                    className={`text-xs mt-2 ${
+                      defaultTemplateFeedback.type === "error" ? "text-red-600" : "text-muted-foreground"
+                    }`}
+                  >
+                    {defaultTemplateFeedback.message}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Right Panel - Content Editor */}
@@ -259,11 +628,7 @@ export function EmailTemplateEditor({ template, isOpen, onClose, onSave }: Email
             )}
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">
-              <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
-                <TabsTrigger value="subject">
-                  <Type className="mr-2 h-4 w-4" />
-                  Subject
-                </TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
                 <TabsTrigger value="html">
                   <Code className="mr-2 h-4 w-4" />
                   HTML
@@ -273,8 +638,7 @@ export function EmailTemplateEditor({ template, isOpen, onClose, onSave }: Email
                   Preview
                 </TabsTrigger>
               </TabsList>
-
-              <TabsContent value="subject" className="flex-1 flex flex-col space-y-2 min-h-0">
+              <TabsContent value="html" className="flex-1 flex flex-col space-y-2 min-h-0">
                 <Label htmlFor="template-subject">Subject Line</Label>
                 <Input
                   id="template-subject"
@@ -283,41 +647,65 @@ export function EmailTemplateEditor({ template, isOpen, onClose, onSave }: Email
                   placeholder="Enter email subject"
                   className="text-base flex-shrink-0"
                 />
-                <Textarea
-                  value={formData.content}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, content: e.target.value }))}
-                  placeholder="Write your email content here..."
-                  className="flex-1 font-mono text-sm resize-none"
-                />
-              </TabsContent>
-
-              <TabsContent value="html" className="flex-1 flex flex-col space-y-2 min-h-0">
                 <Label htmlFor="html-content">HTML Content</Label>
                 <Textarea
                   id="html-content"
                   value={formData.htmlContent}
                   onChange={(e) => setFormData((prev) => ({ ...prev, htmlContent: e.target.value }))}
                   placeholder="Enter HTML content here..."
-                  className="flex-1 font-mono text-sm resize-none overflow-auto"
+                  className="flex-1 font-mono text-sm resize-none overflow-x-auto overflow-y-auto whitespace-pre"
                 />
               </TabsContent>
 
               <TabsContent value="preview" className="flex-1 flex flex-col space-y-2 min-h-0">
                 <Label>Email Preview</Label>
-                <Card className="flex-1 overflow-auto">
-                  <CardHeader>
-                    <CardTitle className="text-lg">{formData.subject || "Email Subject"}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="prose prose-sm max-w-none">
-                      {formData.htmlContent ? (
-                        <div dangerouslySetInnerHTML={{ __html: formData.htmlContent }} />
-                      ) : (
-                        <div className="whitespace-pre-wrap">
-                          {formData.content || "Email content will appear here..."}
-                        </div>
-                      )}
+                <Card className="flex-1 flex flex-col overflow-hidden min-h-[500px]">
+                  <CardHeader className="pb-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wide">
+                        Email Subject
+                      </Label>
+                      <div className="border border-secondary rounded-md bg-muted/40 px-3 py-2">
+                        <CardTitle className="text-lg m-0">
+                          {formData.subject || "Email Subject"}
+                        </CardTitle>
+                      </div>
                     </div>
+                  </CardHeader>
+                  <CardContent className="p-0 flex-1">
+                    <iframe
+                      srcDoc={`
+                        <!DOCTYPE html>
+                        <html>
+                          <head>
+                            <meta charset="utf-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1">
+                            <style>
+                              body {
+                                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                                line-height: 1.6;
+                                color: #333;
+                                margin: 0;
+                                padding: 20px;
+                                background: white;
+                              }
+                              .email-content {
+                                max-width: 600px;
+                                margin: 0 auto;
+                              }
+                            </style>
+                          </head>
+                          <body>
+                            <div class="email-content">
+                              ${formData.htmlContent || formData.content.replace(/\n/g, '<br>') || "Email content will appear here..."}
+                            </div>
+                          </body>
+                        </html>
+                      `}
+                      className="w-full h-full border-0"
+                      title="Email Preview"
+                      sandbox="allow-same-origin allow-scripts"
+                    />
                   </CardContent>
                 </Card>
               </TabsContent>
