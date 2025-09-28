@@ -27,19 +27,19 @@ export function AnalyticsChart() {
               <stop offset="95%" stopColor="#10b981" stopOpacity={0.1} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.2)" strokeOpacity={0.5} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(156, 156, 156)" strokeOpacity={0.5} />
           <XAxis 
             dataKey="name" 
             axisLine={false} 
             tickLine={false} 
-            tick={{ fill: "white", fontSize: 12, fontWeight: "500" }}
+            tick={{ fontSize: 12, fontWeight: "500" }}
             dy={10}
           />
           <YAxis 
             yAxisId="left"
             axisLine={false} 
             tickLine={false} 
-            tick={{ fill: "white", fontSize: 12, fontWeight: "500" }}
+            tick={{ fontSize: 12, fontWeight: "500" }}
             dx={-10}
           />
           <YAxis 
@@ -47,7 +47,7 @@ export function AnalyticsChart() {
             orientation="right"
             axisLine={false} 
             tickLine={false} 
-            tick={{ fill: "white", fontSize: 12, fontWeight: "500" }}
+            tick={{ fontSize: 12, fontWeight: "500" }}
             dx={10}
           />
           <Tooltip
