@@ -22,6 +22,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Upload, X, Plus } from "lucide-react"
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 interface Product {
   id: string
@@ -144,8 +146,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
         totalSales: product.totalSales != null ? product.totalSales.toString() : "",
         totalRevenue: product.totalRevenue != null ? product.totalRevenue.toString() : "",
         netProfit: product.netProfit != null ? product.netProfit.toString() : "",
-        displayedDiscountRate:
-          product.displayedDiscountRate != null ? product.displayedDiscountRate.toString() : "",
+        displayedDiscountRate: product.displayedDiscountRate != null ? product.displayedDiscountRate.toString() : "",
         averageRating: product.averageRating != null ? product.averageRating.toString() : "",
         unlimitedStock: product.stock === null,
       })
@@ -483,6 +484,16 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
     }
   }
 
+  const analyticsData = [
+    { month: "Jan", sales: 4200, revenue: 8400, stock: 145, views: 520 },
+    { month: "Feb", sales: 3800, revenue: 7600, stock: 132, views: 480 },
+    { month: "Mar", sales: 5100, revenue: 10200, stock: 168, views: 610 },
+    { month: "Apr", sales: 4600, revenue: 9200, stock: 155, views: 550 },
+    { month: "May", sales: 6200, revenue: 12400, stock: 189, views: 680 },
+    { month: "Jun", sales: 5800, revenue: 11600, stock: 178, views: 640 },
+    { month: "Jul", sales: 7100, revenue: 14200, stock: 205, views: 720 },
+  ]
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] flex flex-col overflow-hidden">
@@ -510,9 +521,10 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
           <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
             <div className="flex-1 overflow-y-auto no-scrollbar space-y-4 pr-1">
               <TabsContent value="basic" className="space-y-4">
+                {/* Card 1: Product Information - Combined Product Details + Catalog Settings */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Product Details</CardTitle>
+                    <CardTitle>Product Information</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid gap-4 md:grid-cols-2">
@@ -558,14 +570,6 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                         />
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Catalog Settings</CardTitle>
-                  </CardHeader>
-                  <CardContent>
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="sku">SKU *</Label>
@@ -606,11 +610,12 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                   </CardContent>
                 </Card>
 
+                {/* Card 2: Pricing & Discount - Combined Pricing + Discount */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Pricing</CardTitle>
+                    <CardTitle>Pricing & Discount</CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="space-y-4">
                     <div className="grid gap-4 md:grid-cols-3">
                       <div className="space-y-2">
                         <Label htmlFor="basePrice">Base Price</Label>
@@ -647,14 +652,6 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                         />
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Discount</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="discountType">Discount Type</Label>
@@ -711,59 +708,111 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                   </CardContent>
                 </Card>
 
+                {/* Card 3: Product Analytics - Replaced simple stats with recharts curve chart */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Product Stats</CardTitle>
+                    <CardTitle>Product Analytics</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      These metrics sync automatically from the database.
-                    </p>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="totalSales">Total Sales</Label>
-                        <Input
-                          id="totalSales"
-                          value={formData.totalSales}
-                          placeholder="Auto-filled"
-                          readOnly
-                        />
+                    <p className="text-sm text-muted-foreground mb-4">Performance metrics over the last 7 months</p>
+                    <ChartContainer
+                      config={{
+                        sales: {
+                          label: "Sales",
+                          color: "hsl(var(--chart-1))",
+                        },
+                        revenue: {
+                          label: "Revenue",
+                          color: "hsl(var(--chart-2))",
+                        },
+                        stock: {
+                          label: "Stock",
+                          color: "hsl(var(--chart-3))",
+                        },
+                        views: {
+                          label: "Views",
+                          color: "hsl(var(--chart-4))",
+                        },
+                      }}
+                      className="h-[300px] w-full"
+                    >
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={analyticsData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8} />
+                              <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.1} />
+                            </linearGradient>
+                            <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.8} />
+                              <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0.1} />
+                            </linearGradient>
+                            <linearGradient id="colorStock" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="hsl(var(--chart-3))" stopOpacity={0.8} />
+                              <stop offset="95%" stopColor="hsl(var(--chart-3))" stopOpacity={0.1} />
+                            </linearGradient>
+                            <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="hsl(var(--chart-4))" stopOpacity={0.8} />
+                              <stop offset="95%" stopColor="hsl(var(--chart-4))" stopOpacity={0.1} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                          <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                          <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <Area
+                            type="monotone"
+                            dataKey="sales"
+                            stroke="hsl(var(--chart-1))"
+                            fillOpacity={1}
+                            fill="url(#colorSales)"
+                            strokeWidth={2}
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="revenue"
+                            stroke="hsl(var(--chart-2))"
+                            fillOpacity={1}
+                            fill="url(#colorRevenue)"
+                            strokeWidth={2}
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="stock"
+                            stroke="hsl(var(--chart-3))"
+                            fillOpacity={1}
+                            fill="url(#colorStock)"
+                            strokeWidth={2}
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="views"
+                            stroke="hsl(var(--chart-4))"
+                            fillOpacity={1}
+                            fill="url(#colorViews)"
+                            strokeWidth={2}
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
+
+                    {/* Summary stats below the chart */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-4 border-t">
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground">Total Sales</p>
+                        <p className="text-lg font-semibold">{formData.totalSales || "0"}</p>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="totalRevenue">Total Revenue</Label>
-                        <Input
-                          id="totalRevenue"
-                          value={formData.totalRevenue}
-                          placeholder="Auto-filled"
-                          readOnly
-                        />
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground">Total Revenue</p>
+                        <p className="text-lg font-semibold">${formData.totalRevenue || "0"}</p>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="netProfit">Net Profit</Label>
-                        <Input
-                          id="netProfit"
-                          value={formData.netProfit}
-                          placeholder="Auto-filled"
-                          readOnly
-                        />
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground">Net Profit</p>
+                        <p className="text-lg font-semibold">${formData.netProfit || "0"}</p>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="displayedDiscountRate">Displayed Discount Rate</Label>
-                        <Input
-                          id="displayedDiscountRate"
-                          value={formData.displayedDiscountRate}
-                          placeholder="Auto-filled"
-                          readOnly
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="averageRating">Average Rating (out of 5)</Label>
-                        <Input
-                          id="averageRating"
-                          value={formData.averageRating}
-                          placeholder="Auto-filled"
-                          readOnly
-                        />
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground">Avg Rating</p>
+                        <p className="text-lg font-semibold">{formData.averageRating || "0"}/5</p>
                       </div>
                     </div>
                   </CardContent>
@@ -771,418 +820,431 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
               </TabsContent>
 
               <TabsContent value="seo" className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="metaTitle">Meta Title</Label>
-                <Input
-                  id="metaTitle"
-                  value={formData.metaTitle}
-                  onChange={(e) => setFormData({ ...formData, metaTitle: e.target.value })}
-                  placeholder="SEO title for search engines"
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="metaTitle">Meta Title</Label>
+                  <Input
+                    id="metaTitle"
+                    value={formData.metaTitle}
+                    onChange={(e) => setFormData({ ...formData, metaTitle: e.target.value })}
+                    placeholder="SEO title for search engines"
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="metaDescription">Meta Description</Label>
-                <Textarea
-                  id="metaDescription"
-                  value={formData.metaDescription}
-                  onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })}
-                  placeholder="SEO description for search engines"
-                  rows={3}
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="metaDescription">Meta Description</Label>
+                  <Textarea
+                    id="metaDescription"
+                    value={formData.metaDescription}
+                    onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })}
+                    placeholder="SEO description for search engines"
+                    rows={3}
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="keywords">Keywords</Label>
-                <Input
-                  id="keywords"
-                  value={formData.keywords}
-                  onChange={(e) => setFormData({ ...formData, keywords: e.target.value })}
-                  placeholder="Comma-separated keywords"
-                />
-              </div>
-            </TabsContent>
+                <div className="space-y-2">
+                  <Label htmlFor="keywords">Keywords</Label>
+                  <Input
+                    id="keywords"
+                    value={formData.keywords}
+                    onChange={(e) => setFormData({ ...formData, keywords: e.target.value })}
+                    placeholder="Comma-separated keywords"
+                  />
+                </div>
+              </TabsContent>
 
-            <TabsContent value="delivery" className="space-y-4">
-              {productType && productType !== "bundle" && (
-                <div className="space-y-4">
-                  <div className="space-y-3">
-                    <Label>Delivery Method *</Label>
-                    <RadioGroup
-                      value={formData.deliveryMethod}
-                      onValueChange={(value) => setFormData({ ...formData, deliveryMethod: value })}
-                      className="space-y-2"
-                    >
-                      {getDeliveryMethods().map((method) => (
-                        <div key={method.value} className="flex items-center space-x-2">
-                          <RadioGroupItem value={method.value} id={method.value} />
-                          <Label htmlFor={method.value} className="font-normal">
-                            {method.label}
-                          </Label>
-                        </div>
-                      ))}
-                    </RadioGroup>
-                  </div>
-
-                  {formData.deliveryMethod === "download" && (
-                    <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
-                      <div className="space-y-2">
-                        <Label htmlFor="downloadLink">Download Link *</Label>
-                        <Input
-                          id="downloadLink"
-                          value={formData.downloadLink}
-                          onChange={(e) => setFormData({ ...formData, downloadLink: e.target.value })}
-                          placeholder="https://example.com/download"
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="expirationDays">Link Expiration (days)</Label>
-                        <Input
-                          id="expirationDays"
-                          type="number"
-                          value={formData.expirationDays}
-                          onChange={(e) => setFormData({ ...formData, expirationDays: e.target.value })}
-                          placeholder="7"
-                        />
-                      </div>
-                      {renderStockControls("download")}
+              <TabsContent value="delivery" className="space-y-4">
+                {productType && productType !== "bundle" && (
+                  <div className="space-y-4">
+                    <div className="space-y-3">
+                      <Label>Delivery Method *</Label>
+                      <RadioGroup
+                        value={formData.deliveryMethod}
+                        onValueChange={(value) => setFormData({ ...formData, deliveryMethod: value })}
+                        className="space-y-2"
+                      >
+                        {getDeliveryMethods().map((method) => (
+                          <div key={method.value} className="flex items-center space-x-2">
+                            <RadioGroupItem value={method.value} id={method.value} />
+                            <Label htmlFor={method.value} className="font-normal">
+                              {method.label}
+                            </Label>
+                          </div>
+                        ))}
+                      </RadioGroup>
                     </div>
-                  )}
 
-                  {(formData.deliveryMethod === "code" ||
-                    formData.deliveryMethod === "email" ||
-                    formData.deliveryMethod === "order-page") && (
-                    <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <Label>Codes *</Label>
-                          <Button type="button" variant="outline" size="sm" onClick={addCode}>
-                            <Plus className="h-4 w-4 mr-1" />
-                            Add Code
-                          </Button>
-                        </div>
-                        {formData.codes.length === 0 && (
-                          <p className="text-sm text-muted-foreground">
-                            No codes added yet. Click "Add Code" to start.
-                          </p>
-                        )}
-                        <div className="space-y-2 max-h-40 overflow-y-auto no-scrollbar">
-                          {formData.codes.map((code, index) => (
-                            <div key={index} className="flex gap-2">
-                              <Input
-                                value={code}
-                                onChange={(e) => updateCode(index, e.target.value)}
-                                placeholder={`Code ${index + 1}`}
-                                required
-                              />
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                onClick={() => removeCode(index)}
-                                className="shrink-0"
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="emailMessage">Email Message Template</Label>
-                        <Textarea
-                          id="emailMessage"
-                          value={formData.emailMessage}
-                          onChange={(e) => setFormData({ ...formData, emailMessage: e.target.value })}
-                          placeholder="Enter your email message. Use {code} to insert the code automatically."
-                          rows={3}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Use {"{code}"} as a placeholder that will be replaced with the actual code when sending emails.
-                        </p>
-                      </div>
-
-                      <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4">
-                        <div className="text-center">
-                          <Upload className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-                          <p className="text-sm text-muted-foreground mb-2">
-                            Upload .txt file (each line becomes a separate code)
-                          </p>
-                          <input
-                            type="file"
-                            accept=".txt"
-                            onChange={handleCodesFileUpload}
-                            className="hidden"
-                            id="codes-file-upload"
+                    {formData.deliveryMethod === "download" && (
+                      <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
+                        <div className="space-y-2">
+                          <Label htmlFor="downloadLink">Download Link *</Label>
+                          <Input
+                            id="downloadLink"
+                            value={formData.downloadLink}
+                            onChange={(e) => setFormData({ ...formData, downloadLink: e.target.value })}
+                            placeholder="https://example.com/download"
+                            required
                           />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => document.getElementById("codes-file-upload")?.click()}
-                          >
-                            Choose .txt File
-                          </Button>
                         </div>
-                      </div>
-                      {renderStockControls()}
-                    </div>
-                  )}
-
-                  {formData.deliveryMethod === "file" && (
-                    <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
-                      <div className="space-y-2">
-                        <Label>Upload File *</Label>
-                        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-                          <Upload className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-                          <p className="text-sm text-muted-foreground mb-2">
-                            {productType === "digital-card"
-                              ? "Upload file containing multiple codes"
-                              : "Upload file to be displayed on order page"}
-                          </p>
-                          <input
-                            type="file"
-                            onChange={handleFileUpload}
-                            className="hidden"
-                            id="file-upload"
-                            accept=".txt,.pdf,.zip,.rar"
+                        <div className="space-y-2">
+                          <Label htmlFor="expirationDays">Link Expiration (days)</Label>
+                          <Input
+                            id="expirationDays"
+                            type="number"
+                            value={formData.expirationDays}
+                            onChange={(e) => setFormData({ ...formData, expirationDays: e.target.value })}
+                            placeholder="7"
                           />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => document.getElementById("file-upload")?.click()}
-                          >
-                            Choose File
-                          </Button>
-                          {formData.uploadedFile && (
-                            <p className="text-sm text-green-600 mt-2">Selected: {formData.uploadedFile.name}</p>
-                          )}
                         </div>
+                        {renderStockControls("download")}
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="fileExpiration">File Expiration (days)</Label>
-                        <Input
-                          id="fileExpiration"
-                          type="number"
-                          value={formData.expirationDays}
-                          onChange={(e) => setFormData({ ...formData, expirationDays: e.target.value })}
-                          placeholder="30"
-                        />
-                      </div>
-                      {renderStockControls("file")}
-                    </div>
-                  )}
+                    )}
 
-                  {productType === "service" && (
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="deliveryTime">Delivery Time (days)</Label>
-                        <Input
-                          id="deliveryTime"
-                          type="number"
-                          value={formData.deliveryTime}
-                          onChange={(e) => setFormData({ ...formData, deliveryTime: e.target.value })}
-                          placeholder="3"
-                        />
-                      </div>
-                      {renderStockControls()}
-                    </div>
-                  )}
-
-                  {formData.deliveryMethod === "custom-fields" && (
-                    <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-base font-medium">Custom Order Fields Configuration</Label>
-                        <div className="flex gap-2">
-                          <Button type="button" variant="outline" size="sm" onClick={() => addCustomField("text")}>
-                            + Text
-                          </Button>
-                          <Button type="button" variant="outline" size="sm" onClick={() => addCustomField("textarea")}>
-                            + Textarea
-                          </Button>
-                          <Button type="button" variant="outline" size="sm" onClick={() => addCustomField("image")}>
-                            + Image
-                          </Button>
-                          <Button type="button" variant="outline" size="sm" onClick={() => addCustomField("dropdown")}>
-                            + Dropdown
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="text-sm text-muted-foreground space-y-1">
-                        <p>• Maximum 7 text fields</p>
-                        <p>• Only 1 textarea, 1 image upload, and 1 dropdown allowed</p>
-                        <p>• If using textarea/image/dropdown, maximum 3 text fields</p>
-                        <p>• Dropdown options can have additional pricing</p>
-                      </div>
-
-                      {formData.customFields.length > 0 && (
+                    {(formData.deliveryMethod === "code" ||
+                      formData.deliveryMethod === "email" ||
+                      formData.deliveryMethod === "order-page") && (
+                      <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
                         <div className="space-y-3">
-                          {formData.customFields.map((field) => (
-                            <div key={field.id} className="border rounded-lg p-3 space-y-2">
-                              <div className="flex items-center justify-between">
-                                <Badge variant="outline">{field.type}</Badge>
+                          <div className="flex items-center justify-between">
+                            <Label>Codes *</Label>
+                            <Button type="button" variant="outline" size="sm" onClick={addCode}>
+                              <Plus className="h-4 w-4 mr-1" />
+                              Add Code
+                            </Button>
+                          </div>
+                          {formData.codes.length === 0 && (
+                            <p className="text-sm text-muted-foreground">
+                              No codes added yet. Click "Add Code" to start.
+                            </p>
+                          )}
+                          <div className="space-y-2 max-h-40 overflow-y-auto no-scrollbar">
+                            {formData.codes.map((code, index) => (
+                              <div key={index} className="flex gap-2">
+                                <Input
+                                  value={code}
+                                  onChange={(e) => updateCode(index, e.target.value)}
+                                  placeholder={`Code ${index + 1}`}
+                                  required
+                                />
                                 <Button
                                   type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => removeCustomField(field.id)}
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => removeCode(index)}
+                                  className="shrink-0"
                                 >
                                   <X className="h-4 w-4" />
                                 </Button>
                               </div>
-                              <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                  <Label className="text-xs">Field Label</Label>
-                                  <Input
-                                    value={field.label}
-                                    onChange={(e) => updateCustomField(field.id, { label: e.target.value })}
-                                    placeholder="Field label"
-                                  />
-                                </div>
-                                <div className="flex items-center space-x-2 pt-5">
-                                  <input
-                                    type="checkbox"
-                                    checked={field.required}
-                                    onChange={(e) => updateCustomField(field.id, { required: e.target.checked })}
-                                  />
-                                  <Label className="text-xs">Required</Label>
-                                </div>
-                              </div>
-                              {field.type === "dropdown" && (
-                                <div className="space-y-2">
-                                  <div className="flex items-center justify-between">
-                                    <Label className="text-xs">Options with Pricing</Label>
-                                    <Button
-                                      type="button"
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => addDropdownOption(field.id)}
-                                    >
-                                      + Add Option
-                                    </Button>
-                                  </div>
-                                  {field.options &&
-                                    field.options.map((option: any, optionIndex: number) => (
-                                      <div key={optionIndex} className="flex gap-2 items-center">
-                                        <Input
-                                          value={option.label}
-                                          onChange={(e) =>
-                                            updateDropdownOption(field.id, optionIndex, { label: e.target.value })
-                                          }
-                                          placeholder="Option label"
-                                          className="flex-1"
-                                        />
-                                        <div className="flex items-center gap-1">
-                                          <span className="text-xs">+$</span>
-                                          <Input
-                                            type="number"
-                                            step="0.01"
-                                            value={option.price}
-                                            onChange={(e) =>
-                                              updateDropdownOption(field.id, optionIndex, {
-                                                price: Number.parseFloat(e.target.value) || 0,
-                                              })
-                                            }
-                                            placeholder="0.00"
-                                            className="w-20"
-                                          />
-                                        </div>
-                                        <Button
-                                          type="button"
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={() => removeDropdownOption(field.id, optionIndex)}
-                                        >
-                                          <X className="h-4 w-4" />
-                                        </Button>
-                                      </div>
-                                    ))}
-                                  {(!field.options || field.options.length === 0) && (
-                                    <p className="text-xs text-muted-foreground">No options added yet</p>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
-                      )}
 
-                      {formData.customFields.length === 0 && (
-                        <p className="text-sm text-muted-foreground text-center py-4">
-                          No custom fields configured. Add fields above to collect additional information from customers.
+                        <div className="space-y-2">
+                          <Label htmlFor="emailMessage">Email Message Template</Label>
+                          <Textarea
+                            id="emailMessage"
+                            value={formData.emailMessage}
+                            onChange={(e) => setFormData({ ...formData, emailMessage: e.target.value })}
+                            placeholder="Enter your email message. Use {code} to insert the code automatically."
+                            rows={3}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Use {"{code}"} as a placeholder that will be replaced with the actual code when sending
+                            emails.
+                          </p>
+                        </div>
+
+                        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4">
+                          <div className="text-center">
+                            <Upload className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground mb-2">
+                              Upload .txt file (each line becomes a separate code)
+                            </p>
+                            <input
+                              type="file"
+                              accept=".txt"
+                              onChange={handleCodesFileUpload}
+                              className="hidden"
+                              id="codes-file-upload"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => document.getElementById("codes-file-upload")?.click()}
+                            >
+                              Choose .txt File
+                            </Button>
+                          </div>
+                        </div>
+                        {renderStockControls()}
+                      </div>
+                    )}
+
+                    {formData.deliveryMethod === "file" && (
+                      <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
+                        <div className="space-y-2">
+                          <Label>Upload File *</Label>
+                          <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                            <Upload className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground mb-2">
+                              {productType === "digital-card"
+                                ? "Upload file containing multiple codes"
+                                : "Upload file to be displayed on order page"}
+                            </p>
+                            <input
+                              type="file"
+                              onChange={handleFileUpload}
+                              className="hidden"
+                              id="file-upload"
+                              accept=".txt,.pdf,.zip,.rar"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => document.getElementById("file-upload")?.click()}
+                            >
+                              Choose File
+                            </Button>
+                            {formData.uploadedFile && (
+                              <p className="text-sm text-green-600 mt-2">Selected: {formData.uploadedFile.name}</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="fileExpiration">File Expiration (days)</Label>
+                          <Input
+                            id="fileExpiration"
+                            type="number"
+                            value={formData.expirationDays}
+                            onChange={(e) => setFormData({ ...formData, expirationDays: e.target.value })}
+                            placeholder="30"
+                          />
+                        </div>
+                        {renderStockControls("file")}
+                      </div>
+                    )}
+
+                    {productType === "service" && (
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="deliveryTime">Delivery Time (days)</Label>
+                          <Input
+                            id="deliveryTime"
+                            type="number"
+                            value={formData.deliveryTime}
+                            onChange={(e) => setFormData({ ...formData, deliveryTime: e.target.value })}
+                            placeholder="3"
+                          />
+                        </div>
+                        {renderStockControls()}
+                      </div>
+                    )}
+
+                    {formData.deliveryMethod === "custom-fields" && (
+                      <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-base font-medium">Custom Order Fields Configuration</Label>
+                          <div className="flex gap-2">
+                            <Button type="button" variant="outline" size="sm" onClick={() => addCustomField("text")}>
+                              + Text
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => addCustomField("textarea")}
+                            >
+                              + Textarea
+                            </Button>
+                            <Button type="button" variant="outline" size="sm" onClick={() => addCustomField("image")}>
+                              + Image
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => addCustomField("dropdown")}
+                            >
+                              + Dropdown
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <p>• Maximum 7 text fields</p>
+                          <p>• Only 1 textarea, 1 image upload, and 1 dropdown allowed</p>
+                          <p>• If using textarea/image/dropdown, maximum 3 text fields</p>
+                          <p>• Dropdown options can have additional pricing</p>
+                        </div>
+
+                        {formData.customFields.length > 0 && (
+                          <div className="space-y-3">
+                            {formData.customFields.map((field) => (
+                              <div key={field.id} className="border rounded-lg p-3 space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <Badge variant="outline">{field.type}</Badge>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeCustomField(field.id)}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div>
+                                    <Label className="text-xs">Field Label</Label>
+                                    <Input
+                                      value={field.label}
+                                      onChange={(e) => updateCustomField(field.id, { label: e.target.value })}
+                                      placeholder="Field label"
+                                    />
+                                  </div>
+                                  <div className="flex items-center space-x-2 pt-5">
+                                    <input
+                                      type="checkbox"
+                                      checked={field.required}
+                                      onChange={(e) => updateCustomField(field.id, { required: e.target.checked })}
+                                    />
+                                    <Label className="text-xs">Required</Label>
+                                  </div>
+                                </div>
+                                {field.type === "dropdown" && (
+                                  <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <Label className="text-xs">Options with Pricing</Label>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => addDropdownOption(field.id)}
+                                      >
+                                        + Add Option
+                                      </Button>
+                                    </div>
+                                    {field.options &&
+                                      field.options.map((option: any, optionIndex: number) => (
+                                        <div key={optionIndex} className="flex gap-2 items-center">
+                                          <Input
+                                            value={option.label}
+                                            onChange={(e) =>
+                                              updateDropdownOption(field.id, optionIndex, { label: e.target.value })
+                                            }
+                                            placeholder="Option label"
+                                            className="flex-1"
+                                          />
+                                          <div className="flex items-center gap-1">
+                                            <span className="text-xs">+$</span>
+                                            <Input
+                                              type="number"
+                                              step="0.01"
+                                              value={option.price}
+                                              onChange={(e) =>
+                                                updateDropdownOption(field.id, optionIndex, {
+                                                  price: Number.parseFloat(e.target.value) || 0,
+                                                })
+                                              }
+                                              placeholder="0.00"
+                                              className="w-20"
+                                            />
+                                          </div>
+                                          <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => removeDropdownOption(field.id, optionIndex)}
+                                          >
+                                            <X className="h-4 w-4" />
+                                          </Button>
+                                        </div>
+                                      ))}
+                                    {(!field.options || field.options.length === 0) && (
+                                      <p className="text-xs text-muted-foreground">No options added yet</p>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {formData.customFields.length === 0 && (
+                          <p className="text-sm text-muted-foreground text-center py-4">
+                            No custom fields configured. Add fields above to collect additional information from
+                            customers.
+                          </p>
+                        )}
+                        {renderStockControls("custom-fields")}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {productType === "bundle" && (
+                  <div className="space-y-4">
+                    {renderStockControls("bundle")}
+                    <div className="space-y-3 p-4 border rounded-lg bg-muted/20">
+                      <Label>Bundle Contents *</Label>
+                      <p className="text-sm text-muted-foreground">Select products to include in this bundle</p>
+                      <div className="border rounded-lg p-4 space-y-2 min-h-[100px]">
+                        <p className="text-sm text-muted-foreground">
+                          Bundle product selection component would be implemented here with existing products
                         </p>
-                      )}
-                      {renderStockControls("custom-fields")}
+                        <Button type="button" variant="outline" size="sm">
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add Products to Bundle
+                        </Button>
+                      </div>
                     </div>
-                  )}
-                </div>
-              )}
 
-              {productType === "bundle" && (
-                <div className="space-y-4">
-                  {renderStockControls("bundle")}
-                  <div className="space-y-3 p-4 border rounded-lg bg-muted/20">
-                    <Label>Bundle Contents *</Label>
-                    <p className="text-sm text-muted-foreground">Select products to include in this bundle</p>
-                    <div className="border rounded-lg p-4 space-y-2 min-h-[100px]">
-                      <p className="text-sm text-muted-foreground">
-                        Bundle product selection component would be implemented here with existing products
-                      </p>
-                      <Button type="button" variant="outline" size="sm">
-                        <Plus className="h-4 w-4 mr-1" />
-                        Add Products to Bundle
-                      </Button>
+                    <div className="space-y-3 p-4 border rounded-lg bg-muted/20">
+                      <Label>Bundle Delivery Method *</Label>
+                      <RadioGroup
+                        value={formData.bundleDelivery}
+                        onValueChange={(value) => setFormData({ ...formData, bundleDelivery: value })}
+                        className="space-y-2"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="combined" id="combined" />
+                          <Label htmlFor="combined" className="font-normal">
+                            Combined delivery (everything in one order)
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="separate" id="separate" />
+                          <Label htmlFor="separate" className="font-normal">
+                            Separate delivery (each product delivered separately)
+                          </Label>
+                        </div>
+                      </RadioGroup>
                     </div>
                   </div>
-
-                  <div className="space-y-3 p-4 border rounded-lg bg-muted/20">
-                    <Label>Bundle Delivery Method *</Label>
-                    <RadioGroup
-                      value={formData.bundleDelivery}
-                      onValueChange={(value) => setFormData({ ...formData, bundleDelivery: value })}
-                      className="space-y-2"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="combined" id="combined" />
-                        <Label htmlFor="combined" className="font-normal">
-                          Combined delivery (everything in one order)
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="separate" id="separate" />
-                        <Label htmlFor="separate" className="font-normal">
-                          Separate delivery (each product delivered separately)
-                        </Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                </div>
-              )}
-            </TabsContent>
+                )}
+              </TabsContent>
 
               <TabsContent value="images" className="space-y-4">
-              <div className="space-y-3">
-                <Label>Product Images</Label>
-                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
-                  <Upload className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground mb-2">
-                    {productType === "service"
-                      ? "Upload portfolio samples or service images"
-                      : productType === "digital-card"
-                        ? "Upload card design or preview images"
-                        : "Upload product images or screenshots"}
-                  </p>
-                  <p className="text-xs text-muted-foreground mb-4">Supported formats: JPG, PNG, GIF (Max 5MB each)</p>
-                  <Button type="button" variant="outline">
-                    Choose Files
-                  </Button>
+                <div className="space-y-3">
+                  <Label>Product Images</Label>
+                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
+                    <Upload className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {productType === "service"
+                        ? "Upload portfolio samples or service images"
+                        : productType === "digital-card"
+                          ? "Upload card design or preview images"
+                          : "Upload product images or screenshots"}
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Supported formats: JPG, PNG, GIF (Max 5MB each)
+                    </p>
+                    <Button type="button" variant="outline">
+                      Choose Files
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </TabsContent>
-
+              </TabsContent>
             </div>
 
             <DialogFooter className="flex flex-col sm:flex-row gap-2">
