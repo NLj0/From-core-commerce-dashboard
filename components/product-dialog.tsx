@@ -737,30 +737,46 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                       className="h-[300px] w-full"
                     >
                       <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={analyticsData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <AreaChart data={analyticsData} margin={{ top: 10, right: 40, left: 0, bottom: 0 }}>
                           <defs>
                             <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8} />
-                              <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.1} />
+                              <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.6} />
+                              <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.05} />
                             </linearGradient>
                             <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.8} />
-                              <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0.1} />
+                              <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.6} />
+                              <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0.05} />
                             </linearGradient>
                             <linearGradient id="colorStock" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="hsl(var(--chart-3))" stopOpacity={0.8} />
-                              <stop offset="95%" stopColor="hsl(var(--chart-3))" stopOpacity={0.1} />
+                              <stop offset="5%" stopColor="hsl(var(--chart-3))" stopOpacity={0.6} />
+                              <stop offset="95%" stopColor="hsl(var(--chart-3))" stopOpacity={0.05} />
                             </linearGradient>
                             <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="hsl(var(--chart-4))" stopOpacity={0.8} />
-                              <stop offset="95%" stopColor="hsl(var(--chart-4))" stopOpacity={0.1} />
+                              <stop offset="5%" stopColor="hsl(var(--chart-4))" stopOpacity={0.6} />
+                              <stop offset="95%" stopColor="hsl(var(--chart-4))" stopOpacity={0.05} />
                             </linearGradient>
                           </defs>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                           <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                          <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                          {/* Left Y-axis for Sales and Revenue (larger values) */}
+                          <YAxis
+                            yAxisId="left"
+                            stroke="hsl(var(--muted-foreground))"
+                            fontSize={12}
+                            label={{ value: "Sales / Revenue", angle: -90, position: "insideLeft", fontSize: 10 }}
+                          />
+                          {/* Right Y-axis for Stock and Views (smaller values) */}
+                          <YAxis
+                            yAxisId="right"
+                            orientation="right"
+                            stroke="hsl(var(--muted-foreground))"
+                            fontSize={12}
+                            label={{ value: "Stock / Views", angle: 90, position: "insideRight", fontSize: 10 }}
+                          />
                           <ChartTooltip content={<ChartTooltipContent />} />
+                          {/* Sales and Revenue use left Y-axis */}
                           <Area
+                            yAxisId="left"
                             type="monotone"
                             dataKey="sales"
                             stroke="hsl(var(--chart-1))"
@@ -769,6 +785,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                             strokeWidth={2}
                           />
                           <Area
+                            yAxisId="left"
                             type="monotone"
                             dataKey="revenue"
                             stroke="hsl(var(--chart-2))"
@@ -776,7 +793,9 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                             fill="url(#colorRevenue)"
                             strokeWidth={2}
                           />
+                          {/* Stock and Views use right Y-axis */}
                           <Area
+                            yAxisId="right"
                             type="monotone"
                             dataKey="stock"
                             stroke="hsl(var(--chart-3))"
@@ -785,6 +804,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                             strokeWidth={2}
                           />
                           <Area
+                            yAxisId="right"
                             type="monotone"
                             dataKey="views"
                             stroke="hsl(var(--chart-4))"
@@ -991,6 +1011,9 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                               {productType === "digital-card"
                                 ? "Upload file containing multiple codes"
                                 : "Upload file to be displayed on order page"}
+                            </p>
+                            <p className="text-xs text-muted-foreground mb-4">
+                              Supported formats: JPG, PNG, GIF (Max 5MB each)
                             </p>
                             <input
                               type="file"
