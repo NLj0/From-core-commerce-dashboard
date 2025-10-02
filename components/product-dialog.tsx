@@ -22,8 +22,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Upload, X, Plus } from "lucide-react"
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
 
 interface Product {
   id: string
@@ -105,6 +104,33 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
     // Stock management
     unlimitedStock: false,
   })
+
+  const productStatsData = [
+    { month: "Jan", sales: 45, revenue: 2250, profit: 1125 },
+    { month: "Feb", sales: 52, revenue: 2600, profit: 1300 },
+    { month: "Mar", sales: 61, revenue: 3050, profit: 1525 },
+    { month: "Apr", sales: 58, revenue: 2900, profit: 1450 },
+    { month: "May", sales: 70, revenue: 3500, profit: 1750 },
+    { month: "Jun", sales: 68, revenue: 3400, profit: 1700 },
+  ]
+
+  const currencyFormatter = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  })
+
+  const formatTooltipValue = (value: number, name: string) => {
+    switch (name) {
+      case "Revenue":
+      case "Profit":
+        return [currencyFormatter.format(value), name]
+      case "Sales":
+        return [value, name]
+      default:
+        return [value, name]
+    }
+  }
 
   useEffect(() => {
     if (product) {
@@ -484,16 +510,6 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
     }
   }
 
-  const analyticsData = [
-    { month: "Jan", sales: 4200, revenue: 8400, stock: 145, views: 520 },
-    { month: "Feb", sales: 3800, revenue: 7600, stock: 132, views: 480 },
-    { month: "Mar", sales: 5100, revenue: 10200, stock: 168, views: 610 },
-    { month: "Apr", sales: 4600, revenue: 9200, stock: 155, views: 550 },
-    { month: "May", sales: 6200, revenue: 12400, stock: 189, views: 680 },
-    { month: "Jun", sales: 5800, revenue: 11600, stock: 178, views: 640 },
-    { month: "Jul", sales: 7100, revenue: 14200, stock: 205, views: 720 },
-  ]
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] flex flex-col overflow-hidden">
@@ -521,7 +537,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
           <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
             <div className="flex-1 overflow-y-auto no-scrollbar space-y-4 pr-1">
               <TabsContent value="basic" className="space-y-4">
-                {/* Card 1: Product Information - Combined Product Details + Catalog Settings */}
+                {/* Card 1: Product Information - Combined product details and catalog settings */}
                 <Card>
                   <CardHeader>
                     <CardTitle>Product Information</CardTitle>
@@ -610,7 +626,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                   </CardContent>
                 </Card>
 
-                {/* Card 2: Pricing & Discount - Combined Pricing + Discount */}
+                {/* Card 2: Pricing & Discount - Combined pricing and discount settings */}
                 <Card>
                   <CardHeader>
                     <CardTitle>Pricing & Discount</CardTitle>
@@ -652,189 +668,159 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                         />
                       </div>
                     </div>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="discountType">Discount Type</Label>
-                        <Select
-                          value={formData.discountType}
-                          onValueChange={(value) =>
-                            setFormData({ ...formData, discountType: value as "percentage" | "amount" })
-                          }
-                        >
-                          <SelectTrigger id="discountType">
-                            <SelectValue placeholder="Select discount type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="percentage">Percentage</SelectItem>
-                            <SelectItem value="amount">Amount</SelectItem>
-                          </SelectContent>
-                        </Select>
+                    <div className="border-t pt-4">
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="discountType">Discount Type</Label>
+                          <Select
+                            value={formData.discountType}
+                            onValueChange={(value) =>
+                              setFormData({ ...formData, discountType: value as "percentage" | "amount" })
+                            }
+                          >
+                            <SelectTrigger id="discountType">
+                              <SelectValue placeholder="Select discount type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="percentage">Percentage</SelectItem>
+                              <SelectItem value="amount">Amount</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="discountValue">
+                            {formData.discountType === "amount" ? "Discount Amount" : "Discount Percentage"}
+                          </Label>
+                          <Input
+                            id="discountValue"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={formData.discountValue}
+                            onChange={(e) => setFormData({ ...formData, discountValue: e.target.value })}
+                            placeholder="0.00"
+                          />
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="discountValue">
-                          {formData.discountType === "amount" ? "Discount Amount" : "Discount Percentage"}
-                        </Label>
-                        <Input
-                          id="discountValue"
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          value={formData.discountValue}
-                          onChange={(e) => setFormData({ ...formData, discountValue: e.target.value })}
-                          placeholder="0.00"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="discountStartDate">Discount Start Date</Label>
-                        <Input
-                          id="discountStartDate"
-                          type="date"
-                          value={formData.discountStartDate}
-                          onChange={(e) => setFormData({ ...formData, discountStartDate: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="discountEndDate">Discount End Date</Label>
-                        <Input
-                          id="discountEndDate"
-                          type="date"
-                          value={formData.discountEndDate}
-                          onChange={(e) => setFormData({ ...formData, discountEndDate: e.target.value })}
-                        />
+                      <div className="grid gap-4 md:grid-cols-2 mt-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="discountStartDate">Discount Start Date</Label>
+                          <Input
+                            id="discountStartDate"
+                            type="date"
+                            value={formData.discountStartDate}
+                            onChange={(e) => setFormData({ ...formData, discountStartDate: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="discountEndDate">Discount End Date</Label>
+                          <Input
+                            id="discountEndDate"
+                            type="date"
+                            value={formData.discountEndDate}
+                            onChange={(e) => setFormData({ ...formData, discountEndDate: e.target.value })}
+                          />
+                        </div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Card 3: Product Analytics - Replaced simple stats with recharts curve chart */}
+                {/* Card 3: Product Performance - Replaced with recharts area chart */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Product Analytics</CardTitle>
+                    <CardTitle>Product Performance</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">Performance metrics over the last 7 months</p>
-                    <ChartContainer
-                      config={{
-                        sales: {
-                          label: "Sales",
-                          color: "hsl(var(--chart-1))",
-                        },
-                        revenue: {
-                          label: "Revenue",
-                          color: "hsl(var(--chart-2))",
-                        },
-                        stock: {
-                          label: "Stock",
-                          color: "hsl(var(--chart-3))",
-                        },
-                        views: {
-                          label: "Views",
-                          color: "hsl(var(--chart-4))",
-                        },
-                      }}
-                      className="h-[300px] w-full"
-                    >
+                    <div className="grid gap-4 md:grid-cols-3 mb-6">
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Total Sales</p>
+                        <p className="text-2xl font-bold">{formData.totalSales || "0"}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Total Revenue</p>
+                        <p className="text-2xl font-bold">
+                          ${formData.totalRevenue ? Number.parseFloat(formData.totalRevenue).toFixed(2) : "0.00"}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Net Profit</p>
+                        <p className="text-2xl font-bold">
+                          ${formData.netProfit ? Number.parseFloat(formData.netProfit).toFixed(2) : "0.00"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="h-[200px] w-full">
                       <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={analyticsData} margin={{ top: 10, right: 40, left: 0, bottom: 0 }}>
+                        <AreaChart data={productStatsData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                           <defs>
-                            <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.6} />
-                              <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.05} />
+                            <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="#6366f1" stopOpacity={0.8} />
+                              <stop offset="55%" stopColor="#6366f1" stopOpacity={0.1} />
                             </linearGradient>
-                            <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.6} />
-                              <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0.05} />
+                            <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="#10b981" stopOpacity={0.8} />
+                              <stop offset="55%" stopColor="#10b981" stopOpacity={0.1} />
                             </linearGradient>
-                            <linearGradient id="colorStock" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="hsl(var(--chart-3))" stopOpacity={0.6} />
-                              <stop offset="95%" stopColor="hsl(var(--chart-3))" stopOpacity={0.05} />
-                            </linearGradient>
-                            <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="hsl(var(--chart-4))" stopOpacity={0.6} />
-                              <stop offset="95%" stopColor="hsl(var(--chart-4))" stopOpacity={0.05} />
+                            <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.8} />
+                              <stop offset="55%" stopColor="#f59e0b" stopOpacity={0.1} />
                             </linearGradient>
                           </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                          <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                          {/* Left Y-axis for Sales and Revenue (larger values) */}
-                          <YAxis
-                            yAxisId="left"
-                            stroke="hsl(var(--muted-foreground))"
-                            fontSize={12}
-                            label={{ value: "Sales / Revenue", angle: -90, position: "insideLeft", fontSize: 10 }}
+                          <CartesianGrid strokeDasharray="3 3" stroke="#9ca3af" strokeOpacity={0.3} />
+                          <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
+                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11 }} width={40} />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: "#ffffff",
+                              border: "1px solid #e5e7eb",
+                              borderRadius: "8px",
+                              boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                            }}
+                            labelStyle={{
+                              color: "#111827",
+                              fontWeight: "600",
+                              marginBottom: "4px",
+                            }}
+                            itemStyle={{ color: "#374151", fontSize: "12px" }}
+                            formatter={(value, name) => formatTooltipValue(value as number, name as string)}
                           />
-                          {/* Right Y-axis for Stock and Views (smaller values) */}
-                          <YAxis
-                            yAxisId="right"
-                            orientation="right"
-                            stroke="hsl(var(--muted-foreground))"
-                            fontSize={12}
-                            label={{ value: "Stock / Views", angle: 90, position: "insideRight", fontSize: 10 }}
-                          />
-                          <ChartTooltip content={<ChartTooltipContent />} />
-                          {/* Sales and Revenue use left Y-axis */}
                           <Area
-                            yAxisId="left"
                             type="monotone"
                             dataKey="sales"
-                            stroke="hsl(var(--chart-1))"
-                            fillOpacity={1}
-                            fill="url(#colorSales)"
+                            stroke="#6366f1"
                             strokeWidth={2}
+                            fill="url(#salesGradient)"
+                            name="Sales"
+                            dot={false}
+                            activeDot={{ r: 4 }}
                           />
                           <Area
-                            yAxisId="left"
                             type="monotone"
                             dataKey="revenue"
-                            stroke="hsl(var(--chart-2))"
-                            fillOpacity={1}
-                            fill="url(#colorRevenue)"
+                            stroke="#10b981"
                             strokeWidth={2}
-                          />
-                          {/* Stock and Views use right Y-axis */}
-                          <Area
-                            yAxisId="right"
-                            type="monotone"
-                            dataKey="stock"
-                            stroke="hsl(var(--chart-3))"
-                            fillOpacity={1}
-                            fill="url(#colorStock)"
-                            strokeWidth={2}
+                            fill="url(#revenueGradient)"
+                            name="Revenue"
+                            dot={false}
+                            activeDot={{ r: 4 }}
                           />
                           <Area
-                            yAxisId="right"
                             type="monotone"
-                            dataKey="views"
-                            stroke="hsl(var(--chart-4))"
-                            fillOpacity={1}
-                            fill="url(#colorViews)"
+                            dataKey="profit"
+                            stroke="#f59e0b"
                             strokeWidth={2}
+                            fill="url(#profitGradient)"
+                            name="Profit"
+                            dot={false}
+                            activeDot={{ r: 4 }}
                           />
                         </AreaChart>
                       </ResponsiveContainer>
-                    </ChartContainer>
-
-                    {/* Summary stats below the chart */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-4 border-t">
-                      <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground">Total Sales</p>
-                        <p className="text-lg font-semibold">{formData.totalSales || "0"}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground">Total Revenue</p>
-                        <p className="text-lg font-semibold">${formData.totalRevenue || "0"}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground">Net Profit</p>
-                        <p className="text-lg font-semibold">${formData.netProfit || "0"}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground">Avg Rating</p>
-                        <p className="text-lg font-semibold">{formData.averageRating || "0"}/5</p>
-                      </div>
                     </div>
+                    <p className="text-xs text-muted-foreground mt-4 text-center">
+                      Performance metrics sync automatically from the database
+                    </p>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -1270,7 +1256,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
               </TabsContent>
             </div>
 
-            <DialogFooter className="flex flex-col sm:flex-row gap-2">
+            <DialogFooter className="flex flex-col sm:flex-col gap-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
                 Cancel
               </Button>
