@@ -124,7 +124,7 @@ export function EmailCampaignEditor({ campaign, isOpen, onClose, onSave }: Email
             </TabsTrigger>
           </TabsList>
 
-          <div className="overflow-y-auto h-[500px]">
+          <div className="overflow-y-auto h-[500px] no-scrollbar">
             <TabsContent value="details" className="space-y-4 mt-4">
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-4">

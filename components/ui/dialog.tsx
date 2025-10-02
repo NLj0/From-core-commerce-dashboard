@@ -66,7 +66,7 @@ function DialogContent({
             )}
           </div>
 
-          <div className="flex-1 overflow-y-auto px-6">
+          <div className="flex-1 overflow-y-auto px-6 no-scrollbar">
             {React.Children.toArray(children).filter(
               (child) =>
                 React.isValidElement(child) &&

@@ -120,6 +120,16 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
     maximumFractionDigits: 0,
   })
 
+  const formatCurrencyTick = (value: number) => {
+    if (Math.abs(value) >= 1000000) {
+      return `$${(value / 1000000).toFixed(1)}M`
+    }
+    if (Math.abs(value) >= 1000) {
+      return `$${(value / 1000).toFixed(0)}k`
+    }
+    return `$${value}`
+  }
+
   const formatTooltipValue = (value: number, name: string) => {
     switch (name) {
       case "Revenue":
@@ -536,7 +546,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
 
           <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
             <div className="flex-1 overflow-y-auto no-scrollbar space-y-4 pr-1">
-              <TabsContent value="basic" className="space-y-4">
+              <TabsContent value="basic" className="space-y-4 no-scrollbar">
                 {/* Card 1: Product Information - Combined product details and catalog settings */}
                 <Card>
                   <CardHeader>
@@ -609,7 +619,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                           onValueChange={(value) => setFormData({ ...formData, category: value })}
                           required
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select category" />
                           </SelectTrigger>
                           <SelectContent>
@@ -678,7 +688,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                               setFormData({ ...formData, discountType: value as "percentage" | "amount" })
                             }
                           >
-                            <SelectTrigger id="discountType">
+                            <SelectTrigger id="discountType" className="w-full">
                               <SelectValue placeholder="Select discount type" />
                             </SelectTrigger>
                             <SelectContent>
@@ -750,9 +760,9 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                         </p>
                       </div>
                     </div>
-                    <div className="h-[200px] w-full">
+                    <div className="h-[220px] w-full">
                       <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={productStatsData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <AreaChart data={productStatsData} margin={{ top: 10, right: 48, left: 0, bottom: 0 }}>
                           <defs>
                             <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
                               <stop offset="0%" stopColor="#6366f1" stopOpacity={0.8} />
@@ -769,7 +779,23 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                           </defs>
                           <CartesianGrid strokeDasharray="3 3" stroke="#9ca3af" strokeOpacity={0.3} />
                           <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
-                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11 }} width={40} />
+                          <YAxis
+                            yAxisId="left"
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fontSize: 11 }}
+                            width={52}
+                            tickFormatter={formatCurrencyTick}
+                          />
+                          <YAxis
+                            yAxisId="right"
+                            orientation="right"
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fontSize: 11 }}
+                            width={10}
+                            tickFormatter={(value) => `${value}`}
+                          />
                           <Tooltip
                             contentStyle={{
                               backgroundColor: "#ffffff",
@@ -786,16 +812,19 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                             formatter={(value, name) => formatTooltipValue(value as number, name as string)}
                           />
                           <Area
+                            yAxisId="right"
                             type="monotone"
                             dataKey="sales"
                             stroke="#6366f1"
                             strokeWidth={2}
                             fill="url(#salesGradient)"
+                            fillOpacity={0.6}
                             name="Sales"
                             dot={false}
                             activeDot={{ r: 4 }}
                           />
                           <Area
+                            yAxisId="left"
                             type="monotone"
                             dataKey="revenue"
                             stroke="#10b981"
@@ -806,6 +835,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                             activeDot={{ r: 4 }}
                           />
                           <Area
+                            yAxisId="left"
                             type="monotone"
                             dataKey="profit"
                             stroke="#f59e0b"
@@ -1236,7 +1266,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
               <TabsContent value="images" className="space-y-4">
                 <div className="space-y-3">
                   <Label>Product Images</Label>
-                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
+                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center mb-4">
                     <Upload className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
                     <p className="text-sm text-muted-foreground mb-2">
                       {productType === "service"
