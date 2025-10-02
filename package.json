@@ -1,13 +1,4 @@
 {
-  "name": "from-core-commerce-dashboard",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "build": "next build",
-    "dev": "next dev",
-    "lint": "next lint",
-    "start": "next start"
-  },
   "dependencies": {
     "@hookform/resolvers": "3.10.0",
     "@radix-ui/react-accordion": "1.2.2",
@@ -51,5 +42,14 @@
     "postcss": "^8.5",
     "tailwindcss": "4.1.9",
     "typescript": "^5"
+  },
+  "name": "from-core-commerce-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev",
+    "lint": "next lint",
+    "start": "next start"
   }
 }
