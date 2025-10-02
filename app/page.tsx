@@ -3,38 +3,38 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Package, ShoppingCart, Users, Star, TrendingUp, TrendingDown, Eye } from "lucide-react"
+import { CircleDollarSign, ShoppingCart, Target, TrendingDown, TrendingUp, Users, Eye } from "lucide-react"
 import { AnalyticsChart } from "@/components/analytics-chart"
 
 // Mock data for demonstration
 const stats = [
   {
-    title: "Total Products",
-    value: "1,234",
-    change: "+12%",
+    title: "Page Views",
+    value: "18,450",
+    change: "+9%",
     trend: "up",
-    icon: Package,
+    icon: Eye,
   },
   {
-    title: "Daily Orders",
-    value: "89",
-    change: "+23%",
+    title: "Total Sales",
+    value: "$712K",
+    change: "+14%",
+    trend: "up",
+    icon: CircleDollarSign,
+  },
+  {
+    title: "New Orders",
+    value: "441",
+    change: "+7%",
     trend: "up",
     icon: ShoppingCart,
   },
   {
-    title: "Total Customers",
-    value: "2,847",
-    change: "+8%",
+    title: "Conversion Rate",
+    value: "3.4%",
+    change: "+0.4%",
     trend: "up",
-    icon: Users,
-  },
-  {
-    title: "Average Rating",
-    value: "4.8",
-    change: "-0.1",
-    trend: "down",
-    icon: Star,
+    icon: Target,
   },
 ]
 
@@ -177,7 +177,7 @@ export default function DashboardPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Sales Analytics</CardTitle>
+            <CardTitle>Analytics</CardTitle>
           </CardHeader>
           <CardContent>
             <AnalyticsChart />

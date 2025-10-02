@@ -126,6 +126,13 @@
   body {
     @apply bg-background text-foreground;
   }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
   /* Recharts default tooltip styling */
   .recharts-default-tooltip {
     background-color: var(--card) !important;

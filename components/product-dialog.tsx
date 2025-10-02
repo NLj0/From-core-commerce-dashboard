@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -31,6 +32,21 @@ interface Product {
   image: string
   category: string
   sku: string
+  nameArabic?: string
+  description?: string
+  descriptionArabic?: string
+  basePrice?: number
+  costPrice?: number
+  salePrice?: number
+  discountType?: "percentage" | "amount"
+  discountValue?: number
+  discountStartDate?: string | null
+  discountEndDate?: string | null
+  totalSales?: number
+  totalRevenue?: number
+  netProfit?: number
+  displayedDiscountRate?: number
+  averageRating?: number
 }
 
 interface ProductDialogProps {
@@ -45,11 +61,15 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
   const [currentStep, setCurrentStep] = useState("basic")
   const [formData, setFormData] = useState({
     name: "",
-    price: "",
-    stock: "",
+    nameArabic: "",
+    description: "",
+    descriptionArabic: "",
     category: "",
     sku: "",
-    description: "",
+    basePrice: "",
+    costPrice: "",
+    salePrice: "",
+    stock: "",
     image: "",
     // SEO fields
     metaTitle: "",
@@ -69,6 +89,17 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
     bundleDelivery: "combined",
     // Custom fields
     customFields: [] as any[],
+    // Discount fields
+    discountType: "percentage" as "percentage" | "amount",
+    discountValue: "",
+    discountStartDate: "",
+    discountEndDate: "",
+    // Product stats
+    totalSales: "",
+    totalRevenue: "",
+    netProfit: "",
+    displayedDiscountRate: "",
+    averageRating: "",
     // Stock management
     unlimitedStock: false,
   })
@@ -76,13 +107,22 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
   useEffect(() => {
     if (product) {
       setFormData({
-        name: product.name,
-        price: product.price.toString(),
-        stock: product.stock.toString(),
-        category: product.category,
-        sku: product.sku,
-        description: "",
-        image: product.image,
+        name: product.name ?? "",
+        nameArabic: product.nameArabic ?? "",
+        description: product.description ?? "",
+        descriptionArabic: product.descriptionArabic ?? "",
+        category: product.category ?? "",
+        sku: product.sku ?? "",
+        basePrice: product.basePrice != null ? product.basePrice.toString() : "",
+        costPrice: product.costPrice != null ? product.costPrice.toString() : "",
+        salePrice:
+          product.salePrice != null
+            ? product.salePrice.toString()
+            : product.price != null
+              ? product.price.toString()
+              : "",
+        stock: product.stock != null ? product.stock.toString() : "",
+        image: product.image ?? "",
         metaTitle: "",
         metaDescription: "",
         keywords: "",
@@ -97,16 +137,30 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
         bundleProducts: [],
         bundleDelivery: "combined",
         customFields: [],
-        unlimitedStock: false,
+        discountType: product.discountType ?? "percentage",
+        discountValue: product.discountValue != null ? product.discountValue.toString() : "",
+        discountStartDate: product.discountStartDate ?? "",
+        discountEndDate: product.discountEndDate ?? "",
+        totalSales: product.totalSales != null ? product.totalSales.toString() : "",
+        totalRevenue: product.totalRevenue != null ? product.totalRevenue.toString() : "",
+        netProfit: product.netProfit != null ? product.netProfit.toString() : "",
+        displayedDiscountRate:
+          product.displayedDiscountRate != null ? product.displayedDiscountRate.toString() : "",
+        averageRating: product.averageRating != null ? product.averageRating.toString() : "",
+        unlimitedStock: product.stock === null,
       })
     } else {
       setFormData({
         name: "",
-        price: "",
-        stock: "",
+        nameArabic: "",
+        description: "",
+        descriptionArabic: "",
         category: "",
         sku: "",
-        description: "",
+        basePrice: "",
+        costPrice: "",
+        salePrice: "",
+        stock: "",
         image: "",
         metaTitle: "",
         metaDescription: "",
@@ -122,6 +176,15 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
         bundleProducts: [],
         bundleDelivery: "combined",
         customFields: [],
+        discountType: "percentage",
+        discountValue: "",
+        discountStartDate: "",
+        discountEndDate: "",
+        totalSales: "",
+        totalRevenue: "",
+        netProfit: "",
+        displayedDiscountRate: "",
+        averageRating: "",
         unlimitedStock: false,
       })
     }
@@ -130,15 +193,43 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
+    const parseFloatValue = (value: string) => (value ? Number.parseFloat(value) : null)
+    const parseIntValue = (value: string) => (value ? Number.parseInt(value, 10) : null)
+
+    const basePriceValue = parseFloatValue(formData.basePrice)
+    const costPriceValue = parseFloatValue(formData.costPrice)
+    const salePriceValue = parseFloatValue(formData.salePrice)
+    const discountValue = parseFloatValue(formData.discountValue)
+    const totalSalesValue = parseIntValue(formData.totalSales)
+    const totalRevenueValue = parseFloatValue(formData.totalRevenue)
+    const netProfitValue = parseFloatValue(formData.netProfit)
+    const displayedDiscountRateValue = parseFloatValue(formData.displayedDiscountRate)
+    const averageRatingValue = parseFloatValue(formData.averageRating)
+
     const productData = {
       ...formData,
       name: formData.name,
-      price: Number.parseFloat(formData.price),
-      stock: formData.unlimitedStock ? null : Number.parseInt(formData.stock),
+      nameArabic: formData.nameArabic,
+      description: formData.description,
+      descriptionArabic: formData.descriptionArabic,
+      basePrice: basePriceValue,
+      costPrice: costPriceValue,
+      salePrice: salePriceValue,
+      price: salePriceValue ?? basePriceValue ?? 0,
+      stock: formData.unlimitedStock ? null : parseIntValue(formData.stock),
       category: formData.category,
       sku: formData.sku,
       image: formData.image || `/placeholder.svg?height=60&width=60&query=${formData.name}`,
       productType: productType || "standard",
+      discountType: formData.discountType,
+      discountValue,
+      discountStartDate: formData.discountStartDate || null,
+      discountEndDate: formData.discountEndDate || null,
+      totalSales: totalSalesValue,
+      totalRevenue: totalRevenueValue,
+      netProfit: netProfitValue,
+      displayedDiscountRate: displayedDiscountRateValue,
+      averageRating: averageRatingValue,
     }
 
     onSave(productData)
@@ -198,6 +289,57 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
       default:
         return []
     }
+  }
+
+  const methodsWithImplicitStockLimits = new Set(["code"])
+  const supportsUnlimitedStock = productType === "digital" || productType === "digital-card"
+
+  const shouldRenderStockControls = (method?: string | null) => {
+    if (!method) return false
+    return !methodsWithImplicitStockLimits.has(method)
+  }
+
+  const renderStockControls = (methodOverride?: string) => {
+    const method = methodOverride ?? formData.deliveryMethod
+    if (!shouldRenderStockControls(method)) {
+      return null
+    }
+
+    const isUnlimited = supportsUnlimitedStock && formData.unlimitedStock
+    const stockIsRequired = !isUnlimited && productType !== "digital"
+
+    return (
+      <div className="space-y-2">
+        <Label htmlFor="stock">Stock Quantity</Label>
+        {supportsUnlimitedStock && (
+          <div className="flex items-center space-x-2 mb-2">
+            <Checkbox
+              id="unlimited"
+              checked={formData.unlimitedStock}
+              onCheckedChange={(checked) =>
+                setFormData({
+                  ...formData,
+                  unlimitedStock: checked as boolean,
+                  stock: checked ? "" : formData.stock,
+                })
+              }
+            />
+            <Label htmlFor="unlimited" className="text-sm">
+              Unlimited Stock
+            </Label>
+          </div>
+        )}
+        <Input
+          id="stock"
+          type="number"
+          value={formData.stock}
+          onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+          placeholder={isUnlimited ? "Unlimited" : "0"}
+          disabled={isUnlimited}
+          required={stockIsRequired}
+        />
+      </div>
+    )
   }
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -343,7 +485,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] flex flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle>{product ? `Edit ${getProductTypeTitle()}` : `Add New ${getProductTypeTitle()}`}</DialogTitle>
           <DialogDescription>
@@ -353,7 +495,11 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={currentStep} onValueChange={setCurrentStep} className="w-full">
+        <Tabs
+          value={currentStep}
+          onValueChange={setCurrentStep}
+          className="w-full flex-1 flex flex-col overflow-hidden"
+        >
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="basic">Basic Info</TabsTrigger>
             <TabsTrigger value="seo">SEO</TabsTrigger>
@@ -361,115 +507,270 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
             <TabsTrigger value="images">Images</TabsTrigger>
           </TabsList>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <TabsContent value="basic" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Product Name *</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Enter product name"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="category">Category *</Label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={(value) => setFormData({ ...formData, category: value })}
-                    required
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Digital Products">Digital Products</SelectItem>
-                      <SelectItem value="Digital Cards">Digital Cards</SelectItem>
-                      <SelectItem value="Services">Services</SelectItem>
-                      <SelectItem value="Bundles">Bundles</SelectItem>
-                      <SelectItem value="Software">Software</SelectItem>
-                      <SelectItem value="Templates">Templates</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="price">Price ($) *</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    step="0.01"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    placeholder="0.00"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="stock">Stock Quantity</Label>
-                  {(productType === "digital" || productType === "digital-card") && (
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Checkbox
-                        id="unlimited"
-                        checked={formData.unlimitedStock}
-                        onCheckedChange={(checked) =>
-                          setFormData({
-                            ...formData,
-                            unlimitedStock: checked as boolean,
-                            stock: checked ? "" : formData.stock,
-                          })
-                        }
-                      />
-                      <Label htmlFor="unlimited" className="text-sm">
-                        Unlimited Stock
-                      </Label>
+          <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 overflow-y-auto no-scrollbar space-y-4 pr-1">
+              <TabsContent value="basic" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Product Details</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="name-en">Product Name (English) *</Label>
+                        <Input
+                          id="name-en"
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          placeholder="Enter product name in English"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="name-ar">Product Name (Arabic)</Label>
+                        <Input
+                          id="name-ar"
+                          value={formData.nameArabic}
+                          onChange={(e) => setFormData({ ...formData, nameArabic: e.target.value })}
+                          placeholder="Enter product name in Arabic"
+                        />
+                      </div>
                     </div>
-                  )}
-                  <Input
-                    id="stock"
-                    type="number"
-                    value={formData.stock}
-                    onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                    placeholder={formData.unlimitedStock ? "Unlimited" : "0"}
-                    disabled={formData.unlimitedStock}
-                    required={!formData.unlimitedStock && productType !== "digital"}
-                  />
-                </div>
-              </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="description-en">Description (English)</Label>
+                        <Textarea
+                          id="description-en"
+                          value={formData.description}
+                          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                          placeholder="Describe the product in English"
+                          rows={4}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="description-ar">Description (Arabic)</Label>
+                        <Textarea
+                          id="description-ar"
+                          value={formData.descriptionArabic}
+                          onChange={(e) => setFormData({ ...formData, descriptionArabic: e.target.value })}
+                          placeholder="Describe the product in Arabic"
+                          rows={4}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-              <div className="space-y-2">
-                <Label htmlFor="sku">SKU *</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="sku"
-                    value={formData.sku}
-                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    placeholder="Product SKU"
-                    required
-                  />
-                  <Button type="button" variant="outline" onClick={generateSKU}>
-                    Generate
-                  </Button>
-                </div>
-              </div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Catalog Settings</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="sku">SKU *</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="sku"
+                            value={formData.sku}
+                            onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                            placeholder="Product SKU"
+                            required
+                          />
+                          <Button type="button" variant="outline" onClick={generateSKU}>
+                            Generate
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="category">Category *</Label>
+                        <Select
+                          value={formData.category}
+                          onValueChange={(value) => setFormData({ ...formData, category: value })}
+                          required
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Digital Products">Digital Products</SelectItem>
+                            <SelectItem value="Digital Cards">Digital Cards</SelectItem>
+                            <SelectItem value="Services">Services</SelectItem>
+                            <SelectItem value="Bundles">Bundles</SelectItem>
+                            <SelectItem value="Software">Software</SelectItem>
+                            <SelectItem value="Templates">Templates</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Product description..."
-                  rows={3}
-                />
-              </div>
-            </TabsContent>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Pricing</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="basePrice">Base Price</Label>
+                        <Input
+                          id="basePrice"
+                          type="number"
+                          step="0.01"
+                          value={formData.basePrice}
+                          onChange={(e) => setFormData({ ...formData, basePrice: e.target.value })}
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="costPrice">Purchase Price</Label>
+                        <Input
+                          id="costPrice"
+                          type="number"
+                          step="0.01"
+                          value={formData.costPrice}
+                          onChange={(e) => setFormData({ ...formData, costPrice: e.target.value })}
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="salePrice">Sale Price *</Label>
+                        <Input
+                          id="salePrice"
+                          type="number"
+                          step="0.01"
+                          value={formData.salePrice}
+                          onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
+                          placeholder="0.00"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-            <TabsContent value="seo" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Discount</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="discountType">Discount Type</Label>
+                        <Select
+                          value={formData.discountType}
+                          onValueChange={(value) =>
+                            setFormData({ ...formData, discountType: value as "percentage" | "amount" })
+                          }
+                        >
+                          <SelectTrigger id="discountType">
+                            <SelectValue placeholder="Select discount type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="percentage">Percentage</SelectItem>
+                            <SelectItem value="amount">Amount</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="discountValue">
+                          {formData.discountType === "amount" ? "Discount Amount" : "Discount Percentage"}
+                        </Label>
+                        <Input
+                          id="discountValue"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={formData.discountValue}
+                          onChange={(e) => setFormData({ ...formData, discountValue: e.target.value })}
+                          placeholder="0.00"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="discountStartDate">Discount Start Date</Label>
+                        <Input
+                          id="discountStartDate"
+                          type="date"
+                          value={formData.discountStartDate}
+                          onChange={(e) => setFormData({ ...formData, discountStartDate: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="discountEndDate">Discount End Date</Label>
+                        <Input
+                          id="discountEndDate"
+                          type="date"
+                          value={formData.discountEndDate}
+                          onChange={(e) => setFormData({ ...formData, discountEndDate: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Product Stats</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      These metrics sync automatically from the database.
+                    </p>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="totalSales">Total Sales</Label>
+                        <Input
+                          id="totalSales"
+                          value={formData.totalSales}
+                          placeholder="Auto-filled"
+                          readOnly
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="totalRevenue">Total Revenue</Label>
+                        <Input
+                          id="totalRevenue"
+                          value={formData.totalRevenue}
+                          placeholder="Auto-filled"
+                          readOnly
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="netProfit">Net Profit</Label>
+                        <Input
+                          id="netProfit"
+                          value={formData.netProfit}
+                          placeholder="Auto-filled"
+                          readOnly
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="displayedDiscountRate">Displayed Discount Rate</Label>
+                        <Input
+                          id="displayedDiscountRate"
+                          value={formData.displayedDiscountRate}
+                          placeholder="Auto-filled"
+                          readOnly
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="averageRating">Average Rating (out of 5)</Label>
+                        <Input
+                          id="averageRating"
+                          value={formData.averageRating}
+                          placeholder="Auto-filled"
+                          readOnly
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="seo" className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="metaTitle">Meta Title</Label>
                 <Input
@@ -545,6 +846,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                           placeholder="7"
                         />
                       </div>
+                      {renderStockControls("download")}
                     </div>
                   )}
 
@@ -565,7 +867,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                             No codes added yet. Click "Add Code" to start.
                           </p>
                         )}
-                        <div className="space-y-2 max-h-40 overflow-y-auto">
+                        <div className="space-y-2 max-h-40 overflow-y-auto no-scrollbar">
                           {formData.codes.map((code, index) => (
                             <div key={index} className="flex gap-2">
                               <Input
@@ -625,6 +927,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                           </Button>
                         </div>
                       </div>
+                      {renderStockControls()}
                     </div>
                   )}
 
@@ -668,19 +971,23 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                           placeholder="30"
                         />
                       </div>
+                      {renderStockControls("file")}
                     </div>
                   )}
 
                   {productType === "service" && (
-                    <div className="space-y-2">
-                      <Label htmlFor="deliveryTime">Delivery Time (days)</Label>
-                      <Input
-                        id="deliveryTime"
-                        type="number"
-                        value={formData.deliveryTime}
-                        onChange={(e) => setFormData({ ...formData, deliveryTime: e.target.value })}
-                        placeholder="3"
-                      />
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="deliveryTime">Delivery Time (days)</Label>
+                        <Input
+                          id="deliveryTime"
+                          type="number"
+                          value={formData.deliveryTime}
+                          onChange={(e) => setFormData({ ...formData, deliveryTime: e.target.value })}
+                          placeholder="3"
+                        />
+                      </div>
+                      {renderStockControls()}
                     </div>
                   )}
 
@@ -808,6 +1115,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                           No custom fields configured. Add fields above to collect additional information from customers.
                         </p>
                       )}
+                      {renderStockControls("custom-fields")}
                     </div>
                   )}
                 </div>
@@ -815,6 +1123,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
 
               {productType === "bundle" && (
                 <div className="space-y-4">
+                  {renderStockControls("bundle")}
                   <div className="space-y-3 p-4 border rounded-lg bg-muted/20">
                     <Label>Bundle Contents *</Label>
                     <p className="text-sm text-muted-foreground">Select products to include in this bundle</p>
@@ -854,7 +1163,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
               )}
             </TabsContent>
 
-            <TabsContent value="images" className="space-y-4">
+              <TabsContent value="images" className="space-y-4">
               <div className="space-y-3">
                 <Label>Product Images</Label>
                 <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
@@ -873,6 +1182,8 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                 </div>
               </div>
             </TabsContent>
+
+            </div>
 
             <DialogFooter className="flex flex-col sm:flex-row gap-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
