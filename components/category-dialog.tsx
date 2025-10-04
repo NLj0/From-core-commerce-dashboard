@@ -248,7 +248,7 @@ export function CategoryDialog({ open, onOpenChange, category, onSave }: Categor
               </div>
             </TabsContent>
 
-            <DialogFooter className="flex flex-col sm:flex-row gap-2">
+            <DialogFooter className="flex flex-col sm:flex-col gap-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
                 Cancel
               </Button>

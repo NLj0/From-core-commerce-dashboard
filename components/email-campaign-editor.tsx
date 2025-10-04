@@ -18,13 +18,14 @@ import {
 } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Save, Users, Target, AlertTriangle, FileText } from "lucide-react"
+import { Save, Target, AlertTriangle, FileText } from "lucide-react"
 
 interface EmailCampaign {
   id: number
   name: string
   subject: string
   content: string
+  htmlContent?: string
   targetAudience: string
   scheduledDate?: string
   status: "draft" | "scheduled" | "sent"
@@ -52,21 +53,121 @@ const customerSegments = [
 
 // Mock data for email templates
 const campaignTemplates = [
-  { id: 1, name: "Promotional Sale", type: "marketing" },
-  { id: 2, name: "Product Launch", type: "marketing" },
-  { id: 3, name: "Newsletter", type: "marketing" },
-  { id: 4, name: "Abandoned Cart", type: "marketing" },
-  { id: 5, name: "Customer Survey", type: "marketing" },
+  {
+    id: 1,
+    name: "Holiday Flash Sale",
+    type: "promotion",
+    subject: "Holiday Flash Sale - 48 Hours Only!",
+    text:
+      "Hi {CustomerName},\n\nOur biggest holiday sale of the year starts now! Enjoy limited-time savings on our best sellers before they disappear.\n\nUse code HOLIDAY25 at checkout to unlock 25% off.\n\nHappy shopping,\n{CompanyName}",
+    html: `
+      <p style="font-size:16px;color:#334155;">Hi {CustomerName},</p>
+      <h1 style="font-size:28px;color:#1d4ed8;margin:0 0 12px;">Holiday Flash Sale 🎁</h1>
+      <p style="font-size:16px;color:#475569;">Our biggest holiday sale of the year starts now! Enjoy limited-time savings on our best sellers before they disappear.</p>
+      <div style="background:#1d4ed8;color:#ffffff;padding:18px;border-radius:12px;text-align:center;margin:24px 0;">
+        <p style="font-size:18px;margin:0 0 6px;">Use code <strong>HOLIDAY25</strong></p>
+        <p style="font-size:14px;margin:0;">Unlock 25% off storewide for the next 48 hours</p>
+      </div>
+      <a href="https://yourstore.com" style="display:inline-block;background:#10b981;color:#ffffff;text-decoration:none;font-weight:600;padding:12px 24px;border-radius:9999px;">Shop the Sale</a>
+      <p style="font-size:14px;color:#94a3b8;margin-top:24px;">You are receiving this email because you opted in at checkout. Unsubscribe anytime via the link below.</p>
+    `,
+  },
+  {
+    id: 2,
+    name: "Product Launch Spotlight",
+    type: "product",
+    subject: "Meet Our New Arrival — Built for You",
+    text:
+      "Hey {CustomerName},\n\nWe just released something special and you get the first look. Discover the features, see it in action, and grab exclusive launch pricing before it's gone.\n\nCheers,\nThe {CompanyName} Team",
+    html: `
+      <p style="font-size:16px;color:#334155;">Hey {CustomerName},</p>
+      <h2 style="font-size:26px;color:#0f172a;margin-bottom:8px;">Introducing your new favorite product</h2>
+      <p style="font-size:16px;color:#475569;">We built this launch with you in mind. Explore the highlights below and grab exclusive launch pricing while it lasts.</p>
+      <ul style="padding-left:20px;color:#475569;font-size:15px;">
+        <li>✨ Premium materials with a modern finish</li>
+        <li>⚙️ Smarter performance built on customer feedback</li>
+        <li>🚀 Launch pricing available for the first 500 orders</li>
+      </ul>
+      <div style="margin:24px 0;padding:16px;border-radius:12px;background:#f1f5f9;border:1px solid #e2e8f0;">
+        <strong style="color:#0f172a;">Launch Bonus:</strong>
+        <span style="color:#475569;"> Free expedited shipping when you order before {LaunchDeadline}.</span>
+      </div>
+      <a href="https://yourstore.com/new" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;font-weight:600;padding:12px 26px;border-radius:8px;">Explore the Product</a>
+    `,
+  },
+  {
+    id: 3,
+    name: "Monthly Newsletter",
+    type: "newsletter",
+    subject: "{CompanyName} Insider — What’s New This Month",
+    text:
+      "Hello {CustomerName},\n\nHere’s what happened this month: new arrivals, community highlights, and upcoming events you won’t want to miss.\n\nStay tuned for more exciting updates!\n\nWarmly,\nTeam {CompanyName}",
+    html: `
+      <p style="font-size:16px;color:#1f2937;">Hello {CustomerName},</p>
+      <h2 style="font-size:24px;color:#0f172a;margin-bottom:12px;">Inside this month’s newsletter</h2>
+      <div style="display:grid;gap:16px;">
+        <div style="padding:16px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;">
+          <h3 style="margin:0 0 8px;color:#1d4ed8;">✨ Fresh Arrivals</h3>
+          <p style="margin:0;color:#475569;">Discover the latest additions our community is loving right now.</p>
+        </div>
+        <div style="padding:16px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;">
+          <h3 style="margin:0 0 8px;color:#1d4ed8;">📣 Customer Spotlight</h3>
+          <p style="margin:0;color:#475569;">See how {CustomerStoryName} is using our products to level up their workflow.</p>
+        </div>
+        <div style="padding:16px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;">
+          <h3 style="margin:0 0 8px;color:#1d4ed8;">🗓 Upcoming Events</h3>
+          <p style="margin:0;color:#475569;">Join us for live sessions, product walkthroughs, and community Q&As.</p>
+        </div>
+      </div>
+      <p style="font-size:14px;color:#94a3b8;margin-top:24px;">You’re receiving this newsletter because you subscribed on our website. Manage preferences or unsubscribe anytime.</p>
+    `,
+  },
+  {
+    id: 4,
+    name: "Customer Feedback",
+    type: "retention",
+    subject: "We’d love your feedback on your recent experience",
+    text:
+      "Hi {CustomerName},\n\nThanks for being part of the {CompanyName} family. We’re always improving and would love to hear how your recent experience went.\n\nCan you spare 60 seconds to answer a quick survey?\n\nThank you!\n{CompanyName} Support",
+    html: `
+      <p style="font-size:16px;color:#334155;">Hi {CustomerName},</p>
+      <p style="font-size:16px;color:#475569;">Thanks for being part of the {CompanyName} family. Your thoughts help us craft better experiences for every customer.</p>
+      <p style="font-size:16px;color:#475569;">Could you spare 60 seconds to share feedback on your recent purchase?</p>
+      <a href="https://yourstore.com/survey" style="display:inline-block;margin:20px 0;background:#6366f1;color:#ffffff;text-decoration:none;font-weight:600;padding:12px 28px;border-radius:9999px;">Share Feedback</a>
+      <p style="font-size:14px;color:#94a3b8;">If this message wasn’t meant for you, please ignore it or unsubscribe using the link below.</p>
+    `,
+  },
 ]
 
+const htmlToPlainText = (html: string) => {
+  if (!html) return ""
+
+  return html
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<\/(p|div|section|h[1-6]|li|br|tr)>/gi, "\n")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\r/g, "")
+    .replace(/ *\n */g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/[ \t]{2,}/g, " ")
+    .trim()
+}
+
 export function EmailCampaignEditor({ campaign, isOpen, onClose, onSave }: EmailCampaignEditorProps) {
-  const [formData, setFormData] = useState({
-    name: campaign?.name || "",
-    subject: campaign?.subject || "",
-    content: campaign?.content || "",
-    targetAudience: campaign?.targetAudience || "all",
-    scheduledDate: campaign?.scheduledDate || "",
-    status: campaign?.status || ("draft" as const),
+  const [formData, setFormData] = useState(() => {
+    const initialHtmlContent = campaign?.htmlContent || ""
+    const initialPlainText = campaign?.content || (initialHtmlContent ? htmlToPlainText(initialHtmlContent) : "")
+
+    return {
+      name: campaign?.name || "",
+      subject: campaign?.subject || "",
+      content: initialPlainText,
+      htmlContent: initialHtmlContent,
+      targetAudience: campaign?.targetAudience || "all",
+      scheduledDate: campaign?.scheduledDate || "",
+      status: campaign?.status || ("draft" as const),
+    }
   })
 
   const [activeTab, setActiveTab] = useState("content")
@@ -80,10 +181,14 @@ export function EmailCampaignEditor({ campaign, isOpen, onClose, onSave }: Email
   useEffect(() => {
     if (!isOpen) return
 
+    const nextHtmlContent = campaign?.htmlContent || ""
+    const nextPlainText = campaign?.content || (nextHtmlContent ? htmlToPlainText(nextHtmlContent) : "")
+
     setFormData({
       name: campaign?.name || "",
       subject: campaign?.subject || "",
-      content: campaign?.content || "",
+      content: nextPlainText,
+      htmlContent: nextHtmlContent,
       targetAudience: campaign?.targetAudience || "all",
       scheduledDate: campaign?.scheduledDate || "",
       status: campaign?.status || ("draft" as const),
@@ -100,8 +205,8 @@ export function EmailCampaignEditor({ campaign, isOpen, onClose, onSave }: Email
     if (!formData.subject.trim()) {
       errors.push("Email subject is required")
     }
-    if (!formData.content.trim()) {
-      errors.push("Email content is required")
+    if (!formData.htmlContent.trim()) {
+      errors.push("HTML content is required")
     }
     if (sendOption === "schedule" && !formData.scheduledDate) {
       errors.push("Schedule date is required when scheduling a campaign")
@@ -129,17 +234,30 @@ export function EmailCampaignEditor({ campaign, isOpen, onClose, onSave }: Email
     if (template) {
       setFormData((prev) => ({
         ...prev,
-        subject: `${template.name} - Special Offer`,
-        content: `This is a sample ${template.name.toLowerCase()} email content...`,
+        subject: template.subject,
+        content: template.text || htmlToPlainText(template.html),
+        htmlContent: template.html,
       }))
     }
   }
 
+  const handleHtmlContentChange = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      htmlContent: value,
+      content: htmlToPlainText(value),
+    }))
+  }
+
   const resetForm = () => {
+    const resetHtmlContent = campaign?.htmlContent || ""
+    const resetPlainText = campaign?.content || (resetHtmlContent ? htmlToPlainText(resetHtmlContent) : "")
+
     setFormData({
       name: campaign?.name || "",
       subject: campaign?.subject || "",
-      content: campaign?.content || "",
+      content: resetPlainText,
+      htmlContent: resetHtmlContent,
       targetAudience: campaign?.targetAudience || "all",
       scheduledDate: campaign?.scheduledDate || "",
       status: campaign?.status || ("draft" as const),
@@ -147,6 +265,42 @@ export function EmailCampaignEditor({ campaign, isOpen, onClose, onSave }: Email
     setSelectedTemplate("")
     setValidationErrors([])
   }
+
+  const emailPreviewHtml =
+    formData.htmlContent && formData.htmlContent.trim().length > 0
+      ? formData.htmlContent
+      : formData.content
+          ? formData.content.replace(/\n/g, "<br>")
+          : ""
+
+  const emailPreviewSrcDoc = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            background: white;
+          }
+          .email-content {
+            max-width: 600px;
+            margin: 0 auto;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="email-content">
+          ${formData.htmlContent || formData.content.replace(/\n/g, "<br>") || "Email content will appear here..."}
+        </div>
+      </body>
+    </html>
+  `
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -191,7 +345,7 @@ export function EmailCampaignEditor({ campaign, isOpen, onClose, onSave }: Email
                       handleTemplateSelect(value)
                     }}
                   >
-                    <SelectTrigger className="text-sm">
+                    <SelectTrigger className="w-full text-sm">
                       <SelectValue placeholder="Select a template" />
                     </SelectTrigger>
                     <SelectContent>
@@ -214,7 +368,7 @@ export function EmailCampaignEditor({ campaign, isOpen, onClose, onSave }: Email
                   value={formData.targetAudience}
                   onValueChange={(value) => setFormData((prev) => ({ ...prev, targetAudience: value }))}
                 >
-                  <SelectTrigger className="text-sm">
+                  <SelectTrigger className="w-full text-sm">
                     <SelectValue placeholder="Select audience" />
                   </SelectTrigger>
                   <SelectContent>
@@ -250,7 +404,7 @@ export function EmailCampaignEditor({ campaign, isOpen, onClose, onSave }: Email
                     Send Option
                   </Label>
                   <Select value={sendOption} onValueChange={setSendOption}>
-                    <SelectTrigger className="text-sm">
+                    <SelectTrigger className="w-full text-sm">
                       <SelectValue placeholder="Select send option" />
                     </SelectTrigger>
                     <SelectContent>
@@ -328,16 +482,11 @@ export function EmailCampaignEditor({ campaign, isOpen, onClose, onSave }: Email
             )}
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">
-              <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
+              <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
                 <TabsTrigger value="content" className="text-xs md:text-sm">
                   <FileText className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
                   <span className="hidden sm:inline">Content</span>
                   <span className="sm:hidden">Content</span>
-                </TabsTrigger>
-                <TabsTrigger value="audience" className="text-xs md:text-sm">
-                  <Users className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
-                  <span className="hidden sm:inline">Audience</span>
-                  <span className="sm:hidden">Audience</span>
                 </TabsTrigger>
                 <TabsTrigger value="preview" className="text-xs md:text-sm">
                   <Target className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
@@ -361,117 +510,59 @@ export function EmailCampaignEditor({ campaign, isOpen, onClose, onSave }: Email
                 </div>
 
                 <div className="flex-1 flex flex-col space-y-2 min-h-0">
-                  <Label htmlFor="email-content" className="text-sm">
-                    Email Content
+                  <Label htmlFor="html-content" className="text-sm">
+                    HTML Content
                   </Label>
                   <Textarea
-                    id="email-content"
-                    value={formData.content}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, content: e.target.value }))}
-                    placeholder="Write your campaign email content here..."
-                    className="flex-1 font-mono text-xs md:text-sm resize-none overflow-auto whitespace-pre-wrap min-h-[300px] md:min-h-[400px]"
+                    id="html-content"
+                    value={formData.htmlContent}
+                    onChange={(e) => handleHtmlContentChange(e.target.value)}
+                    placeholder="<!DOCTYPE html>\n<html>\n  <body>\n    <h1>Welcome to {CompanyName}</h1>\n  </body>\n</html>"
+                    className="flex-1 font-mono text-xs md:text-sm resize-none overflow-auto whitespace-pre min-h-[300px] md:min-h-[400px]"
+                    spellCheck={false}
                   />
                 </div>
 
                 <div className="flex-shrink-0 p-3 border rounded-md bg-muted/20">
-                  <p className="text-xs text-muted-foreground">
-                    <strong>Available Placeholders:</strong> {"{CustomerName}"}, {"{CustomerEmail}"}, {"{CompanyName}"},{" "}
-                    {"{UnsubscribeLink}"}
-                  </p>
+                  <div className="space-y-1 text-xs text-muted-foreground">
+                    <p>
+                      <strong>Available Placeholders:</strong> {"{CustomerName}"}, {"{CustomerEmail}"}, {"{CompanyName}"},{" "}
+                      {"{UnsubscribeLink}"}
+                    </p>
+                    <p className="leading-relaxed">
+                      Write or paste full HTML emails here — we’ll generate a plain-text fallback automatically and keep your preview in sync.
+                    </p>
+                  </div>
                 </div>
               </TabsContent>
 
-              <TabsContent value="audience" className="flex-1 flex flex-col space-y-4 min-h-0 overflow-y-auto">
-                <div>
-                  <Label className="text-base font-medium">Customer Segments</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Choose which customer segment to target with this campaign.
-                  </p>
+              <TabsContent value="preview" className="flex-1 flex flex-col space-y-3 min-h-0">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium">Campaign Preview</Label>
+                  <span className="text-xs text-muted-foreground">
+                    Estimated audience: {estimatedRecipients.toLocaleString()} recipients
+                  </span>
                 </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {customerSegments.map((segment) => (
-                    <Card
-                      key={segment.id}
-                      className={`cursor-pointer transition-colors ${
-                        formData.targetAudience === segment.id
-                          ? "ring-2 ring-primary bg-primary/5"
-                          : "hover:bg-muted/50"
-                      }`}
-                      onClick={() => setFormData((prev) => ({ ...prev, targetAudience: segment.id }))}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <div
-                              className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${
-                                formData.targetAudience === segment.id
-                                  ? "bg-primary border-primary"
-                                  : "border-muted-foreground"
-                              }`}
-                            />
-                            <div className="min-w-0">
-                              <h3 className="font-medium text-sm">{segment.name}</h3>
-                              <p className="text-xs text-muted-foreground">
-                                {segment.count.toLocaleString()} customers
-                              </p>
-                            </div>
-                          </div>
-                          <Users className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-
-                <Card className="bg-muted/30">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-medium text-sm">Selected Audience</h3>
-                        <p className="text-xs text-muted-foreground">
-                          {selectedSegment?.name} - {estimatedRecipients.toLocaleString()} recipients
-                        </p>
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        {((estimatedRecipients / 2847) * 100).toFixed(1)}% of total
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="preview" className="flex-1 flex flex-col space-y-2 min-h-0">
-                <Label className="text-sm">Campaign Preview</Label>
-                <Card className="flex-1 flex flex-col overflow-hidden min-h-[300px] md:min-h-[500px]">
+                <Card className="flex-1 flex flex-col overflow-hidden min-h-[320px] md:min-h-[520px]">
                   <CardHeader className="pb-3 flex-shrink-0">
-                    <div className="space-y-3">
-                      <div className="space-y-1">
-                        <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wide">
-                          Campaign Name
-                        </Label>
-                        <div className="border border-secondary rounded-md bg-muted/40 px-3 py-2">
-                          <CardTitle className="text-sm md:text-base m-0">{formData.name || "Campaign Name"}</CardTitle>
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wide">
-                          Email Subject
-                        </Label>
-                        <div className="border border-secondary rounded-md bg-muted/40 px-3 py-2">
-                          <CardTitle className="text-sm m-0">{formData.subject || "Email Subject"}</CardTitle>
-                        </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wide">
+                        Email Subject
+                      </Label>
+                      <div className="border border-secondary rounded-md bg-muted/40 px-3 py-2">
+                        <CardTitle className="text-sm md:text-base m-0">
+                          {formData.subject || "Email Subject"}
+                        </CardTitle>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent className="p-0 flex-1 overflow-hidden">
-                    <div className="h-full overflow-y-auto p-6 bg-muted/20">
-                      <div className="max-w-[600px] mx-auto bg-white p-6 rounded-md shadow-sm">
-                        <div className="whitespace-pre-wrap text-sm">
-                          {formData.content || "Email content will appear here..."}
-                        </div>
-                      </div>
-                    </div>
+                    <iframe
+                      title="Email Preview"
+                      srcDoc={emailPreviewSrcDoc}
+                      className="w-full h-full border-0"
+                      sandbox="allow-same-origin allow-scripts"
+                    />
                   </CardContent>
                 </Card>
               </TabsContent>

@@ -20,8 +20,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
-import { Upload, X, Plus } from "lucide-react"
+import { Upload, X, Plus, Search, Globe } from "lucide-react"
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
 
 interface Product {
@@ -48,6 +49,10 @@ interface Product {
   netProfit?: number
   displayedDiscountRate?: number
   averageRating?: number
+  promotionalTitle?: string
+  isActive?: boolean
+  allowRepeatPurchase?: boolean
+  preventDiscount?: boolean
 }
 
 interface ProductDialogProps {
@@ -103,6 +108,10 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
     averageRating: "",
     // Stock management
     unlimitedStock: false,
+    promotionalTitle: "",
+    isActive: true,
+    allowRepeatPurchase: true,
+    preventDiscount: false,
   })
 
   const productStatsData = [
@@ -185,6 +194,10 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
         displayedDiscountRate: product.displayedDiscountRate != null ? product.displayedDiscountRate.toString() : "",
         averageRating: product.averageRating != null ? product.averageRating.toString() : "",
         unlimitedStock: product.stock === null,
+        promotionalTitle: product.promotionalTitle ?? "",
+        isActive: product.isActive ?? true,
+        allowRepeatPurchase: product.allowRepeatPurchase ?? true,
+        preventDiscount: product.preventDiscount ?? false,
       })
     } else {
       setFormData({
@@ -223,6 +236,10 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
         displayedDiscountRate: "",
         averageRating: "",
         unlimitedStock: false,
+        promotionalTitle: "",
+        isActive: true,
+        allowRepeatPurchase: true,
+        preventDiscount: false,
       })
     }
   }, [product])
@@ -327,6 +344,60 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
         return []
     }
   }
+
+  const slugify = (value: string) =>
+    value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)+/g, "")
+
+  const getSEOPreview = () => {
+    const titleSource = formData.metaTitle?.trim() || formData.name || "Product Title"
+    const descriptionSource =
+      formData.metaDescription?.trim() ||
+      formData.description?.trim() ||
+      "Write a compelling description to improve how this product appears in search results."
+
+    const safeTitle = titleSource.length > 70 ? `${titleSource.slice(0, 67).trim()}...` : titleSource
+    const safeDescription =
+      descriptionSource.length > 160 ? `${descriptionSource.slice(0, 157).trim()}...` : descriptionSource
+
+    const generatedSlug = slugify(formData.name || titleSource)
+    const url = `https://yourstore.com/products/${generatedSlug || "product"}`
+
+    return {
+      title: safeTitle,
+      description: safeDescription,
+      url,
+    }
+  }
+
+  const parseNumericInput = (value: string) => {
+    const parsed = Number.parseFloat(value)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+
+  const basePriceNumber = parseNumericInput(formData.basePrice)
+  const salePriceNumber = parseNumericInput(formData.salePrice)
+  const discountValueNumber = parseNumericInput(formData.discountValue)
+  const priceReference = salePriceNumber || basePriceNumber
+
+  let discountPercent = 0
+  let discountAmount = 0
+
+  if (formData.discountType === "percentage") {
+    discountPercent = discountValueNumber
+    discountAmount = priceReference * (discountPercent / 100)
+  } else {
+    discountAmount = discountValueNumber
+    if (priceReference > 0) {
+      discountPercent = (discountAmount / priceReference) * 100
+    }
+  }
+
+  const discountPercentDisplay = `${Number.isFinite(discountPercent) ? discountPercent.toFixed(1) : "0.0"}%`
+  const discountAmountDisplay = `$${Number.isFinite(discountAmount) ? discountAmount.toFixed(2) : "0.00"}`
 
   const methodsWithImplicitStockLimits = new Set(["code"])
   const supportsUnlimitedStock = productType === "digital" || productType === "digital-card"
@@ -633,6 +704,69 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                         </Select>
                       </div>
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="promotional-title">Promo Headline</Label>
+                      <Input
+                        id="promotional-title"
+                        value={formData.promotionalTitle}
+                        maxLength={15}
+                        onChange={(e) => setFormData({ ...formData, promotionalTitle: e.target.value })}
+                        placeholder="Write a short promotional headline"
+                      />
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        This short headline appears on the product card in the store. Maximum of 15 characters.
+                      </p>
+                    </div>
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <div className="flex items-center justify-between gap-3 rounded-md border border-dashed border-muted-foreground/30 p-3">
+                        <div className="space-y-1">
+                          <Label className="text-sm font-medium">Show Product in Store</Label>
+                          <p className="text-xs text-muted-foreground">Make this product visible to customers.</p>
+                        </div>
+                        <Switch
+                          checked={formData.isActive}
+                          onCheckedChange={(checked) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              isActive: Boolean(checked),
+                            }))
+                          }
+                          aria-label="Toggle product availability"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between gap-3 rounded-md border border-dashed border-muted-foreground/30 p-3">
+                        <div className="space-y-1">
+                          <Label className="text-sm font-medium">Allow Repeat Purchase</Label>
+                          <p className="text-xs text-muted-foreground">Let customers buy this item multiple times.</p>
+                        </div>
+                        <Switch
+                          checked={formData.allowRepeatPurchase}
+                          onCheckedChange={(checked) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              allowRepeatPurchase: Boolean(checked),
+                            }))
+                          }
+                          aria-label="Toggle repeat purchases"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between gap-3 rounded-md border border-dashed border-muted-foreground/30 p-3">
+                        <div className="space-y-1">
+                          <Label className="text-sm font-medium">Disable Discounts</Label>
+                          <p className="text-xs text-muted-foreground">Block coupons and automatic promotions.</p>
+                        </div>
+                        <Switch
+                          checked={formData.preventDiscount}
+                          onCheckedChange={(checked) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              preventDiscount: Boolean(checked),
+                            }))
+                          }
+                          aria-label="Toggle discount prevention"
+                        />
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -885,6 +1019,28 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                     onChange={(e) => setFormData({ ...formData, keywords: e.target.value })}
                     placeholder="Comma-separated keywords"
                   />
+                </div>
+
+                <div className="space-y-3 mt-6">
+                  <div className="flex items-center gap-2">
+                    <Search className="h-4 w-4 text-muted-foreground" />
+                    <Label className="text-sm font-medium">SEO Preview</Label>
+                  </div>
+                  <div className="border rounded-lg p-4 bg-muted/20 space-y-2">
+                    <div className="flex items-start gap-2">
+                      <Globe className="h-4 w-4 text-blue-600 mt-1 shrink-0" />
+                      <div className="space-y-1 flex-1 min-w-0">
+                        <div className="text-blue-600 text-sm font-medium hover:underline cursor-pointer truncate">
+                          {getSEOPreview().title}
+                        </div>
+                        <div className="text-green-700 text-xs truncate">{getSEOPreview().url}</div>
+                        <div className="text-gray-600 text-sm leading-relaxed">{getSEOPreview().description}</div>
+                      </div>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2 pt-2 border-t">
+                      This is how your category will appear in Google search results
+                    </div>
+                  </div>
                 </div>
               </TabsContent>
 

@@ -10,21 +10,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   Mail,
-  Send,
   Calendar,
   Users,
   FileText,
@@ -32,8 +21,6 @@ import {
   Plus,
   Edit,
   Eye,
-  Paperclip,
-  Clock,
   Download,
   RefreshCw,
 } from "lucide-react"
@@ -254,15 +241,6 @@ const emailLogs = [
   },
 ]
 
-// Mock data for customers (for recipient selection)
-const customers = [
-  { id: 1, name: "John Doe", email: "john@example.com", segment: "VIP" },
-  { id: 2, name: "Sarah Wilson", email: "sarah@example.com", segment: "Regular" },
-  { id: 3, name: "Mike Johnson", email: "mike@example.com", segment: "New" },
-  { id: 4, name: "Emma Davis", email: "emma@example.com", segment: "VIP" },
-  { id: 5, name: "Alex Brown", email: "alex@example.com", segment: "Regular" },
-]
-
 function getStatusBadge(status: string) {
   switch (status) {
     case "sent":
@@ -292,62 +270,15 @@ function getTypeBadge(type: string) {
 }
 
 export default function EmailsPage() {
-  const [isComposeOpen, setIsComposeOpen] = useState(false)
   const [isTemplateEditorOpen, setIsTemplateEditorOpen] = useState(false)
   const [isCampaignEditorOpen, setIsCampaignEditorOpen] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null)
   const [selectedCampaign, setSelectedCampaign] = useState<any>(null)
-  const [selectedRecipients, setSelectedRecipients] = useState("single")
-  const [sendOption, setSendOption] = useState("now")
-  const [selectedCustomers, setSelectedCustomers] = useState<number[]>([])
-  const [emailSubject, setEmailSubject] = useState("")
-  const [emailContent, setEmailContent] = useState("")
-  const [scheduleDate, setScheduleDate] = useState("")
-  const [attachments, setAttachments] = useState<File[]>([])
 
   const [logTypeFilter, setLogTypeFilter] = useState("all")
   const [logStatusFilter, setLogStatusFilter] = useState("all-status")
   const [logSearchTerm, setLogSearchTerm] = useState("")
   const [selectedLogEntries, setSelectedLogEntries] = useState<number[]>([])
-
-  const handleCustomerSelection = (customerId: number, checked: boolean) => {
-    if (checked) {
-      setSelectedCustomers((prev) => [...prev, customerId])
-    } else {
-      setSelectedCustomers((prev) => prev.filter((id) => id !== customerId))
-    }
-  }
-
-  const handleSendEmail = () => {
-    // Handle email sending logic here
-    console.log("Sending email:", {
-      recipients: selectedRecipients,
-      selectedCustomers,
-      subject: emailSubject,
-      content: emailContent,
-      sendOption,
-      scheduleDate,
-      attachments,
-    })
-    setIsComposeOpen(false)
-    // Reset form
-    setSelectedRecipients("single")
-    setSelectedCustomers([])
-    setEmailSubject("")
-    setEmailContent("")
-    setSendOption("now")
-    setScheduleDate("")
-    setAttachments([])
-  }
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || [])
-    setAttachments((prev) => [...prev, ...files])
-  }
-
-  const removeAttachment = (index: number) => {
-    setAttachments((prev) => prev.filter((_, i) => i !== index))
-  }
 
   const filteredEmailLogs = emailLogs.filter((log) => {
     const matchesType = logTypeFilter === "all" || log.type === logTypeFilter
@@ -385,193 +316,11 @@ export default function EmailsPage() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Email Management</h1>
-          <p className="text-muted-foreground mt-1 md:mt-2">
-            Manage email templates, campaigns, and track all email communications.
-          </p>
-        </div>
-        <Dialog open={isComposeOpen} onOpenChange={setIsComposeOpen}>
-          <DialogTrigger asChild>
-            <Button className="text-white bg-emerald-600 hover:bg-emerald-700 w-full md:w-auto">
-              <Plus className="mr-2 h-4 w-4" />
-              <span className="hidden sm:inline">Compose Email</span>
-              <span className="sm:hidden">Compose</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-[95vw] md:max-w-4xl max-h-[90vh] overflow-hidden">
-            <DialogHeader>
-              <DialogTitle className="text-lg md:text-xl">Compose New Email</DialogTitle>
-              <DialogDescription className="text-sm">Create and send a new email to your customers.</DialogDescription>
-            </DialogHeader>
-            <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 md:gap-6 h-[500px] md:h-[600px]">
-              {/* Left Panel - Recipients & Settings */}
-              <div className="space-y-4 overflow-y-auto lg:col-span-1">
-                <div className="space-y-2">
-                  <Label htmlFor="recipients">Recipients</Label>
-                  <Select value={selectedRecipients} onValueChange={setSelectedRecipients}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select recipients" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="single">Single Customer</SelectItem>
-                      <SelectItem value="multiple">Multiple Customers</SelectItem>
-                      <SelectItem value="all">All Customers</SelectItem>
-                      <SelectItem value="segment">Customer Segment</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {selectedRecipients === "single" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Customer Email</Label>
-                    <Input id="email" placeholder="customer@example.com" />
-                  </div>
-                )}
-
-                {selectedRecipients === "multiple" && (
-                  <div className="space-y-2">
-                    <Label>Select Customers</Label>
-                    <div className="border rounded-md p-3 max-h-32 md:max-h-48 overflow-y-auto space-y-2">
-                      {customers.map((customer) => (
-                        <div key={customer.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`customer-${customer.id}`}
-                            checked={selectedCustomers.includes(customer.id)}
-                            onCheckedChange={(checked) => handleCustomerSelection(customer.id, checked as boolean)}
-                          />
-                          <Label htmlFor={`customer-${customer.id}`} className="flex-1 text-sm">
-                            <div className="font-medium">{customer.name}</div>
-                            <div className="text-xs text-muted-foreground">{customer.email}</div>
-                          </Label>
-                          <Badge variant="outline" className="text-xs">
-                            {customer.segment}
-                          </Badge>
-                        </div>
-                      ))}
-                    </div>
-                    <p className="text-xs text-muted-foreground">{selectedCustomers.length} customer(s) selected</p>
-                  </div>
-                )}
-
-                {selectedRecipients === "segment" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="segment">Customer Segment</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select segment" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="vip">VIP Customers</SelectItem>
-                        <SelectItem value="regular">Regular Customers</SelectItem>
-                        <SelectItem value="new">New Customers</SelectItem>
-                        <SelectItem value="inactive">Inactive Customers</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <Label htmlFor="send-option">Send Option</Label>
-                  <Select value={sendOption} onValueChange={setSendOption}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select send option" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="now">Send Now</SelectItem>
-                      <SelectItem value="schedule">Schedule Later</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {sendOption === "schedule" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="schedule-date">Schedule Date & Time</Label>
-                    <Input
-                      id="schedule-date"
-                      type="datetime-local"
-                      value={scheduleDate}
-                      onChange={(e) => setScheduleDate(e.target.value)}
-                    />
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <Label htmlFor="attachments">Attachments</Label>
-                  <div className="space-y-2">
-                    <Input id="attachments" type="file" multiple onChange={handleFileUpload} className="hidden" />
-                    <Button variant="outline" size="sm" onClick={() => document.getElementById("attachments")?.click()}>
-                      <Paperclip className="mr-2 h-4 w-4" />
-                      Add Files
-                    </Button>
-                    {attachments.length > 0 && (
-                      <div className="space-y-1">
-                        {attachments.map((file, index) => (
-                          <div key={index} className="flex items-center justify-between text-xs p-2 bg-muted rounded">
-                            <span className="truncate">{file.name}</span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeAttachment(index)}
-                              className="h-4 w-4 p-0"
-                            >
-                              ×
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Panel - Email Content */}
-              <div className="lg:col-span-2 space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="subject">Subject Line</Label>
-                  <Input
-                    id="subject"
-                    placeholder="Enter email subject"
-                    value={emailSubject}
-                    onChange={(e) => setEmailSubject(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="message">Message</Label>
-                  <Textarea
-                    id="message"
-                    placeholder="Write your email message here..."
-                    className="min-h-[200px] md:min-h-[400px]"
-                    value={emailContent}
-                    onChange={(e) => setEmailContent(e.target.value)}
-                  />
-                </div>
-
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock className="h-4 w-4" />
-                  <span>
-                    {sendOption === "now"
-                      ? "Email will be sent immediately"
-                      : scheduleDate
-                        ? `Scheduled for ${new Date(scheduleDate).toLocaleString()}`
-                        : "Select a date and time to schedule"}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <DialogFooter className="flex-col sm:flex-row gap-2">
-              <Button variant="outline" onClick={() => setIsComposeOpen(false)} className="w-full sm:w-auto">
-                Cancel
-              </Button>
-              <Button onClick={handleSendEmail} className="w-full sm:w-auto">
-                <Send className="mr-2 h-4 w-4" />
-                {sendOption === "now" ? "Send Now" : "Schedule Email"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+      <div className="flex flex-col">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Email Management</h1>
+        <p className="text-muted-foreground mt-1 md:mt-2">
+          Manage email templates, campaigns, and track all email communications.
+        </p>
       </div>
 
       <Tabs defaultValue="templates" className="space-y-4 md:space-y-6">
