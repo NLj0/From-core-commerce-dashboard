@@ -1,0 +1,823 @@
+{
+  "common": {
+    "loading": "جارٍ التحميل...",
+    "search": "بحث",
+    "filter": "تصفية",
+    "export": "تصدير",
+    "import": "استيراد",
+    "add": "إضافة",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "close": "إغلاق",
+    "actions": "الإجراءات",
+    "status": "الحالة",
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "all": "الكل",
+    "none": "لا شيء",
+    "apply": "تطبيق",
+    "reset": "إعادة تعيين",
+    "view": "عرض",
+    "download": "تحميل",
+    "upload": "رفع",
+    "submit": "إرسال",
+    "back": "رجوع",
+    "next": "التالي",
+    "previous": "السابق",
+    "name": "الاسم",
+    "description": "الوصف",
+    "date": "التاريخ",
+    "price": "السعر",
+    "total": "المجموع",
+    "subtotal": "المجموع الفرعي",
+    "yes": "نعم",
+    "no": "لا"
+  },
+  "navigation": {
+    "dashboard": "لوحة التحكم",
+    "products": "المنتجات",
+    "categories": "الفئات",
+    "orders": "الطلبات",
+    "customers": "العملاء",
+    "reviews": "التقييمات",
+    "coupons": "القسائم",
+      "product": "المنتج",
+    "emails": "التسويق عبر البريد الإلكتروني",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج"
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "subtitle": "راقب أداء متجرك وأدِر عملك بكفاءة",
+    "overview": "نظرة عامة",
+    "pageViews": "مشاهدات الصفحة",
+    "totalRevenue": "إجمالي الإيرادات",
+    "totalOrders": "إجمالي الطلبات",
+    "totalCustomers": "إجمالي العملاء",
+    "averageOrderValue": "متوسط قيمة الطلب",
+    "recentOrders": "الطلبات الأخيرة",
+    "topProducts": "المنتجات الأكثر مبيعاً",
+  "salesOverview": "نظرة عامة على المبيعات",
+  "last30Days": "منذ الشهر الماضي",
+  "salesCount": "{count} مبيعات",
+    "last7Days": "آخر ٧ أيام",
+      "productManagement": "إدارة المنتجات",
+    "thisMonth": "هذا الشهر",
+    "lastMonth": "الشهر الماضي",
+      "allStatuses": "كل الحالات",
+      "allCategories": "جميع الفئات",
+    "viewAll": "عرض الكل"
+  },
+  "products": {
+    "title": "المنتجات",
+    "subtitle": "إدارة كتالوج المنتجات الخاص بك",
+    "addProduct": "إضافة منتج",
+    "editProduct": "تعديل المنتج",
+    "deleteProduct": "حذف المنتج",
+    "product": "المنتج",
+    "productName": "اسم المنتج",
+    "productDescription": "وصف المنتج",
+    "category": "الفئة",
+    "price": "السعر",
+    "salePrice": "سعر التخفيض",
+    "stock": "المخزون",
+    "sku": "رمز المنتج",
+    "inStock": "متوفر",
+    "outOfStock": "غير متوفر",
+    "lowStock": "مخزون منخفض",
+    "published": "منشور",
+    "draft": "مسودة",
+    "featured": "مميز",
+    "images": "الصور",
+    "uploadImages": "رفع الصور",
+    "totalProducts": "إجمالي المنتجات",
+    "publishedProducts": "المنشورة",
+    "draftProducts": "المسودات",
+    "searchProducts": "ابحث في المنتجات...",
+    "productManagement": "إدارة المنتجات",
+    "filterByCategory": "تصفية حسب الفئة",
+    "filterByStatus": "تصفية حسب الحالة",
+    "allStatuses": "كل الحالات",
+    "allCategories": "جميع الفئات",
+    "sortBy": "ترتيب حسب",
+    "newest": "الأحدث",
+    "oldest": "الأقدم",
+    "priceHighToLow": "السعر: من الأعلى إلى الأدنى",
+    "priceLowToHigh": "السعر: من الأدنى إلى الأعلى",
+    "nameAZ": "الاسم: أ-ي",
+    "nameZA": "الاسم: ي-أ",
+    "showingCount": "عرض {current} من {total} منتج",
+    "menuDigitalTitle": "منتج رقمي",
+    "menuDigitalDescription": "ملفات، دورات، برامج",
+    "menuDigitalCardTitle": "بطاقة رقمية",
+    "menuDigitalCardDescription": "قسائم، رموز شحن",
+    "menuServiceTitle": "خدمة عند الطلب",
+    "menuServiceDescription": "تصميم، استشارات، كتابة",
+    "menuBundleTitle": "حزم منتجات",
+    "menuBundleDescription": "عروض متعددة المنتجات",
+    "categoryOptions": {
+      "all": "جميع الفئات",
+      "Electronics": "إلكترونيات",
+      "Accessories": "إكسسوارات"
+    }
+  },
+  "categories": {
+    "title": "الفئات",
+    "subtitle": "نظم منتجاتك في فئات",
+    "addCategory": "إضافة فئة",
+    "editCategory": "تعديل الفئة",
+    "deleteCategory": "حذف الفئة",
+    "category": "الفئة",
+    "categoryName": "اسم الفئة",
+    "categoryDescription": "وصف الفئة",
+    "parentCategory": "الفئة الرئيسية",
+    "noParent": "لا يوجد (مستوى علوي)",
+    "totalCategories": "إجمالي الفئات",
+    "activeCategories": "نشطة",
+    "activeCategoriesLabel": "الفئات النشطة",
+    "inactiveCategories": "غير نشطة",
+    "productsCount": "المنتجات",
+    "totalProductsLabel": "إجمالي المنتجات",
+    "productsLabel": "منتجات",
+    "searchCategories": "ابحث في الفئات...",
+    "categoryManagement": "إدارة الفئات",
+    "allStatuses": "كل الحالات",
+    "sortBy": "ترتيب حسب",
+    "sortOptions": {
+      "name": "الاسم",
+      "status": "الحالة",
+      "products": "المنتجات",
+      "date": "التاريخ"
+    },
+    "showingCount": "عرض {current} من {total} فئة",
+    "categoryColumn": "الفئة",
+    "descriptionColumn": "الوصف",
+    "productsColumn": "المنتجات",
+    "statusColumn": "الحالة",
+    "createdColumn": "تاريخ الإنشاء",
+    "createdOn": "تم الإنشاء في {date}",
+    "slug": "الرابط المختصر",
+    "icon": "الأيقونة",
+    "image": "الصورة",
+    "uploadImage": "رفع صورة",
+    "deleteConfirm": "هل أنت متأكد من حذف هذه الفئة؟ لا يمكن التراجع عن هذا الإجراء."
+  },
+  "orders": {
+    "title": "الطلبات",
+    "subtitle": "إدارة طلبات العملاء",
+    "orderNumber": "رقم الطلب #",
+    "orderDate": "تاريخ الطلب",
+    "customer": "العميل",
+    "items": "العناصر",
+    "total": "المجموع",
+    "status": "الحالة",
+    "pending": "قيد الانتظار",
+    "processing": "قيد المعالجة",
+    "shipped": "تم الشحن",
+    "delivered": "تم التوصيل",
+  "cancelled": "ملغي",
+  "refunded": "مسترد",
+  "completed": "مكتمل",
+    "viewOrder": "عرض الطلب",
+    "orderDetails": "تفاصيل الطلب",
+    "shippingAddress": "عنوان الشحن",
+    "billingAddress": "عنوان الفواتير",
+    "paymentMethod": "طريقة الدفع",
+    "paymentStatus": "حالة الدفع",
+    "paid": "مدفوع",
+    "unpaid": "غير مدفوع",
+    "partiallyPaid": "مدفوع جزئياً",
+    "totalOrders": "إجمالي الطلبات",
+    "pendingOrders": "قيد الانتظار",
+    "completedOrders": "المكتملة",
+  "revenue": "الإيرادات",
+  "allStatuses": "كل الحالات",
+  "orderManagement": "إدارة الطلبات",
+  "showingCount": "عرض {current} من {total} طلب",
+  "products": "المنتجات",
+  "moreProducts": "+{count} منتجات إضافية",
+  "additionalProducts": "+{count} إضافية",
+  "markProcessing": "تعيين كقيد المعالجة",
+  "markDelivered": "تعيين كمسلَّم",
+  "markCompleted": "تعيين كمكتمل",
+    "searchOrders": "البحث عن الطلبات...",
+    "filterByStatus": "تصفية حسب الحالة",
+    "filterByDate": "تصفية حسب التاريخ",
+    "updateStatus": "تحديث الحالة",
+    "printInvoice": "طباعة الفاتورة",
+    "trackingNumber": "رقم التتبع"
+  },
+  "customers": {
+    "title": "العملاء",
+    "subtitle": "إدارة قاعدة العملاء الخاصة بك",
+    "addCustomer": "إضافة عميل",
+    "editCustomer": "تعديل العميل",
+    "deleteCustomer": "حذف العميل",
+    "customer": "العميل",
+    "customerName": "اسم العميل",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "address": "العنوان",
+    "city": "المدينة",
+    "state": "الولاية",
+    "zipCode": "الرمز البريدي",
+    "country": "البلد",
+    "totalCustomers": "إجمالي العملاء",
+    "activeCustomersLabel": "العملاء النشطون",
+    "newCustomers": "الجدد هذا الشهر",
+    "totalRevenue": "إجمالي الإيرادات",
+    "returningCustomers": "العائدون",
+    "searchCustomers": "ابحث في العملاء...",
+    "customerManagement": "إدارة العملاء",
+    "allStatuses": "كل الحالات",
+    "statusOptions": {
+      "vip": "عميل مميز",
+      "active": "نشط",
+      "new": "جديد",
+      "inactive": "غير نشط"
+    },
+    "showingCount": "عرض {current} من {total} عميل",
+    "customerColumn": "العميل",
+    "contactColumn": "بيانات التواصل",
+    "ordersColumn": "الطلبات",
+    "totalSpentColumn": "إجمالي الإنفاق",
+    "statusColumn": "الحالة",
+    "lastActivityColumn": "آخر نشاط",
+    "ordersLabel": "طلبات",
+    "lastActivityLabel": "آخر نشاط: {date}",
+    "viewProfile": "عرض الملف",
+    "sendEmail": "إرسال بريد",
+    "callCustomer": "الاتصال بالعميل",
+    "customerDetails": "تفاصيل العميل",
+    "orderHistory": "سجل الطلبات",
+    "totalSpent": "إجمالي الإنفاق",
+    "averageOrderValue": "متوسط قيمة الطلب",
+    "lastOrder": "آخر طلب",
+    "dateJoined": "تاريخ الانضمام",
+    "importCustomers": "استيراد العملاء",
+    "exportCustomers": "تصدير العملاء"
+  },
+  "reviews": {
+    "title": "التقييمات",
+    "subtitle": "إدارة تقييمات العملاء وآرائهم حول منتجاتك.",
+    "stats": {
+      "total": "إجمالي التقييمات",
+      "average": "متوسط التقييم",
+      "pending": "التقييمات المعلقة",
+      "flagged": "التقييمات المُبلَّغ عنها"
+    },
+    "management": "إدارة التقييمات",
+    "searchPlaceholder": "ابحث في التقييمات...",
+    "statusFilter": "الحالة",
+    "ratingFilter": "التقييم",
+    "statusOptions": {
+      "all": "كل الحالات",
+      "published": "منشور",
+      "pending": "معلق",
+      "flagged": "مُبلَّغ عنه"
+    },
+    "ratingOptions": {
+      "all": "كل التقييمات",
+      "5": "٥ نجوم",
+      "4": "٤ نجوم",
+      "3": "٣ نجوم",
+      "2": "نجمتان",
+      "1": "نجمة واحدة"
+    },
+    "showingCount": "عرض {current} من {total} تقييم",
+    "verified": "موثَّق",
+    "helpful": "{count} وجدوه مفيدًا",
+    "adminResponse": "رد الإدارة",
+    "table": {
+      "customer": "العميل",
+      "product": "المنتج",
+      "rating": "التقييم",
+      "review": "التقييم",
+      "date": "التاريخ",
+      "status": "الحالة",
+      "actions": "إجراءات"
+    },
+    "actions": {
+      "respond": "الرد",
+      "editResponse": "تعديل الرد",
+      "publish": "نشر",
+      "flag": "الإبلاغ عن التقييم",
+      "delete": "حذف"
+    },
+    "responseDialog": {
+      "addTitle": "الرد على التقييم",
+      "editTitle": "تعديل الرد",
+      "description": "رد على هذا التقييم لتُظهر اهتمامك بآراء العملاء.",
+      "currentResponse": "الرد الحالي:",
+      "byAuthorOn": "بواسطة {author} في {date}",
+      "fieldLabel": "ردك",
+      "placeholder": "اكتب ردًا مهنيًا على هذا التقييم...",
+      "helper": "كن مهنيًا ومتعاونًا، سيكون هذا الرد مرئيًا لجميع العملاء.",
+      "cancel": "إلغاء",
+      "post": "نشر الرد",
+      "update": "تحديث الرد"
+    }
+  },
+  "coupons": {
+    "title": "القسائم والخصومات",
+    "subtitle": "إدارة أكواد الخصم والعروض الترويجية",
+    "actions": {
+      "create": "إنشاء قسيمة",
+      "edit": "تعديل",
+      "delete": "حذف"
+    },
+    "stats": {
+      "total": "إجمالي القسائم",
+      "totalDescription": "{count} قسائم نشطة",
+      "usage": "إجمالي الاستخدام",
+      "usageDescription": "عبر جميع القسائم",
+      "savings": "إجمالي التوفير",
+      "savingsDescription": "توفير العملاء",
+      "activeRate": "معدل النشاط",
+      "activeRateDescription": "من إجمالي القسائم"
+    },
+    "filters": {
+      "searchPlaceholder": "البحث عن القسائم...",
+      "statusPlaceholder": "تصفية حسب الحالة",
+      "statusOptions": {
+        "all": "جميع الحالات",
+        "active": "نشطة",
+        "expired": "منتهية",
+        "disabled": "معطلة"
+      }
+    },
+    "showingCount": "عرض {current} من {total} قسيمة",
+    "table": {
+      "code": "رمز القسيمة",
+      "discount": "الخصم",
+      "validity": "مدة الصلاحية",
+      "usage": "الاستخدام",
+      "appliesTo": "ينطبق على",
+      "status": "الحالة",
+      "actions": "إجراءات",
+      "min": "الحد الأدنى:",
+      "used": "مستخدمة",
+      "allProducts": "جميع المنتجات",
+      "selectedProducts": "منتجات محددة",
+      "more": "+{count} إضافية",
+      "until": "حتى {date}"
+    },
+    "status": {
+      "active": "نشط",
+      "expired": "منتهي",
+      "disabled": "معطل"
+    },
+    "mobile": {
+      "appliesTo": "ينطبق على:"
+    },
+    "discount": {
+      "percentage": "{value}%",
+      "fixed": "{value} {currency}"
+    },
+    "dialog": {
+      "title": {
+        "create": "إنشاء قسيمة جديدة",
+        "edit": "تعديل القسيمة"
+      },
+      "description": {
+        "create": "أنشئ قسيمة خصم جديدة لعملائك",
+        "edit": "حدّث تفاصيل القسيمة وإعداداتها"
+      },
+      "sections": {
+        "basic": "المعلومات الأساسية",
+        "validity": "فترة الصلاحية",
+        "usage": "حدود الاستخدام",
+        "apply": "تطبيق القسيمة على"
+      },
+      "labels": {
+        "code": "رمز القسيمة",
+        "discountType": "نوع الخصم",
+        "discountValue": "قيمة الخصم",
+        "status": "الحالة",
+        "statusActive": "نشط",
+        "statusDisabled": "معطل",
+        "description": "الوصف (اختياري)",
+        "startDate": "تاريخ البدء (اختياري)",
+        "endDate": "تاريخ الانتهاء (اختياري)",
+        "usageLimitToggle": "تعيين حد أقصى للاستخدام",
+        "usageLimit": "الحد الأقصى للاستخدام",
+        "minOrderToggle": "تعيين حد أدنى للطلب",
+        "minOrder": "الحد الأدنى للطلب ($)",
+        "appliesTo": "تطبيق القسيمة على",
+        "selectProducts": "اختيار المنتجات",
+        "selectedProducts": "المنتجات المحددة ({count}):",
+        "searchProducts": "البحث عن المنتجات...",
+        "categoryFilter": "تصفية حسب الفئة",
+        "availableProducts": "المنتجات المتاحة ({count}):"
+      },
+      "placeholders": {
+        "code": "مثال: WELCOME20",
+        "discountValuePercentage": "20",
+        "discountValueFixed": "50",
+        "usageLimit": "100",
+        "minOrder": "50",
+        "description": "وصف مختصر لهذه القسيمة..."
+      },
+      "selectOptions": {
+        "percentage": "نسبة مئوية (%)",
+        "fixed": "مبلغ ثابت ($)",
+        "appliesTo": {
+          "all": "جميع المنتجات",
+          "selected": "منتجات محددة"
+        }
+      },
+      "bulk": {
+        "selectAll": "تحديد كل المعروض ({count})",
+        "deselectAll": "إلغاء تحديد المعروض ({count})",
+        "addAllCategory": "إضافة كل منتجات {category}"
+      },
+      "empty": {
+        "title": "لم يتم العثور على منتجات",
+        "subtitle": "جرّب تعديل البحث أو عوامل التصفية"
+      },
+      "buttons": {
+        "generate": "توليد",
+        "clearAll": "مسح الكل",
+        "add": "إضافة",
+        "cancel": "إلغاء",
+        "create": "إنشاء القسيمة",
+        "update": "تحديث القسيمة"
+      },
+      "validation": {
+        "codeRequired": "رمز القسيمة مطلوب",
+        "codeTooShort": "يجب أن يتكون رمز القسيمة من 3 أحرف على الأقل",
+        "discountValuePositive": "يجب أن تكون قيمة الخصم أكبر من 0",
+        "discountValueMaxPercentage": "لا يمكن أن يتجاوز الخصم نسبة 100%",
+        "usageLimitPositive": "يجب أن يكون حد الاستخدام أكبر من 0",
+        "minOrderNonNegative": "يجب ألا يقل الحد الأدنى للطلب عن 0",
+        "endDateAfterStart": "يجب أن يكون تاريخ الانتهاء بعد تاريخ البدء",
+        "selectedProductsRequired": "يرجى اختيار منتج واحد على الأقل"
+      }
+    },
+    "categories": {
+      "all": "جميع الفئات",
+      "electronics": "الإلكترونيات",
+      "clothing": "الملابس",
+      "home": "المنزل"
+    }
+  },
+  "emails": {
+    "title": "إدارة البريد الإلكتروني",
+    "subtitle": "إدارة قوالب البريد والحملات وتتبع جميع الاتصالات البريدية.",
+    "tabs": {
+      "templates": "القوالب",
+      "campaigns": "الحملات",
+      "logs": "سجل البريد",
+      "logsShort": "السجل",
+      "analytics": "التحليلات"
+    },
+    "templates": {
+      "title": "قوالب البريد الإلكتروني",
+      "searchPlaceholder": "ابحث في القوالب...",
+      "filter": {
+        "placeholder": "تصفية حسب النوع",
+        "options": {
+          "all": "جميع الأنواع",
+          "transactional": "معاملات",
+          "marketing": "تسويق"
+        }
+      },
+      "table": {
+        "name": "اسم القالب",
+        "type": "النوع",
+        "subject": "الموضوع",
+        "modified": "آخر تعديل",
+        "actions": "إجراءات"
+      },
+      "mobile": {
+        "modified": "آخر تعديل {date}"
+      }
+    },
+    "campaigns": {
+      "title": "حملات البريد الإلكتروني",
+      "create": "حملة جديدة",
+      "table": {
+        "name": "اسم الحملة",
+        "recipients": "المستلمون",
+        "status": "الحالة",
+        "date": "التاريخ",
+        "openRate": "معدل الفتح",
+        "clickRate": "معدل النقر",
+        "actions": "إجراءات"
+      },
+      "mobile": {
+        "recipients": "{count} مستلم",
+        "metrics": "{open} فتح • {click} نقر",
+        "date": "مجدولة لـ {date}",
+        "noDate": "غير مجدولة"
+      }
+    },
+    "logs": {
+      "title": "سجل البريد الإلكتروني",
+      "refresh": "تحديث",
+      "export": "تصدير ({count})",
+      "searchPlaceholder": "ابحث باستخدام المستلم أو الموضوع أو الاسم...",
+      "filters": {
+        "type": {
+          "placeholder": "تصفية حسب النوع",
+          "options": {
+            "all": "جميع الأنواع",
+            "transactional": "معاملات",
+            "marketing": "تسويق"
+          }
+        },
+        "status": {
+          "placeholder": "تصفية حسب الحالة",
+          "options": {
+            "all": "جميع الحالات",
+            "sent": "مرسلة",
+            "failed": "فاشلة"
+          }
+        }
+      },
+      "table": {
+        "recipient": "المستلم",
+        "subject": "الموضوع",
+        "type": "النوع",
+        "template": "القالب",
+        "status": "الحالة",
+        "sent": "الإرسال",
+        "engagement": "التفاعل"
+      },
+      "selected": "{count} محدد",
+      "showing": "عرض {current} من {total} سجل بريد",
+      "empty": "لم يتم العثور على سجلات بريد تطابق معاييرك.",
+      "pagination": {
+        "page": "الصفحة {current} من {total}"
+      },
+      "activity": {
+        "opened": "تم الفتح",
+        "clicked": "تم النقر",
+        "bounced": "مرتدة",
+        "unsubscribed": "ألغى الاشتراك",
+        "none": "لا يوجد نشاط"
+      }
+    },
+    "analytics": {
+      "cards": {
+        "sent": {
+          "title": "إجمالي الرسائل المرسلة",
+          "change": "{change} عن الشهر الماضي"
+        },
+        "openRate": {
+          "title": "متوسط معدل الفتح",
+          "change": "{change} عن الشهر الماضي"
+        },
+        "clickRate": {
+          "title": "معدل النقر",
+          "change": "{change} عن الشهر الماضي"
+        },
+        "failed": {
+          "title": "عمليات التسليم الفاشلة",
+          "change": "{change} عن الشهر الماضي"
+        }
+      },
+      "chart": {
+        "title": "أداء البريد الإلكتروني عبر الزمن",
+        "placeholder": "سيتم عرض مخطط تحليلات البريد هنا"
+      }
+    },
+    "status": {
+      "sent": "مرسلة",
+      "scheduled": "مجدولة",
+      "draft": "مسودة",
+      "failed": "فاشلة",
+      "active": "نشطة"
+    },
+    "types": {
+      "transactional": "معاملات",
+      "marketing": "تسويق"
+    },
+    "common": {
+      "noDate": "غير مجدولة",
+      "notAvailable": "غير متوفر",
+      "selected": "محدد",
+      "open": "فتح",
+      "click": "نقر"
+    }
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "subtitle": "إدارة إعدادات حسابك وتفضيلاتك.",
+    "tabs": {
+      "general": "عام",
+      "account": "الحساب",
+      "security": "الأمان",
+      "notifications": "الإشعارات"
+    },
+    "general": {
+      "site": {
+        "title": "إعدادات الموقع",
+        "description": "اضبط معلومات متجرك الأساسية وهوية العلامة التجارية.",
+        "fields": {
+          "name": {
+            "label": "اسم الموقع",
+            "placeholder": "اسم متجرك"
+          },
+          "contactEmail": {
+            "label": "البريد المخصص للتواصل",
+            "placeholder": "support@yourstore.com"
+          },
+          "description": {
+            "label": "وصف الموقع",
+            "placeholder": "وصف مختصر لمتجرك"
+          }
+        },
+        "logo": {
+          "label": "شعار الموقع",
+          "button": "رفع الشعار",
+          "helper": "ملفات PNG أو JPG حتى ٢ ميجابايت",
+          "alt": "شعار الموقع"
+        },
+        "favicon": {
+          "label": "الأيقونة المصغرة",
+          "button": "رفع الأيقونة المصغرة",
+          "helper": "ملفات ICO أو PNG ‎٣٢×٣٢ بكسل",
+          "alt": "الأيقونة المصغرة"
+        },
+        "save": "حفظ إعدادات الموقع"
+      },
+      "theme": {
+        "title": "تفضيلات المظهر",
+        "description": "اختر طريقة ظهور لوحة التحكم لك.",
+        "modeLabel": "وضع المظهر",
+        "placeholder": "اختر وضع المظهر",
+        "modes": {
+          "light": "فاتح",
+          "dark": "داكن",
+          "system": "النظام"
+        },
+        "current": "الوضع الحالي: {theme}"
+      },
+      "language": {
+        "title": "اللغة والمنطقة",
+        "description": "اضبط اللغة المفضلة والإعدادات الإقليمية.",
+        "languageLabel": "لغة العرض",
+        "languagePlaceholder": "اختر اللغة",
+        "languages": {
+          "english": "English",
+          "arabic": "العربية (Arabic)",
+          "spanish": "Español",
+          "french": "Français"
+        },
+        "timezoneLabel": "المنطقة الزمنية",
+        "timezonePlaceholder": "اختر المنطقة الزمنية",
+        "timezones": {
+          "utc-8": "توقيت المحيط الهادئ (UTC-8)",
+          "utc-5": "التوقيت الشرقي (UTC-5)",
+          "utc+0": "توقيت غرينتش (UTC+0)",
+          "utc+3": "توقيت السعودية (UTC+3)"
+        }
+      }
+    },
+    "account": {
+      "profile": {
+        "title": "معلومات الملف الشخصي",
+        "description": "حدّث معلوماتك الشخصية وصورة الملف.",
+        "changePhoto": "تغيير الصورة",
+        "photoHelper": "ملفات JPG أو PNG أو GIF بحد أقصى ٢ ميجابايت.",
+        "fields": {
+          "name": "الاسم الكامل",
+          "email": "البريد الإلكتروني",
+          "phone": "رقم الهاتف",
+          "role": "الدور"
+        },
+        "roleNote": "تواصل مع المسؤول لتغيير الدور",
+        "save": "حفظ التغييرات"
+      },
+      "password": {
+        "title": "كلمة المرور والأمان",
+        "description": "حدّث كلمة المرور للحفاظ على أمان حسابك.",
+        "fields": {
+          "current": "كلمة المرور الحالية",
+          "new": "كلمة المرور الجديدة",
+          "confirm": "تأكيد كلمة المرور الجديدة"
+        },
+        "helper": "يجب أن تكون كلمة المرور ٨ أحرف على الأقل وتتضمن حروفًا كبيرة وصغيرة وأرقامًا.",
+        "submit": "تحديث كلمة المرور"
+      }
+    },
+    "security": {
+      "payments": {
+        "title": "بوابات الدفع",
+        "description": "اضبط وأدِر خدمات معالجة المدفوعات لديك.",
+        "gatewayNames": {
+          "stripe": "سترايب",
+          "paypal": "باي بال",
+          "razorpay": "رازور باي"
+        },
+        "fields": {
+          "publicKey": "المفتاح العام",
+          "secretKey": "المفتاح السري",
+          "clientId": "معرّف العميل",
+          "clientSecret": "سر العميل",
+          "keyId": "معرّف المفتاح",
+          "keySecret": "سر المفتاح"
+        },
+        "placeholder": {
+          "key": "أدخل المفتاح...",
+          "secret": "أدخل السر..."
+        },
+        "lastTested": "آخر اختبار: {date}",
+        "neverTested": "لم يتم الاختبار",
+        "test": "اختبار الاتصال"
+      },
+      "settings": {
+        "title": "إعدادات الأمان",
+        "description": "أدِر إعدادات الأمان والخصوصية لحسابك.",
+        "twoFactor": {
+          "label": "المصادقة الثنائية",
+          "description": "أضف طبقة أمان إضافية"
+        },
+        "loginAlerts": {
+          "label": "تنبيهات تسجيل الدخول",
+          "description": "احصل على إشعارات بمحاولات تسجيل الدخول الجديدة"
+        },
+        "sessionTimeout": {
+          "label": "انتهاء الجلسة",
+          "options": {
+            "15": "١٥ دقيقة",
+            "30": "٣٠ دقيقة",
+            "60": "ساعة واحدة",
+            "240": "٤ ساعات",
+            "never": "أبدًا"
+          }
+        }
+      },
+      "actions": {
+        "title": "إجراءات الحساب",
+        "description": "أدِر بيانات حسابك وتفضيلاتك.",
+        "download": "تنزيل بيانات الحساب",
+        "export": "تصدير الإعدادات",
+        "delete": "حذف الحساب",
+        "warning": "هذا الإجراء لا يمكن التراجع عنه. سيتم حذف جميع بياناتك نهائيًا."
+      }
+    },
+    "notifications": {
+      "title": "تفضيلات الإشعارات",
+      "description": "اختر كيفية تلقي الإشعارات حول التحديثات المهمة.",
+      "channels": {
+        "email": {
+          "label": "إشعارات البريد الإلكتروني",
+          "description": "استقبل الإشعارات عبر البريد الإلكتروني"
+        },
+        "push": {
+          "label": "إشعارات المتصفح",
+          "description": "استقبل إشعارات فورية في المتصفح"
+        },
+        "sms": {
+          "label": "إشعارات الرسائل القصيرة",
+          "description": "استقبل التنبيهات المهمة عبر الرسائل القصيرة"
+        },
+        "marketing": {
+          "label": "الاتصالات التسويقية",
+          "description": "استقبل التحديثات حول الميزات الجديدة والنصائح"
+        }
+      }
+    },
+    "status": {
+      "connected": "متصل",
+      "disconnected": "غير متصل"
+    }
+  },
+  "validation": {
+    "required": "هذا الحقل مطلوب",
+    "email": "يرجى إدخال عنوان بريد إلكتروني صالح",
+    "minLength": "يجب أن يكون على الأقل {min} أحرف",
+    "maxLength": "يجب ألا يزيد عن {max} حرفاً",
+    "number": "يجب أن يكون رقماً صالحاً",
+    "positive": "يجب أن يكون رقماً موجباً",
+    "url": "يرجى إدخال عنوان URL صالح",
+    "phone": "يرجى إدخال رقم هاتف صالح"
+  },
+  "messages": {
+    "success": "نجاح!",
+    "error": "خطأ!",
+    "saveSuccess": "تم الحفظ بنجاح",
+    "deleteSuccess": "تم الحذف بنجاح",
+    "updateSuccess": "تم التحديث بنجاح",
+    "createSuccess": "تم الإنشاء بنجاح",
+    "deleteConfirm": "هل أنت متأكد من أنك تريد حذف هذا العنصر؟",
+    "unsavedChanges": "لديك تغييرات غير محفوظة. هل أنت متأكد من أنك تريد المغادرة؟"
+  },
+  "language": {
+    "english": "English",
+    "arabic": "العربية",
+    "selectLanguage": "اختر اللغة",
+    "switchLanguage": "تبديل اللغة"
+  },
+  "formatting": {
+    "currency": "ر.س",
+    "dateFormat": "DD/MM/YYYY",
+    "timeFormat": "hh:mm A",
+    "dateTimeFormat": "DD/MM/YYYY hh:mm A"
+  }
+}

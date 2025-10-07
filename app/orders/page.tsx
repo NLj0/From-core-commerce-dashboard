@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, MoreHorizontal, Eye, Edit, Download, CheckCircle, XCircle, Clock } from "lucide-react"
 import { OrderDetailsDialog } from "@/components/order-details-dialog"
+import { useLanguage } from "@/providers/language-provider"
 
 const mockOrders = [
   {
@@ -290,44 +291,48 @@ const mockOrders = [
   },
 ]
 
-function getStatusBadge(status: string) {
+type TranslateFn = (key: string) => string
+
+function getStatusBadge(status: string, t: TranslateFn) {
   switch (status) {
     case "completed":
       return (
         <Badge variant="success">
           <CheckCircle className="mr-1 h-3 w-3" />
-          Completed
+          {t("orders.completed")}
         </Badge>
       )
     case "processing":
       return (
         <Badge variant="info">
           <Clock className="mr-1 h-3 w-3" />
-          Processing
+          {t("orders.processing")}
         </Badge>
       )
     case "delivered":
       return (
         <Badge variant="violet">
           <Download className="mr-1 h-3 w-3" />
-          Delivered
+          {t("orders.delivered")}
         </Badge>
       )
     case "pending":
-      return <Badge variant="warning">Pending</Badge>
+      return <Badge variant="warning">{t("orders.pending")}</Badge>
     case "cancelled":
       return (
         <Badge variant="danger">
           <XCircle className="mr-1 h-3 w-3" />
-          Cancelled
+          {t("orders.cancelled")}
         </Badge>
       )
     default:
-      return <Badge variant="outline">{status}</Badge>
+      return <Badge variant="outline">{t(`orders.${status}`)}</Badge>
   }
 }
 
 export default function OrdersPage() {
+  const { t, dir: direction } = useLanguage()
+  const isRTL = direction === "rtl"
   const [orders, setOrders] = useState(mockOrders)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -361,18 +366,18 @@ export default function OrdersPage() {
   const totalRevenue = orders.filter((o) => o.status === "completed").reduce((sum, order) => sum + order.total, 0)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir={direction}>
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Orders</h1>
-        <p className="text-muted-foreground mt-2">Track and manage all digital orders and services.</p>
+        <h1 className="text-3xl font-bold text-foreground">{t("orders.title")}</h1>
+        <p className="text-muted-foreground mt-2">{t("orders.subtitle")}</p>
       </div>
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("orders.totalOrders")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalOrders}</div>
@@ -380,7 +385,7 @@ export default function OrdersPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("orders.completed")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{completedOrders}</div>
@@ -388,7 +393,7 @@ export default function OrdersPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Processing</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("orders.processing")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">{processingOrders}</div>
@@ -396,7 +401,7 @@ export default function OrdersPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("orders.revenue")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
@@ -407,36 +412,42 @@ export default function OrdersPage() {
       {/* Filters and Search */}
       <Card>
         <CardHeader>
-          <CardTitle>Order Management</CardTitle>
+          <CardTitle>{t("orders.orderManagement")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-1 gap-4">
               <div className="relative flex-1 max-w-sm">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Search
+                  className={`absolute top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground ${
+                    direction === "rtl" ? "right-3" : "left-3"
+                  }`}
+                />
                 <Input
-                  placeholder="Search orders..."
+                  placeholder={t("orders.searchOrders")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className={direction === "rtl" ? "pr-10 text-right" : "pl-10"}
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Status" />
+                  <SelectValue placeholder={t("common.status")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="processing">Processing</SelectItem>
-                  <SelectItem value="delivered">Delivered</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                  <SelectItem value="all">{t("orders.allStatuses")}</SelectItem>
+                  <SelectItem value="pending">{t("orders.pending")}</SelectItem>
+                  <SelectItem value="processing">{t("orders.processing")}</SelectItem>
+                  <SelectItem value="delivered">{t("orders.delivered")}</SelectItem>
+                  <SelectItem value="completed">{t("orders.completed")}</SelectItem>
+                  <SelectItem value="cancelled">{t("orders.cancelled")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="text-sm text-muted-foreground">
-              Showing {filteredOrders.length} of {orders.length} orders
+              {t("orders.showingCount")
+                .replace("{current}", filteredOrders.length.toString())
+                .replace("{total}", orders.length.toString())}
             </div>
           </div>
         </CardContent>
@@ -448,20 +459,25 @@ export default function OrdersPage() {
           <div className="hidden md:block">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Order ID</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Products</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="w-[70px]">Actions</TableHead>
+                <TableRow className={isRTL ? "text-right" : ""}>
+                  <TableHead className={isRTL ? "text-right" : ""}>{t("orders.orderNumber")}</TableHead>
+                  <TableHead className={isRTL ? "text-right" : ""}>{t("orders.customer")}</TableHead>
+                  <TableHead className={isRTL ? "text-right" : ""}>{t("orders.products")}</TableHead>
+                  <TableHead className={isRTL ? "text-right" : ""}>{t("orders.total")}</TableHead>
+                  <TableHead className={isRTL ? "text-right" : ""}>{t("orders.status")}</TableHead>
+                  <TableHead className={isRTL ? "text-right" : ""}>{t("orders.orderDate")}</TableHead>
+                  <TableHead className={`w-[70px] ${isRTL ? "text-right" : ""}`}>{t("common.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredOrders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-mono font-medium">{order.id}</TableCell>
+                  <TableRow key={order.id} className={isRTL ? "text-right" : ""}>
+                    <TableCell
+                      className={`font-mono font-medium ${isRTL ? "text-right" : ""}`}
+                      dir="ltr"
+                    >
+                      {order.id}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Avatar className="h-8 w-8">
@@ -475,7 +491,9 @@ export default function OrdersPage() {
                         </Avatar>
                         <div>
                           <div className="font-medium">{order.customer.name}</div>
-                          <div className="text-xs text-muted-foreground">{order.customer.email}</div>
+                          <div className="text-xs text-muted-foreground" dir="ltr">
+                            {order.customer.email}
+                          </div>
                         </div>
                       </div>
                     </TableCell>
@@ -487,12 +505,17 @@ export default function OrdersPage() {
                           </div>
                         ))}
                         {order.products.length > 2 && (
-                          <div className="text-xs text-muted-foreground">+{order.products.length - 2} more</div>
+                          <div className="text-xs text-muted-foreground">
+                            {t("orders.additionalProducts").replace(
+                              "{count}",
+                              (order.products.length - 2).toString()
+                            )}
+                          </div>
                         )}
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">${order.total.toFixed(2)}</TableCell>
-                    <TableCell>{getStatusBadge(order.status)}</TableCell>
+                    <TableCell>{getStatusBadge(order.status, t)}</TableCell>
                     <TableCell className="text-muted-foreground">{order.date}</TableCell>
                     <TableCell>
                       <DropdownMenu>
@@ -504,19 +527,19 @@ export default function OrdersPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => handleViewOrder(order)}>
                             <Eye className="mr-2 h-4 w-4" />
-                            View Details
+                            {t("orders.viewOrder")}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "processing")}>
                             <Edit className="mr-2 h-4 w-4" />
-                            Mark Processing
+                            {t("orders.markProcessing")}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "delivered")}>
                             <Download className="mr-2 h-4 w-4" />
-                            Mark Delivered
+                            {t("orders.markDelivered")}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "completed")}>
                             <CheckCircle className="mr-2 h-4 w-4" />
-                            Mark Completed
+                            {t("orders.markCompleted")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -545,10 +568,15 @@ export default function OrdersPage() {
                       </Avatar>
                       <div>
                         <div className="font-medium">{order.customer.name}</div>
-                        <div className="text-xs text-muted-foreground font-mono">{order.id}</div>
+                        <div
+                          className={`text-xs text-muted-foreground font-mono ${isRTL ? "text-right" : ""}`}
+                          dir="ltr"
+                        >
+                          {order.id}
+                        </div>
                       </div>
                     </div>
-                    {getStatusBadge(order.status)}
+                    {getStatusBadge(order.status, t)}
                   </div>
 
                   {/* Products */}
@@ -559,7 +587,12 @@ export default function OrdersPage() {
                       </div>
                     ))}
                     {order.products.length > 2 && (
-                      <div className="text-xs text-muted-foreground">+{order.products.length - 2} more products</div>
+                      <div className="text-xs text-muted-foreground">
+                        {t("orders.moreProducts").replace(
+                          "{count}",
+                          (order.products.length - 2).toString()
+                        )}
+                      </div>
                     )}
                   </div>
 
@@ -579,19 +612,19 @@ export default function OrdersPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => handleViewOrder(order)}>
                           <Eye className="mr-2 h-4 w-4" />
-                          View Details
+                          {t("orders.viewOrder")}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "processing")}>
                           <Edit className="mr-2 h-4 w-4" />
-                          Mark Processing
+                          {t("orders.markProcessing")}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "delivered")}>
                           <Download className="mr-2 h-4 w-4" />
-                          Mark Delivered
+                          {t("orders.markDelivered")}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "completed")}>
                           <CheckCircle className="mr-2 h-4 w-4" />
-                          Mark Completed
+                          {t("orders.markCompleted")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

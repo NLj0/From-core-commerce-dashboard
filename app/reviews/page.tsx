@@ -11,6 +11,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, MoreHorizontal, Reply, Trash2, Star, MessageSquare, TrendingUp, AlertTriangle } from "lucide-react"
 import { ReviewResponseDialog } from "@/components/review-response-dialog"
+import { useLanguage } from "@/providers/language-provider"
+
+type TranslateFn = (key: string) => string
 
 // Mock reviews data
 const mockReviews = [
@@ -147,7 +150,7 @@ const mockReviews = [
   },
 ]
 
-function StarRating({ rating }: { rating: number }) {
+function StarRating({ rating, isRTL }: { rating: number; isRTL?: boolean }) {
   return (
     <div className="flex items-center gap-1">
       {[1, 2, 3, 4, 5].map((star) => (
@@ -156,38 +159,44 @@ function StarRating({ rating }: { rating: number }) {
           className={`h-4 w-4 ${star <= rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
         />
       ))}
-      <span className="ml-1 text-sm font-medium">{rating}</span>
+      <span className={`${isRTL ? "mr-1" : "ml-1"} text-sm font-medium`}>{rating}</span>
     </div>
   )
 }
 
-function getStatusBadge(status: string) {
+function getStatusBadge(status: string, t: TranslateFn, isRTL: boolean) {
+  const key = `reviews.statusOptions.${status}`
+  const label = t(key)
+  const text = label === key ? status : label
+
   switch (status) {
     case "published":
       return (
         <Badge variant="success">
-          Published
+          {text}
         </Badge>
       )
     case "pending":
       return (
         <Badge variant="warning">
-          Pending
+          {text}
         </Badge>
       )
     case "flagged":
       return (
-        <Badge variant="danger">
-          <AlertTriangle className="mr-1 h-3 w-3" />
-          Flagged
+        <Badge variant="danger" className="flex items-center">
+          <AlertTriangle className={`${isRTL ? "ml-1" : "mr-1"} h-3 w-3`} />
+          {text}
         </Badge>
       )
     default:
-      return <Badge variant="outline">{status}</Badge>
+      return <Badge variant="outline">{text}</Badge>
   }
 }
 
 export default function ReviewsPage() {
+  const { t, dir } = useLanguage()
+  const isRTL = dir === "rtl"
   const [reviews, setReviews] = useState(mockReviews)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -245,19 +254,26 @@ export default function ReviewsPage() {
   const pendingReviews = reviews.filter((r) => r.status === "pending").length
   const flaggedReviews = reviews.filter((r) => r.status === "flagged").length
 
+  const showingLabel = t("reviews.showingCount")
+    .replace("{current}", filteredReviews.length.toString())
+    .replace("{total}", reviews.length.toString())
+
+  const helpfulLabel = (count: number) =>
+    t("reviews.helpful").replace("{count}", count.toString())
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir={dir}>
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Reviews</h1>
-        <p className="text-muted-foreground mt-2">Manage customer reviews and feedback for your products.</p>
+      <div className={isRTL ? "text-right" : "text-left"}>
+        <h1 className="text-3xl font-bold text-foreground">{t("reviews.title")}</h1>
+        <p className="text-muted-foreground mt-2">{t("reviews.subtitle")}</p>
       </div>
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Reviews</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("reviews.stats.total")}</CardTitle>
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -266,17 +282,17 @@ export default function ReviewsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("reviews.stats.average")}</CardTitle>
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{averageRating.toFixed(1)}</div>
-            <StarRating rating={Math.round(averageRating)} />
+            <StarRating rating={Math.round(averageRating)} isRTL={isRTL} />
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Reviews</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("reviews.stats.pending")}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -285,7 +301,7 @@ export default function ReviewsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Flagged Reviews</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("reviews.stats.flagged")}</CardTitle>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -297,48 +313,72 @@ export default function ReviewsPage() {
       {/* Filters and Search */}
       <Card>
         <CardHeader>
-          <CardTitle>Review Management</CardTitle>
+          <CardTitle>{t("reviews.management")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-1 gap-4">
               <div className="relative flex-1 max-w-sm">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Search
+                  className={`absolute top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground ${isRTL ? "right-3" : "left-3"}`}
+                />
                 <Input
-                  placeholder="Search reviews..."
+                  placeholder={t("reviews.searchPlaceholder")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className={isRTL ? "pr-10 text-right" : "pl-10"}
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Status" />
+                <SelectTrigger
+                  className={`w-[140px] ${isRTL ? "justify-between text-right" : "justify-between"}`}
+                >
+                  <SelectValue placeholder={t("reviews.statusFilter")} />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="flagged">Flagged</SelectItem>
+                <SelectContent align={isRTL ? "start" : "end"}>
+                  <SelectItem value="all" className={isRTL ? "justify-end text-right" : ""}>
+                    {t("reviews.statusOptions.all")}
+                  </SelectItem>
+                  <SelectItem value="published" className={isRTL ? "justify-end text-right" : ""}>
+                    {t("reviews.statusOptions.published")}
+                  </SelectItem>
+                  <SelectItem value="pending" className={isRTL ? "justify-end text-right" : ""}>
+                    {t("reviews.statusOptions.pending")}
+                  </SelectItem>
+                  <SelectItem value="flagged" className={isRTL ? "justify-end text-right" : ""}>
+                    {t("reviews.statusOptions.flagged")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <Select value={ratingFilter} onValueChange={setRatingFilter}>
-                <SelectTrigger className="w-[120px]">
-                  <SelectValue placeholder="Rating" />
+                <SelectTrigger
+                  className={`w-[120px] ${isRTL ? "justify-between text-right" : "justify-between"}`}
+                >
+                  <SelectValue placeholder={t("reviews.ratingFilter")} />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Ratings</SelectItem>
-                  <SelectItem value="5">5 Stars</SelectItem>
-                  <SelectItem value="4">4 Stars</SelectItem>
-                  <SelectItem value="3">3 Stars</SelectItem>
-                  <SelectItem value="2">2 Stars</SelectItem>
-                  <SelectItem value="1">1 Star</SelectItem>
+                <SelectContent align={isRTL ? "start" : "end"}>
+                  <SelectItem value="all" className={isRTL ? "justify-end text-right" : ""}>
+                    {t("reviews.ratingOptions.all")}
+                  </SelectItem>
+                  <SelectItem value="5" className={isRTL ? "justify-end text-right" : ""}>
+                    {t("reviews.ratingOptions.5")}
+                  </SelectItem>
+                  <SelectItem value="4" className={isRTL ? "justify-end text-right" : ""}>
+                    {t("reviews.ratingOptions.4")}
+                  </SelectItem>
+                  <SelectItem value="3" className={isRTL ? "justify-end text-right" : ""}>
+                    {t("reviews.ratingOptions.3")}
+                  </SelectItem>
+                  <SelectItem value="2" className={isRTL ? "justify-end text-right" : ""}>
+                    {t("reviews.ratingOptions.2")}
+                  </SelectItem>
+                  <SelectItem value="1" className={isRTL ? "justify-end text-right" : ""}>
+                    {t("reviews.ratingOptions.1")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="text-sm text-muted-foreground">
-              Showing {filteredReviews.length} of {reviews.length} reviews
-            </div>
+            <div className="text-sm text-muted-foreground text-center md:text-right">{showingLabel}</div>
           </div>
         </CardContent>
       </Card>
@@ -350,13 +390,13 @@ export default function ReviewsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Rating</TableHead>
-                  <TableHead>Review</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-[70px]">Actions</TableHead>
+                  <TableHead className={isRTL ? "text-right" : ""}>{t("reviews.table.customer")}</TableHead>
+                  <TableHead className={isRTL ? "text-right" : ""}>{t("reviews.table.product")}</TableHead>
+                  <TableHead className={isRTL ? "text-right" : ""}>{t("reviews.table.rating")}</TableHead>
+                  <TableHead className={isRTL ? "text-right" : ""}>{t("reviews.table.review")}</TableHead>
+                  <TableHead className={isRTL ? "text-right" : ""}>{t("reviews.table.date")}</TableHead>
+                  <TableHead className={isRTL ? "text-right" : ""}>{t("reviews.table.status")}</TableHead>
+                  <TableHead className={`w-[70px] ${isRTL ? "text-right" : ""}`}>{t("reviews.table.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -374,61 +414,90 @@ export default function ReviewsPage() {
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="font-medium flex items-center gap-1">
+                          <div
+                            className={`font-medium flex items-center gap-1 ${isRTL ? "flex-row-reverse" : ""}`}
+                          >
                             {review.customer.name}
                             {review.verified && (
-                              <Badge variant="outline" className="text-xs px-1 py-0">
-                                Verified
+                              <Badge
+                                variant="outline"
+                                className={`text-xs px-1 py-0 ${isRTL ? "flex-row-reverse" : ""}`}
+                              >
+                                {t("reviews.verified")}
                               </Badge>
                             )}
                           </div>
-                          <div className="text-xs text-muted-foreground">{review.customer.email}</div>
+                          <div className={`text-xs text-muted-foreground ${isRTL ? "text-right" : ""}`}>
+                            {review.customer.email}
+                          </div>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="font-medium">{review.product.name}</div>
-                      <div className="text-xs text-muted-foreground">{review.product.id}</div>
+                      <div className={`font-medium ${isRTL ? "text-right" : ""}`}>{review.product.name}</div>
+                      <div className={`text-xs text-muted-foreground ${isRTL ? "text-right" : ""}`}>
+                        {review.product.id}
+                      </div>
                     </TableCell>
                     <TableCell>
-                      <StarRating rating={review.rating} />
+                      <StarRating rating={review.rating} isRTL={isRTL} />
                     </TableCell>
                     <TableCell className="max-w-xs">
-                      <div className="font-medium text-sm mb-1">{review.title}</div>
-                      <div className="text-sm text-muted-foreground line-clamp-2">{review.content}</div>
+                      <div className={`font-medium text-sm mb-1 ${isRTL ? "text-right" : ""}`}>{review.title}</div>
+                      <div className={`text-sm text-muted-foreground line-clamp-2 ${isRTL ? "text-right" : ""}`}>
+                        {review.content}
+                      </div>
                       {review.response && (
-                        <div className="mt-2 p-2 bg-muted/50 rounded text-xs">
-                          <div className="font-medium">Admin Response:</div>
+                        <div className={`mt-2 p-2 bg-muted/50 rounded text-xs ${isRTL ? "text-right" : ""}`}>
+                          <div className="font-medium">{t("reviews.adminResponse")}</div>
                           <div className="text-muted-foreground">{review.response.content}</div>
                         </div>
                       )}
                       <div className="flex items-center gap-2 mt-2">
-                        <span className="text-xs text-muted-foreground">{review.helpful} helpful</span>
+                        <span className="text-xs text-muted-foreground">{helpfulLabel(review.helpful)}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{review.date}</TableCell>
-                    <TableCell>{getStatusBadge(review.status)}</TableCell>
+                    <TableCell className={`text-muted-foreground ${isRTL ? "text-right" : ""}`}>
+                      {review.date}
+                    </TableCell>
+                    <TableCell className={isRTL ? "text-right" : ""}>
+                      {getStatusBadge(review.status, t, isRTL)}
+                    </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
+                          <Button variant="ghost" size="icon" className={isRTL ? "rotate-180" : ""}>
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleRespondToReview(review)}>
-                            <Reply className="mr-2 h-4 w-4" />
-                            {review.response ? "Edit Response" : "Respond"}
+                        <DropdownMenuContent align={isRTL ? "start" : "end"} className={isRTL ? "text-right" : ""}>
+                          <DropdownMenuItem
+                            onClick={() => handleRespondToReview(review)}
+                            className={isRTL ? "flex-row-reverse justify-end gap-2" : ""}
+                          >
+                            <Reply className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+                            {review.response
+                              ? t("reviews.actions.editResponse")
+                              : t("reviews.actions.respond")}
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleUpdateReviewStatus(review.id, "published")}>
-                            Publish
+                          <DropdownMenuItem
+                            onClick={() => handleUpdateReviewStatus(review.id, "published")}
+                            className={isRTL ? "justify-end" : ""}
+                          >
+                            {t("reviews.actions.publish")}
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleUpdateReviewStatus(review.id, "flagged")}>
-                            Flag Review
+                          <DropdownMenuItem
+                            onClick={() => handleUpdateReviewStatus(review.id, "flagged")}
+                            className={isRTL ? "justify-end" : ""}
+                          >
+                            {t("reviews.actions.flag")}
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDeleteReview(review.id)} className="text-destructive">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteReview(review.id)}
+                            className={`text-destructive ${isRTL ? "flex-row-reverse justify-end gap-2" : ""}`}
+                          >
+                            <Trash2 className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+                            {t("reviews.actions.delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -443,10 +512,10 @@ export default function ReviewsPage() {
           <div className="md:hidden">
             <div className="divide-y">
               {filteredReviews.map((review) => (
-                <div key={review.id} className="p-4 space-y-3">
+                <div key={review.id} className={`p-4 space-y-3 ${isRTL ? "text-right" : ""}`}>
                   {/* Line 1: Customer Name + Star Rating */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                  <div className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}>
+                    <div className={`flex items-center gap-3 ${isRTL ? "flex-row-reverse" : ""}`}>
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={review.customer.avatar || "/placeholder.svg"} alt={review.customer.name} />
                         <AvatarFallback>
@@ -457,18 +526,20 @@ export default function ReviewsPage() {
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium flex items-center gap-1">
+                        <div
+                          className={`font-medium flex items-center gap-1 ${isRTL ? "flex-row-reverse" : ""}`}
+                        >
                           {review.customer.name}
                           {review.verified && (
                             <Badge variant="outline" className="text-xs px-1 py-0">
-                              Verified
+                              {t("reviews.verified")}
                             </Badge>
                           )}
                         </div>
-                        <StarRating rating={review.rating} />
+                        <StarRating rating={review.rating} isRTL={isRTL} />
                       </div>
                     </div>
-                    {getStatusBadge(review.status)}
+                    {getStatusBadge(review.status, t, isRTL)}
                   </div>
 
                   {/* Line 2: Review Text + Date */}
@@ -477,37 +548,59 @@ export default function ReviewsPage() {
                       <div className="font-medium text-sm">{review.title}</div>
                       <div className="text-sm text-muted-foreground line-clamp-2">{review.content}</div>
                     </div>
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <div className="flex items-center gap-2">
+                    <div
+                      className={`flex items-center justify-between text-xs text-muted-foreground ${
+                        isRTL ? "flex-row-reverse" : ""
+                      }`}
+                    >
+                      <div className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
                         <span>{review.date}</span>
                         <span>•</span>
                         <span>{review.product.name}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span>{review.helpful} helpful</span>
+                      <div className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
+                        <span>{helpfulLabel(review.helpful)}</span>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className={`h-8 w-8 ${isRTL ? "rotate-180" : ""}`}
+                            >
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleRespondToReview(review)}>
-                              <Reply className="mr-2 h-4 w-4" />
-                              {review.response ? "Edit Response" : "Respond"}
+                          <DropdownMenuContent
+                            align={isRTL ? "start" : "end"}
+                            className={isRTL ? "text-right" : ""}
+                          >
+                            <DropdownMenuItem
+                              onClick={() => handleRespondToReview(review)}
+                              className={isRTL ? "flex-row-reverse justify-end gap-2" : ""}
+                            >
+                              <Reply className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+                              {review.response
+                                ? t("reviews.actions.editResponse")
+                                : t("reviews.actions.respond")}
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleUpdateReviewStatus(review.id, "published")}>
-                              Publish
+                            <DropdownMenuItem
+                              onClick={() => handleUpdateReviewStatus(review.id, "published")}
+                              className={isRTL ? "justify-end" : ""}
+                            >
+                              {t("reviews.actions.publish")}
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleUpdateReviewStatus(review.id, "flagged")}>
-                              Flag Review
+                            <DropdownMenuItem
+                              onClick={() => handleUpdateReviewStatus(review.id, "flagged")}
+                              className={isRTL ? "justify-end" : ""}
+                            >
+                              {t("reviews.actions.flag")}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => handleDeleteReview(review.id)}
-                              className="text-destructive"
+                              className={`text-destructive ${isRTL ? "flex-row-reverse justify-end gap-2" : ""}`}
                             >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
+                              <Trash2 className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+                              {t("reviews.actions.delete")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -515,7 +608,7 @@ export default function ReviewsPage() {
                     </div>
                     {review.response && (
                       <div className="mt-2 p-2 bg-muted/50 rounded text-xs">
-                        <div className="font-medium">Admin Response:</div>
+                        <div className="font-medium">{t("reviews.adminResponse")}</div>
                         <div className="text-muted-foreground">{review.response.content}</div>
                       </div>
                     )}

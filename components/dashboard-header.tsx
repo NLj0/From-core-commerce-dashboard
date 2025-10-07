@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Bell, Settings, LogOut, User, Menu, ShoppingCart, Package, Star, UserPlus, AlertTriangle } from "lucide-react"
+import { LanguageSwitcher } from "@/components/language-switcher"
 
 interface DashboardHeaderProps {
   onMenuClick?: () => void
@@ -101,6 +102,9 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
       </div>
 
       <div className="flex items-center gap-2 md:gap-4 ml-auto md:ml-0">
+        {/* Language Switcher */}
+        <LanguageSwitcher />
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">

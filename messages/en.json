@@ -1,0 +1,818 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import",
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "actions": "Actions",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "all": "All",
+    "none": "None",
+    "apply": "Apply",
+    "reset": "Reset",
+    "view": "View",
+    "download": "Download",
+    "upload": "Upload",
+    "submit": "Submit",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "name": "Name",
+    "description": "Description",
+  "completed": "Completed",
+    "price": "Price",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "products": "Products",
+    "categories": "Categories",
+    "orders": "Orders",
+    "customers": "Customers",
+    "reviews": "Reviews",
+    "coupons": "Coupons",
+    "emails": "Email Marketing",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "dashboard": {
+    "title": "Dashboard Overview",
+    "subtitle": "Monitor your store performance and manage your business efficiently",
+    "overview": "Overview",
+    "pageViews": "Page Views",
+    "totalRevenue": "Total Revenue",
+    "totalOrders": "Total Orders",
+    "totalCustomers": "Total Customers",
+    "averageOrderValue": "Average Order Value",
+    "recentOrders": "Recent Orders",
+    "topProducts": "Top Selling Products",
+  "salesOverview": "Sales Overview",
+  "last30Days": "from last month",
+  "salesCount": "{count} sales",
+    "last7Days": "Last 7 Days",
+    "thisMonth": "This Month",
+    "lastMonth": "Last Month",
+    "viewAll": "View All"
+  },
+  "products": {
+    "title": "Products",
+    "subtitle": "Manage your product catalog",
+    "addProduct": "Add Product",
+    "editProduct": "Edit Product",
+    "deleteProduct": "Delete Product",
+    "product": "Product",
+    "productName": "Product Name",
+    "productDescription": "Product Description",
+    "category": "Category",
+    "price": "Price",
+    "salePrice": "Sale Price",
+    "stock": "Stock",
+    "sku": "SKU",
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "lowStock": "Low Stock",
+    "published": "Published",
+    "draft": "Draft",
+    "featured": "Featured",
+    "images": "Images",
+    "uploadImages": "Upload Images",
+    "totalProducts": "Total Products",
+    "publishedProducts": "Published",
+    "draftProducts": "Drafts",
+    "searchProducts": "Search products...",
+    "productManagement": "Product Management",
+    "filterByCategory": "Filter by Category",
+    "filterByStatus": "Filter by Status",
+    "allStatuses": "All Statuses",
+    "allCategories": "All Categories",
+    "sortBy": "Sort By",
+    "newest": "Newest",
+    "oldest": "Oldest",
+    "priceHighToLow": "Price: High to Low",
+    "priceLowToHigh": "Price: Low to High",
+    "nameAZ": "Name: A-Z",
+    "nameZA": "Name: Z-A",
+    "showingCount": "Showing {current} of {total} products",
+    "menuDigitalTitle": "Digital Product",
+    "menuDigitalDescription": "Files, courses, software",
+    "menuDigitalCardTitle": "Digital Card",
+    "menuDigitalCardDescription": "Coupons, recharge codes",
+    "menuServiceTitle": "On-Demand Service",
+    "menuServiceDescription": "Design, consulting, writing",
+    "menuBundleTitle": "Bundle Products",
+    "menuBundleDescription": "Multi-product packages",
+    "categoryOptions": {
+      "all": "All Categories",
+      "Electronics": "Electronics",
+      "Accessories": "Accessories"
+    }
+  },
+  "categories": {
+    "title": "Categories",
+    "subtitle": "Organize your products into categories",
+    "addCategory": "Add Category",
+    "editCategory": "Edit Category",
+    "deleteCategory": "Delete Category",
+    "category": "Category",
+    "categoryName": "Category Name",
+    "categoryDescription": "Category Description",
+    "parentCategory": "Parent Category",
+    "noParent": "No Parent (Top Level)",
+    "totalCategories": "Total Categories",
+    "activeCategories": "Active",
+    "activeCategoriesLabel": "Active Categories",
+    "inactiveCategories": "Inactive",
+    "productsCount": "Products",
+    "totalProductsLabel": "Total Products",
+    "productsLabel": "products",
+    "searchCategories": "Search categories...",
+    "categoryManagement": "Category Management",
+    "allStatuses": "All Statuses",
+    "sortBy": "Sort by",
+    "sortOptions": {
+      "name": "Name",
+      "status": "Status",
+      "products": "Products",
+      "date": "Date"
+    },
+    "showingCount": "Showing {current} of {total} categories",
+    "categoryColumn": "Category",
+    "descriptionColumn": "Description",
+    "productsColumn": "Products",
+    "statusColumn": "Status",
+    "createdColumn": "Created",
+    "createdOn": "Created {date}",
+    "slug": "Slug",
+    "icon": "Icon",
+    "image": "Image",
+    "uploadImage": "Upload Image",
+    "deleteConfirm": "Are you sure you want to delete this category? This action cannot be undone."
+  },
+  "orders": {
+    "title": "Orders",
+    "subtitle": "Manage customer orders",
+    "orderNumber": "Order #",
+    "orderDate": "Order Date",
+    "customer": "Customer",
+    "items": "Items",
+    "total": "Total",
+    "status": "Status",
+    "pending": "Pending",
+    "processing": "Processing",
+    "shipped": "Shipped",
+    "delivered": "Delivered",
+    "cancelled": "Cancelled",
+    "refunded": "Refunded",
+    "viewOrder": "View Order",
+    "orderDetails": "Order Details",
+    "shippingAddress": "Shipping Address",
+    "billingAddress": "Billing Address",
+    "paymentMethod": "Payment Method",
+    "paymentStatus": "Payment Status",
+    "paid": "Paid",
+    "unpaid": "Unpaid",
+    "partiallyPaid": "Partially Paid",
+    "totalOrders": "Total Orders",
+    "pendingOrders": "Pending",
+    "completedOrders": "Completed",
+  "revenue": "Revenue",
+  "allStatuses": "All Statuses",
+  "orderManagement": "Order Management",
+  "showingCount": "Showing {current} of {total} orders",
+  "products": "Products",
+  "moreProducts": "+{count} more products",
+  "additionalProducts": "+{count} more",
+  "markProcessing": "Mark Processing",
+  "markDelivered": "Mark Delivered",
+  "markCompleted": "Mark Completed",
+    "searchOrders": "Search orders...",
+    "filterByStatus": "Filter by Status",
+    "filterByDate": "Filter by Date",
+    "updateStatus": "Update Status",
+    "printInvoice": "Print Invoice",
+    "trackingNumber": "Tracking Number"
+  },
+  "customers": {
+    "title": "Customers",
+    "subtitle": "Manage your customer base",
+    "addCustomer": "Add Customer",
+    "editCustomer": "Edit Customer",
+    "deleteCustomer": "Delete Customer",
+    "customer": "Customer",
+    "customerName": "Customer Name",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "city": "City",
+    "state": "State",
+    "zipCode": "ZIP Code",
+    "country": "Country",
+    "totalCustomers": "Total Customers",
+    "activeCustomersLabel": "Active Customers",
+    "newCustomers": "New This Month",
+    "totalRevenue": "Total Revenue",
+    "returningCustomers": "Returning",
+    "searchCustomers": "Search customers...",
+    "customerManagement": "Customer Management",
+    "allStatuses": "All Statuses",
+    "statusOptions": {
+      "vip": "VIP",
+      "active": "Active",
+      "new": "New",
+      "inactive": "Inactive"
+    },
+    "showingCount": "Showing {current} of {total} customers",
+    "customerColumn": "Customer",
+    "contactColumn": "Contact",
+    "ordersColumn": "Orders",
+    "totalSpentColumn": "Total Spent",
+    "statusColumn": "Status",
+    "lastActivityColumn": "Last Activity",
+    "ordersLabel": "orders",
+    "lastActivityLabel": "Last: {date}",
+    "viewProfile": "View Profile",
+    "sendEmail": "Send Email",
+    "callCustomer": "Call Customer",
+    "customerDetails": "Customer Details",
+    "orderHistory": "Order History",
+    "totalSpent": "Total Spent",
+    "averageOrderValue": "Average Order Value",
+    "lastOrder": "Last Order",
+    "dateJoined": "Date Joined",
+    "importCustomers": "Import Customers",
+    "exportCustomers": "Export Customers"
+  },
+  "reviews": {
+    "title": "Reviews",
+    "subtitle": "Manage customer reviews and feedback for your products.",
+    "stats": {
+      "total": "Total Reviews",
+      "average": "Average Rating",
+      "pending": "Pending Reviews",
+      "flagged": "Flagged Reviews"
+    },
+    "management": "Review Management",
+    "searchPlaceholder": "Search reviews...",
+    "statusFilter": "Status",
+    "ratingFilter": "Rating",
+    "statusOptions": {
+      "all": "All Status",
+      "published": "Published",
+      "pending": "Pending",
+      "flagged": "Flagged"
+    },
+    "ratingOptions": {
+      "all": "All Ratings",
+      "5": "5 Stars",
+      "4": "4 Stars",
+      "3": "3 Stars",
+      "2": "2 Stars",
+      "1": "1 Star"
+    },
+    "showingCount": "Showing {current} of {total} reviews",
+    "verified": "Verified",
+    "helpful": "{count} helpful",
+    "adminResponse": "Admin Response",
+    "table": {
+      "customer": "Customer",
+      "product": "Product",
+      "rating": "Rating",
+      "review": "Review",
+      "date": "Date",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "actions": {
+      "respond": "Respond",
+      "editResponse": "Edit Response",
+      "publish": "Publish",
+      "flag": "Flag Review",
+      "delete": "Delete"
+    },
+    "responseDialog": {
+      "addTitle": "Respond to Review",
+      "editTitle": "Edit Response",
+      "description": "Respond to this customer review to show you care about their feedback.",
+      "currentResponse": "Current Response:",
+      "byAuthorOn": "By {author} on {date}",
+      "fieldLabel": "Your Response",
+      "placeholder": "Write a thoughtful response to this review...",
+      "helper": "Be professional and helpful. This response will be visible to all customers.",
+      "cancel": "Cancel",
+      "post": "Post Response",
+      "update": "Update Response"
+    }
+  },
+  "coupons": {
+    "title": "Coupons & Discounts",
+    "subtitle": "Manage discount codes and promotional offers",
+    "actions": {
+      "create": "Create Coupon",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "stats": {
+      "total": "Total Coupons",
+      "totalDescription": "{count} active coupons",
+      "usage": "Total Usage",
+      "usageDescription": "Across all coupons",
+      "savings": "Total Savings",
+      "savingsDescription": "Customer savings",
+      "activeRate": "Active Rate",
+      "activeRateDescription": "Of total coupons"
+    },
+    "filters": {
+      "searchPlaceholder": "Search coupons...",
+      "statusPlaceholder": "Filter by status",
+      "statusOptions": {
+        "all": "All Status",
+        "active": "Active",
+        "expired": "Expired",
+        "disabled": "Disabled"
+      }
+    },
+    "showingCount": "Showing {current} of {total} coupons",
+    "table": {
+      "code": "Coupon Code",
+      "discount": "Discount",
+      "validity": "Validity Period",
+      "usage": "Usage",
+      "appliesTo": "Applies To",
+      "status": "Status",
+      "actions": "Actions",
+      "min": "Min:",
+      "used": "used",
+      "allProducts": "All Products",
+      "selectedProducts": "Selected Products",
+      "more": "+{count} more",
+      "until": "Until {date}"
+    },
+    "status": {
+      "active": "Active",
+      "expired": "Expired",
+      "disabled": "Disabled"
+    },
+    "mobile": {
+      "appliesTo": "Applies to:"
+    },
+    "discount": {
+      "percentage": "{value}%",
+      "fixed": "{currency}{value}"
+    },
+    "dialog": {
+      "title": {
+        "create": "Create New Coupon",
+        "edit": "Edit Coupon"
+      },
+      "description": {
+        "create": "Create a new discount coupon for your customers",
+        "edit": "Update coupon details and settings"
+      },
+      "sections": {
+        "basic": "Basic Information",
+        "validity": "Validity Period",
+        "usage": "Usage Limits",
+        "apply": "Apply Coupon To"
+      },
+      "labels": {
+        "code": "Coupon Code",
+        "discountType": "Discount Type",
+        "discountValue": "Discount Value",
+        "status": "Status",
+        "statusActive": "Active",
+        "statusDisabled": "Disabled",
+        "description": "Description (Optional)",
+        "startDate": "Start Date (Optional)",
+        "endDate": "End Date (Optional)",
+        "usageLimitToggle": "Set usage limit",
+        "usageLimit": "Maximum Uses",
+        "minOrderToggle": "Set minimum order value",
+        "minOrder": "Minimum Order Value ($)",
+        "appliesTo": "Apply Coupon To",
+        "selectProducts": "Select Products",
+        "selectedProducts": "Selected Products ({count}):",
+        "searchProducts": "Search products...",
+        "categoryFilter": "Filter by category",
+        "availableProducts": "Available Products ({count}):"
+      },
+      "placeholders": {
+        "code": "e.g., WELCOME20",
+        "discountValuePercentage": "20",
+        "discountValueFixed": "50",
+        "usageLimit": "100",
+        "minOrder": "50",
+        "description": "Brief description of this coupon..."
+      },
+      "selectOptions": {
+        "percentage": "Percentage (%)",
+        "fixed": "Fixed Amount ($)",
+        "appliesTo": {
+          "all": "All Products",
+          "selected": "Selected Products"
+        }
+      },
+      "bulk": {
+        "selectAll": "Select All Visible ({count})",
+        "deselectAll": "Deselect Visible ({count})",
+        "addAllCategory": "Add All {category}"
+      },
+      "empty": {
+        "title": "No products found",
+        "subtitle": "Try adjusting your search or filters"
+      },
+      "buttons": {
+        "generate": "Generate",
+        "clearAll": "Clear All",
+        "add": "Add",
+        "cancel": "Cancel",
+        "create": "Create Coupon",
+        "update": "Update Coupon"
+      },
+      "validation": {
+        "codeRequired": "Coupon code is required",
+        "codeTooShort": "Coupon code must be at least 3 characters",
+        "discountValuePositive": "Discount value must be greater than 0",
+        "discountValueMaxPercentage": "Percentage discount cannot exceed 100%",
+        "usageLimitPositive": "Usage limit must be greater than 0",
+        "minOrderNonNegative": "Minimum order value must be 0 or greater",
+        "endDateAfterStart": "End date must be after start date",
+        "selectedProductsRequired": "Please select at least one product"
+      }
+    },
+    "categories": {
+      "all": "All Categories",
+      "electronics": "Electronics",
+      "clothing": "Clothing",
+      "home": "Home"
+    }
+  },
+  "emails": {
+    "title": "Email Management",
+    "subtitle": "Manage email templates, campaigns, and track all email communications.",
+    "tabs": {
+      "templates": "Templates",
+      "campaigns": "Campaigns",
+      "logs": "Email Logs",
+      "logsShort": "Logs",
+      "analytics": "Analytics"
+    },
+    "templates": {
+      "title": "Email Templates",
+      "searchPlaceholder": "Search templates...",
+      "filter": {
+        "placeholder": "Filter by type",
+        "options": {
+          "all": "All Types",
+          "transactional": "Transactional",
+          "marketing": "Marketing"
+        }
+      },
+      "table": {
+        "name": "Template Name",
+        "type": "Type",
+        "subject": "Subject",
+        "modified": "Last Modified",
+        "actions": "Actions"
+      },
+      "mobile": {
+        "modified": "Last modified {date}"
+      }
+    },
+    "campaigns": {
+      "title": "Email Campaigns",
+      "create": "New Campaign",
+      "table": {
+        "name": "Campaign Name",
+        "recipients": "Recipients",
+        "status": "Status",
+        "date": "Date",
+        "openRate": "Open Rate",
+        "clickRate": "Click Rate",
+        "actions": "Actions"
+      },
+      "mobile": {
+        "recipients": "{count} recipients",
+        "metrics": "{open} open • {click} click",
+        "date": "Scheduled for {date}",
+        "noDate": "Not scheduled"
+      }
+    },
+    "logs": {
+      "title": "Email Logs",
+      "refresh": "Refresh",
+      "export": "Export ({count})",
+      "searchPlaceholder": "Search by recipient, subject, or name...",
+      "filters": {
+        "type": {
+          "placeholder": "Filter by type",
+          "options": {
+            "all": "All Types",
+            "transactional": "Transactional",
+            "marketing": "Marketing"
+          }
+        },
+        "status": {
+          "placeholder": "Filter by status",
+          "options": {
+            "all": "All Status",
+            "sent": "Sent",
+            "failed": "Failed"
+          }
+        }
+      },
+      "table": {
+        "recipient": "Recipient",
+        "subject": "Subject",
+        "type": "Type",
+        "template": "Template",
+        "status": "Status",
+        "sent": "Sent",
+        "engagement": "Engagement"
+      },
+      "selected": "{count} selected",
+      "showing": "Showing {current} of {total} email logs",
+      "empty": "No email logs found matching your criteria.",
+      "pagination": {
+        "page": "Page {current} of {total}"
+      },
+      "activity": {
+        "opened": "Opened",
+        "clicked": "Clicked",
+        "bounced": "Bounced",
+        "unsubscribed": "Unsubscribed",
+        "none": "No activity"
+      }
+    },
+    "analytics": {
+      "cards": {
+        "sent": {
+          "title": "Total Emails Sent",
+          "change": "{change} from last month"
+        },
+        "openRate": {
+          "title": "Average Open Rate",
+          "change": "{change} from last month"
+        },
+        "clickRate": {
+          "title": "Click Through Rate",
+          "change": "{change} from last month"
+        },
+        "failed": {
+          "title": "Failed Deliveries",
+          "change": "{change} from last month"
+        }
+      },
+      "chart": {
+        "title": "Email Performance Over Time",
+        "placeholder": "Email analytics chart would be displayed here"
+      }
+    },
+    "status": {
+      "sent": "Sent",
+      "scheduled": "Scheduled",
+      "draft": "Draft",
+      "failed": "Failed",
+      "active": "Active"
+    },
+    "types": {
+      "transactional": "Transactional",
+      "marketing": "Marketing"
+    },
+    "common": {
+      "noDate": "Not scheduled",
+      "notAvailable": "Not available",
+      "selected": "selected",
+      "open": "open",
+      "click": "click"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account settings and preferences.",
+    "tabs": {
+      "general": "General",
+      "account": "Account",
+      "security": "Security",
+      "notifications": "Notifications"
+    },
+    "general": {
+      "site": {
+        "title": "Site Settings",
+        "description": "Configure your store's basic information and branding.",
+        "fields": {
+          "name": {
+            "label": "Site Name",
+            "placeholder": "Your Store Name"
+          },
+          "contactEmail": {
+            "label": "Contact Email",
+            "placeholder": "support@yourstore.com"
+          },
+          "description": {
+            "label": "Site Description",
+            "placeholder": "Brief description of your store"
+          }
+        },
+        "logo": {
+          "label": "Site Logo",
+          "button": "Upload Logo",
+          "helper": "PNG, JPG up to 2MB",
+          "alt": "Site Logo"
+        },
+        "favicon": {
+          "label": "Favicon",
+          "button": "Upload Favicon",
+          "helper": "ICO, PNG 32x32px",
+          "alt": "Favicon"
+        },
+        "save": "Save Site Settings"
+      },
+      "theme": {
+        "title": "Theme Preferences",
+        "description": "Choose how the dashboard appears to you.",
+        "modeLabel": "Theme Mode",
+        "placeholder": "Select theme",
+        "modes": {
+          "light": "Light",
+          "dark": "Dark",
+          "system": "System"
+        },
+        "current": "Current theme: {theme}"
+      },
+      "language": {
+        "title": "Language & Region",
+        "description": "Set your preferred language and regional settings.",
+        "languageLabel": "Display Language",
+        "languagePlaceholder": "Select language",
+        "languages": {
+          "english": "English",
+          "arabic": "العربية (Arabic)",
+          "spanish": "Español",
+          "french": "Français"
+        },
+        "timezoneLabel": "Time Zone",
+        "timezonePlaceholder": "Select time zone",
+        "timezones": {
+          "utc-8": "Pacific Time (UTC-8)",
+          "utc-5": "Eastern Time (UTC-5)",
+          "utc+0": "GMT (UTC+0)",
+          "utc+3": "Arabia Standard Time (UTC+3)"
+        }
+      }
+    },
+    "account": {
+      "profile": {
+        "title": "Profile Information",
+        "description": "Update your personal information and profile picture.",
+        "changePhoto": "Change Photo",
+        "photoHelper": "JPG, PNG or GIF. Max size 2MB.",
+        "fields": {
+          "name": "Full Name",
+          "email": "Email Address",
+          "phone": "Phone Number",
+          "role": "Role"
+        },
+        "roleNote": "Contact admin to change role",
+        "save": "Save Changes"
+      },
+      "password": {
+        "title": "Password & Security",
+        "description": "Update your password to keep your account secure.",
+        "fields": {
+          "current": "Current Password",
+          "new": "New Password",
+          "confirm": "Confirm New Password"
+        },
+        "helper": "Password must be at least 8 characters long and include uppercase, lowercase, and numbers.",
+        "submit": "Update Password"
+      }
+    },
+    "security": {
+      "payments": {
+        "title": "Payment Gateways",
+        "description": "Configure and manage your payment processing services.",
+        "gatewayNames": {
+          "stripe": "Stripe",
+          "paypal": "PayPal",
+          "razorpay": "Razorpay"
+        },
+        "fields": {
+          "publicKey": "Public Key",
+          "secretKey": "Secret Key",
+          "clientId": "Client ID",
+          "clientSecret": "Client Secret",
+          "keyId": "Key ID",
+          "keySecret": "Key Secret"
+        },
+        "placeholder": {
+          "key": "Enter key...",
+          "secret": "Enter secret..."
+        },
+        "lastTested": "Last tested: {date}",
+        "neverTested": "Never tested",
+        "test": "Test Connection"
+      },
+      "settings": {
+        "title": "Security Settings",
+        "description": "Manage your account security and privacy settings.",
+        "twoFactor": {
+          "label": "Two-Factor Authentication",
+          "description": "Add an extra layer of security"
+        },
+        "loginAlerts": {
+          "label": "Login Alerts",
+          "description": "Get notified of new login attempts"
+        },
+        "sessionTimeout": {
+          "label": "Session Timeout",
+          "options": {
+            "15": "15 minutes",
+            "30": "30 minutes",
+            "60": "1 hour",
+            "240": "4 hours",
+            "never": "Never"
+          }
+        }
+      },
+      "actions": {
+        "title": "Account Actions",
+        "description": "Manage your account data and preferences.",
+        "download": "Download Account Data",
+        "export": "Export Settings",
+        "delete": "Delete Account",
+        "warning": "This action cannot be undone. All your data will be permanently deleted."
+      }
+    },
+    "notifications": {
+      "title": "Notification Preferences",
+      "description": "Choose how you want to be notified about important updates.",
+      "channels": {
+        "email": {
+          "label": "Email Notifications",
+          "description": "Receive notifications via email"
+        },
+        "push": {
+          "label": "Push Notifications",
+          "description": "Receive push notifications in your browser"
+        },
+        "sms": {
+          "label": "SMS Notifications",
+          "description": "Receive important alerts via SMS"
+        },
+        "marketing": {
+          "label": "Marketing Communications",
+          "description": "Receive updates about new features and tips"
+        }
+      }
+    },
+    "status": {
+      "connected": "Connected",
+      "disconnected": "Disconnected"
+    }
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Please enter a valid email address",
+    "minLength": "Must be at least {min} characters",
+    "maxLength": "Must be no more than {max} characters",
+    "number": "Must be a valid number",
+    "positive": "Must be a positive number",
+    "url": "Please enter a valid URL",
+    "phone": "Please enter a valid phone number"
+  },
+  "messages": {
+    "success": "Success!",
+    "error": "Error!",
+    "saveSuccess": "Saved successfully",
+    "deleteSuccess": "Deleted successfully",
+    "updateSuccess": "Updated successfully",
+    "createSuccess": "Created successfully",
+    "deleteConfirm": "Are you sure you want to delete this item?",
+    "unsavedChanges": "You have unsaved changes. Are you sure you want to leave?"
+  },
+  "language": {
+    "english": "English",
+    "arabic": "العربية",
+    "selectLanguage": "Select Language",
+    "switchLanguage": "Switch Language"
+  },
+  "formatting": {
+    "currency": "$",
+    "dateFormat": "MM/DD/YYYY",
+    "timeFormat": "hh:mm A",
+    "dateTimeFormat": "MM/DD/YYYY hh:mm A"
+  }
+}

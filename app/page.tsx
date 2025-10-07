@@ -1,3 +1,5 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -5,32 +7,33 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { CircleDollarSign, ShoppingCart, Target, TrendingDown, TrendingUp, Users, Eye } from "lucide-react"
 import { AnalyticsChart } from "@/components/analytics-chart"
+import { useLanguage } from "@/providers/language-provider"
 
 // Mock data for demonstration
 const stats = [
   {
-    title: "Page Views",
+    key: "pageViews",
     value: "18,450",
     change: "+9%",
     trend: "up",
     icon: Eye,
   },
   {
-    title: "Total Sales",
+    key: "totalRevenue",
     value: "$712K",
     change: "+14%",
     trend: "up",
     icon: CircleDollarSign,
   },
   {
-    title: "New Orders",
+    key: "totalOrders",
     value: "441",
     change: "+7%",
     trend: "up",
     icon: ShoppingCart,
   },
   {
-    title: "Conversion Rate",
+    key: "averageOrderValue",
     value: "3.4%",
     change: "+0.4%",
     trend: "up",
@@ -139,12 +142,14 @@ function getStatusBadge(status: string) {
 }
 
 export default function DashboardPage() {
+  const { t, dir } = useLanguage()
+  
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir={dir}>
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Dashboard Overview</h1>
+        <h1 className="text-3xl font-bold text-foreground">{t("dashboard.title")}</h1>
         <p className="text-muted-foreground mt-2">
-          Monitor your store performance and manage your business efficiently.
+          {t("dashboard.subtitle")}
         </p>
       </div>
 
@@ -152,9 +157,9 @@ export default function DashboardPage() {
         {stats.map((stat) => {
           const Icon = stat.icon
           return (
-            <Card key={stat.title}>
+            <Card key={stat.key}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                <CardTitle className="text-sm font-medium">{t(`dashboard.${stat.key}`)}</CardTitle>
                 <Icon className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -166,7 +171,7 @@ export default function DashboardPage() {
                     <TrendingDown className="mr-1 h-3 w-3 text-red-600" />
                   )}
                   <span className={stat.trend === "up" ? "text-green-600" : "text-red-600"}>{stat.change}</span>
-                  <span className="ml-1">from last month</span>
+                  <span className="ml-1">{t("dashboard.last30Days")}</span>
                 </div>
               </CardContent>
             </Card>
@@ -177,7 +182,7 @@ export default function DashboardPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Analytics</CardTitle>
+            <CardTitle>{t("dashboard.salesOverview")}</CardTitle>
           </CardHeader>
           <CardContent>
             <AnalyticsChart />
@@ -186,7 +191,7 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Top Selling Products</CardTitle>
+            <CardTitle>{t("dashboard.topProducts")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -213,10 +218,10 @@ export default function DashboardPage() {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Recent Orders</CardTitle>
+          <CardTitle>{t("dashboard.recentOrders")}</CardTitle>
           <Button variant="outline" size="sm">
             <Eye className="mr-2 h-4 w-4" />
-            View All
+            {t("dashboard.viewAll")}
           </Button>
         </CardHeader>
         <CardContent>
@@ -224,12 +229,12 @@ export default function DashboardPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Order ID</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
+                  <TableHead className={dir === "rtl" ? "text-right" : ""}>{t("orders.orderNumber")}</TableHead>
+                  <TableHead className={dir === "rtl" ? "text-right" : ""}>{t("orders.customer")}</TableHead>
+                  <TableHead className={dir === "rtl" ? "text-right" : ""}>{t("products.product")}</TableHead>
+                  <TableHead className={dir === "rtl" ? "text-right" : ""}>{t("orders.total")}</TableHead>
+                  <TableHead className={dir === "rtl" ? "text-right" : ""}>{t("orders.status")}</TableHead>
+                  <TableHead className={dir === "rtl" ? "text-right" : ""}>{t("common.date")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

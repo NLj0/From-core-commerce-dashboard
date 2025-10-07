@@ -26,6 +26,9 @@ import {
 } from "lucide-react"
 import { EmailTemplateEditor } from "@/components/email-template-editor"
 import { EmailCampaignEditor } from "@/components/email-campaign-editor"
+import { useLanguage } from "@/providers/language-provider"
+
+type TranslateFn = (key: string) => string
 
 // Mock data for email templates
 const emailTemplates = [
@@ -142,27 +145,27 @@ const emailCampaigns = [
     name: "Winter Sale 2024",
     recipients: 1250,
     status: "sent",
-    date: "2024-01-15",
-    openRate: "24.5%",
-    clickRate: "3.2%",
+    scheduledDate: "2024-01-15",
+    openRate: 24.5,
+    clickRate: 3.2,
   },
   {
     id: 2,
     name: "New Product Launch",
     recipients: 890,
     status: "scheduled",
-    date: "2024-01-20",
-    openRate: "-",
-    clickRate: "-",
+    scheduledDate: "2024-01-20",
+    openRate: null,
+    clickRate: null,
   },
   {
     id: 3,
     name: "Customer Feedback Survey",
     recipients: 2100,
     status: "draft",
-    date: "-",
-    openRate: "-",
-    clickRate: "-",
+    scheduledDate: null,
+    openRate: null,
+    clickRate: null,
   },
 ]
 
@@ -175,9 +178,9 @@ const emailLogs = [
     subject: "Your order #ORD-001 has been confirmed",
     type: "transactional",
     status: "sent",
-    date: "2024-01-15 10:30",
+    date: "2024-01-15T10:30:00Z",
     template: "Order Confirmation",
-    openedAt: "2024-01-15 11:45",
+    openedAt: "2024-01-15T11:45:00Z",
     clickedAt: null,
     bounced: false,
     unsubscribed: false,
@@ -189,10 +192,10 @@ const emailLogs = [
     subject: "Winter Sale - 50% Off Everything!",
     type: "marketing",
     status: "sent",
-    date: "2024-01-15 09:15",
+    date: "2024-01-15T09:15:00Z",
     template: "Winter Sale 2024",
-    openedAt: "2024-01-15 10:22",
-    clickedAt: "2024-01-15 10:25",
+    openedAt: "2024-01-15T10:22:00Z",
+    clickedAt: "2024-01-15T10:25:00Z",
     bounced: false,
     unsubscribed: false,
   },
@@ -203,7 +206,7 @@ const emailLogs = [
     subject: "Your order #ORD-003 has been delivered",
     type: "transactional",
     status: "failed",
-    date: "2024-01-14 16:45",
+  date: "2024-01-14T16:45:00Z",
     template: "Product Delivery",
     openedAt: null,
     clickedAt: null,
@@ -218,7 +221,7 @@ const emailLogs = [
     subject: "Don't forget your items, Emma",
     type: "marketing",
     status: "sent",
-    date: "2024-01-14 14:20",
+    date: "2024-01-14T14:20:00Z",
     template: "Abandoned Cart",
     openedAt: null,
     clickedAt: null,
@@ -232,57 +235,156 @@ const emailLogs = [
     subject: "Welcome to our store, Alex!",
     type: "marketing",
     status: "sent",
-    date: "2024-01-13 12:00",
+    date: "2024-01-13T12:00:00Z",
     template: "Welcome Email",
-    openedAt: "2024-01-13 13:15",
-    clickedAt: "2024-01-13 13:18",
+    openedAt: "2024-01-13T13:15:00Z",
+    clickedAt: "2024-01-13T13:18:00Z",
     bounced: false,
     unsubscribed: false,
   },
 ]
 
-function getStatusBadge(status: string) {
+const analyticsCardConfig = [
+  {
+    key: "sent" as const,
+    value: 12847,
+    change: 15,
+    format: "number" as const,
+    Icon: Mail,
+  },
+  {
+    key: "openRate" as const,
+    value: 24.8,
+    change: 2.1,
+    format: "percent" as const,
+    Icon: Eye,
+  },
+  {
+    key: "clickRate" as const,
+    value: 3.4,
+    change: 0.3,
+    format: "percent" as const,
+    Icon: Users,
+  },
+  {
+    key: "failed" as const,
+    value: 127,
+    change: -8,
+    format: "number" as const,
+    Icon: Mail,
+  },
+]
+
+function getStatusBadge(status: string, t: TranslateFn) {
+  const key = `emails.status.${status}`
+  const label = t(key)
+  const text = label === key ? status : label
+
   switch (status) {
     case "sent":
-      return <Badge variant="badge-emerald">Sent</Badge>
+      return <Badge variant="badge-emerald">{text}</Badge>
     case "scheduled":
-      return <Badge variant="badge-blue">Scheduled</Badge>
+      return <Badge variant="badge-blue">{text}</Badge>
     case "draft":
-      return <Badge variant="badge-gray">Draft</Badge>
+      return <Badge variant="badge-gray">{text}</Badge>
     case "failed":
-      return <Badge variant="badge-rose">Failed</Badge>
+      return <Badge variant="badge-rose">{text}</Badge>
     case "active":
-      return <Badge variant="badge-emerald">Active</Badge>
+      return <Badge variant="badge-emerald">{text}</Badge>
     default:
-      return <Badge variant="outline">{status}</Badge>
+      return <Badge variant="outline">{text}</Badge>
   }
 }
 
-function getTypeBadge(type: string) {
+function getTypeBadge(type: string, t: TranslateFn) {
+  const key = `emails.types.${type}`
+  const label = t(key)
+  const text = label === key ? type : label
+
   switch (type) {
     case "transactional":
-      return <Badge variant="badge-blue">Transactional</Badge>
+      return <Badge variant="badge-blue">{text}</Badge>
     case "marketing":
-      return <Badge variant="secondary">Marketing</Badge>
+      return <Badge variant="secondary">{text}</Badge>
     default:
-      return <Badge variant="outline">{type}</Badge>
+      return <Badge variant="outline">{text}</Badge>
   }
+}
+
+function formatDateValue(dateString: string | null | undefined, locale: string, fallback: string) {
+  if (!dateString) {
+    return fallback
+  }
+
+  const date = new Date(dateString)
+  if (Number.isNaN(date.getTime())) {
+    return fallback
+  }
+
+  return new Intl.DateTimeFormat(locale, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+  }).format(date)
+}
+
+function formatDateTimeValue(dateString: string | null | undefined, locale: string, fallback: string) {
+  if (!dateString) {
+    return fallback
+  }
+
+  const date = new Date(dateString)
+  if (Number.isNaN(date.getTime())) {
+    return fallback
+  }
+
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date)
+}
+
+function formatPercentageValue(value: number | null | undefined, locale: string, fallback: string) {
+  if (value === null || value === undefined) {
+    return fallback
+  }
+
+  return new Intl.NumberFormat(locale, {
+    style: "percent",
+    maximumFractionDigits: 1,
+    minimumFractionDigits: 0,
+  }).format(value / 100)
+}
+
+function formatChangeValue(change: number, locale: string) {
+  const formatter = new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 1,
+    minimumFractionDigits: 0,
+  })
+  const sign = change > 0 ? "+" : ""
+  return `${sign}${formatter.format(change)}%`
 }
 
 export default function EmailsPage() {
+  const { t, dir } = useLanguage()
+  const isRTL = dir === "rtl"
+  const locale = isRTL ? "ar-EG" : "en-US"
+  const notAvailableText = t("emails.common.notAvailable")
+  const notScheduledText = t("emails.common.noDate")
+
   const [isTemplateEditorOpen, setIsTemplateEditorOpen] = useState(false)
   const [isCampaignEditorOpen, setIsCampaignEditorOpen] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null)
   const [selectedCampaign, setSelectedCampaign] = useState<any>(null)
 
   const [logTypeFilter, setLogTypeFilter] = useState("all")
-  const [logStatusFilter, setLogStatusFilter] = useState("all-status")
+  const [logStatusFilter, setLogStatusFilter] = useState("all")
   const [logSearchTerm, setLogSearchTerm] = useState("")
   const [selectedLogEntries, setSelectedLogEntries] = useState<number[]>([])
 
   const filteredEmailLogs = emailLogs.filter((log) => {
     const matchesType = logTypeFilter === "all" || log.type === logTypeFilter
-    const matchesStatus = logStatusFilter === "all-status" || log.status === logStatusFilter
+    const matchesStatus = logStatusFilter === "all" || log.status === logStatusFilter
     const matchesSearch =
       logSearchTerm === "" ||
       log.recipient.toLowerCase().includes(logSearchTerm.toLowerCase()) ||
@@ -315,88 +417,129 @@ export default function EmailsPage() {
   }
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="flex flex-col">
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Email Management</h1>
-        <p className="text-muted-foreground mt-1 md:mt-2">
-          Manage email templates, campaigns, and track all email communications.
-        </p>
+    <div className="space-y-4 md:space-y-6" dir={dir}>
+      <div className={`flex flex-col ${isRTL ? "text-right" : "text-left"}`}>
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("emails.title")}</h1>
+        <p className="text-muted-foreground mt-1 md:mt-2">{t("emails.subtitle")}</p>
       </div>
 
       <Tabs defaultValue="templates" className="space-y-4 md:space-y-6">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
-          <TabsTrigger value="templates" className="text-xs md:text-sm">
-            <FileText className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
-            <span className="hidden sm:inline">Templates</span>
-            <span className="sm:hidden">Templates</span>
+          <TabsTrigger
+            value="templates"
+            className={`flex items-center justify-center gap-1 md:gap-2 text-xs md:text-sm ${isRTL ? "flex-row-reverse" : ""}`}
+          >
+            <FileText className="h-3 w-3 md:h-4 md:w-4" />
+            <span>{t("emails.tabs.templates")}</span>
           </TabsTrigger>
-          <TabsTrigger value="campaigns" className="text-xs md:text-sm">
-            <Users className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
-            <span className="hidden sm:inline">Campaigns</span>
-            <span className="sm:hidden">Campaigns</span>
+          <TabsTrigger
+            value="campaigns"
+            className={`flex items-center justify-center gap-1 md:gap-2 text-xs md:text-sm ${isRTL ? "flex-row-reverse" : ""}`}
+          >
+            <Users className="h-3 w-3 md:h-4 md:w-4" />
+            <span>{t("emails.tabs.campaigns")}</span>
           </TabsTrigger>
-          <TabsTrigger value="logs" className="text-xs md:text-sm">
-            <Mail className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
-            <span className="hidden sm:inline">Email Logs</span>
-            <span className="sm:hidden">Logs</span>
+          <TabsTrigger
+            value="logs"
+            className={`flex items-center justify-center gap-1 md:gap-2 text-xs md:text-sm ${isRTL ? "flex-row-reverse" : ""}`}
+          >
+            <Mail className="h-3 w-3 md:h-4 md:w-4" />
+            <span className="hidden sm:inline">{t("emails.tabs.logs")}</span>
+            <span className="sm:hidden">{t("emails.tabs.logsShort")}</span>
           </TabsTrigger>
-          <TabsTrigger value="analytics" className="text-xs md:text-sm">
-            <Calendar className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
-            <span className="hidden sm:inline">Analytics</span>
-            <span className="sm:hidden">Analytics</span>
+          <TabsTrigger
+            value="analytics"
+            className={`flex items-center justify-center gap-1 md:gap-2 text-xs md:text-sm ${isRTL ? "flex-row-reverse" : ""}`}
+          >
+            <Calendar className="h-3 w-3 md:h-4 md:w-4" />
+            <span>{t("emails.tabs.analytics")}</span>
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="templates" className="space-y-4 md:space-y-6">
           <Card>
-            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-              <CardTitle className="text-lg md:text-xl">Email Templates</CardTitle>
+            <CardHeader
+              className={`flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 ${isRTL ? "sm:flex-row-reverse" : ""}`}
+            >
+              <CardTitle className={`text-lg md:text-xl ${isRTL ? "text-right" : "text-left"}`}>
+                {t("emails.templates.title")}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
+                <div
+                  className={`flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 ${isRTL ? "sm:flex-row-reverse" : ""}`}
+                >
                   <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input placeholder="Search templates..." className="pl-10" />
+                    <Search
+                      className={`absolute top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground ${isRTL ? "right-3" : "left-3"}`}
+                    />
+                    <Input
+                      placeholder={t("emails.templates.searchPlaceholder")}
+                      className={`${isRTL ? "pr-10 text-right" : "pl-10"}`}
+                    />
                   </div>
                   <Select defaultValue="all">
-                    <SelectTrigger className="w-full sm:w-[180px]">
-                      <SelectValue placeholder="Filter by type" />
+                    <SelectTrigger
+                      className={`w-full sm:w-[180px] ${isRTL ? "justify-between text-right" : "justify-between"}`}
+                    >
+                      <SelectValue placeholder={t("emails.templates.filter.placeholder")} />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
-                      <SelectItem value="transactional">Transactional</SelectItem>
-                      <SelectItem value="marketing">Marketing</SelectItem>
+                    <SelectContent align={isRTL ? "start" : "end"} className={isRTL ? "text-right" : ""}>
+                      <SelectItem value="all" className={isRTL ? "justify-end text-right" : ""}>
+                        {t("emails.templates.filter.options.all")}
+                      </SelectItem>
+                      <SelectItem value="transactional" className={isRTL ? "justify-end text-right" : ""}>
+                        {t("emails.templates.filter.options.transactional")}
+                      </SelectItem>
+                      <SelectItem value="marketing" className={isRTL ? "justify-end text-right" : ""}>
+                        {t("emails.templates.filter.options.marketing")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="hidden md:block">
-                  <Table>
+                  <Table dir={dir}>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Template Name</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead className="hidden lg:table-cell">Subject</TableHead>
-                        <TableHead>Last Modified</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead className={isRTL ? "text-right" : ""}>{t("emails.templates.table.name")}</TableHead>
+                        <TableHead className={isRTL ? "text-right" : ""}>{t("emails.templates.table.type")}</TableHead>
+                        <TableHead className={`hidden lg:table-cell ${isRTL ? "text-right" : ""}`}>
+                          {t("emails.templates.table.subject")}
+                        </TableHead>
+                        <TableHead className={isRTL ? "text-right" : ""}>{t("emails.templates.table.modified")}</TableHead>
+                        <TableHead className={isRTL ? "text-left" : "text-right"}>
+                          {t("emails.templates.table.actions")}
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {emailTemplates.map((template) => (
                         <TableRow key={template.id}>
-                          <TableCell className="font-medium">{template.name}</TableCell>
-                          <TableCell>{getTypeBadge(template.type)}</TableCell>
-                          <TableCell className="max-w-xs truncate hidden lg:table-cell">{template.subject}</TableCell>
-                          <TableCell className="text-muted-foreground text-sm">{template.lastModified}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Button variant="ghost" size="sm">
+                          <TableCell className={`font-medium ${isRTL ? "text-right" : ""}`}>{template.name}</TableCell>
+                          <TableCell className={isRTL ? "text-right" : ""}>{getTypeBadge(template.type, t)}</TableCell>
+                          <TableCell className={`max-w-xs truncate hidden lg:table-cell ${isRTL ? "text-right" : ""}`}>
+                            {template.subject}
+                          </TableCell>
+                          <TableCell className={`text-muted-foreground text-sm ${isRTL ? "text-right" : ""}`}>
+                            {formatDateValue(template.lastModified, locale, notAvailableText)}
+                          </TableCell>
+                          <TableCell className={isRTL ? "text-left" : "text-right"}>
+                            <div className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                aria-label={t("common.view")}
+                              >
                                 <Eye className="h-4 w-4" />
                               </Button>
                               <Button
                                 variant="ghost"
                                 size="sm"
+                                className="h-8 w-8 p-0"
+                                aria-label={t("common.edit")}
                                 onClick={() => {
                                   setSelectedTemplate(template)
                                   setIsTemplateEditorOpen(true)
@@ -413,38 +556,51 @@ export default function EmailsPage() {
                 </div>
 
                 <div className="md:hidden space-y-4">
-                  {emailTemplates.map((template) => (
-                    <Card key={template.id}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-medium text-sm truncate">{template.name}</h3>
-                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{template.subject}</p>
+                  {emailTemplates.map((template) => {
+                    const modifiedLabel = formatDateValue(template.lastModified, locale, notAvailableText)
+                    const modifiedText = t("emails.templates.mobile.modified").replace("{date}", modifiedLabel)
+
+                    return (
+                      <Card key={template.id} className={isRTL ? "text-right" : ""}>
+                        <CardContent className="p-4">
+                          <div className={`flex items-start justify-between mb-3 ${isRTL ? "flex-row-reverse" : ""}`}>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-medium text-sm truncate">{template.name}</h3>
+                              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{template.subject}</p>
+                            </div>
+                            <div className={`flex items-center gap-1 ${isRTL ? "mr-2 flex-row-reverse" : "ml-2"}`}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                aria-label={t("common.view")}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                aria-label={t("common.edit")}
+                                onClick={() => {
+                                  setSelectedTemplate(template)
+                                  setIsTemplateEditorOpen(true)
+                                }}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1 ml-2">
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                              onClick={() => {
-                                setSelectedTemplate(template)
-                                setIsTemplateEditorOpen(true)
-                              }}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
+                          <div className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}>
+                            <div className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
+                              {getTypeBadge(template.type, t)}
+                            </div>
+                            <span className="text-xs text-muted-foreground">{modifiedText}</span>
                           </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">{getTypeBadge(template.type)}</div>
-                          <span className="text-xs text-muted-foreground">{template.lastModified}</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
                 </div>
               </div>
             </CardContent>
@@ -453,8 +609,12 @@ export default function EmailsPage() {
 
         <TabsContent value="campaigns" className="space-y-4 md:space-y-6">
           <Card>
-            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-              <CardTitle className="text-lg md:text-xl">Email Campaigns</CardTitle>
+            <CardHeader
+              className={`flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 ${isRTL ? "sm:flex-row-reverse" : ""}`}
+            >
+              <CardTitle className={`text-lg md:text-xl ${isRTL ? "text-right" : "text-left"}`}>
+                {t("emails.campaigns.title")}
+              </CardTitle>
               <Button
                 variant="outline"
                 size="sm"
@@ -462,43 +622,123 @@ export default function EmailsPage() {
                   setSelectedCampaign(null)
                   setIsCampaignEditorOpen(true)
                 }}
-                className="w-full sm:w-auto"
+                className={`w-full sm:w-auto ${isRTL ? "flex-row-reverse" : ""}`}
               >
-                <Plus className="mr-2 h-4 w-4" />
-                New Campaign
+                <Plus className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+                {t("emails.campaigns.create")}
               </Button>
             </CardHeader>
             <CardContent>
               <div className="hidden md:block">
-                <Table>
+                <Table dir={dir}>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Campaign Name</TableHead>
-                      <TableHead>Recipients</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead className="hidden lg:table-cell">Open Rate</TableHead>
-                      <TableHead className="hidden lg:table-cell">Click Rate</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead className={isRTL ? "text-right" : ""}>{t("emails.campaigns.table.name")}</TableHead>
+                      <TableHead className={isRTL ? "text-right" : ""}>{t("emails.campaigns.table.recipients")}</TableHead>
+                      <TableHead className={isRTL ? "text-right" : ""}>{t("emails.campaigns.table.status")}</TableHead>
+                      <TableHead className={isRTL ? "text-right" : ""}>{t("emails.campaigns.table.date")}</TableHead>
+                      <TableHead className={`hidden lg:table-cell ${isRTL ? "text-right" : ""}`}>
+                        {t("emails.campaigns.table.openRate")}
+                      </TableHead>
+                      <TableHead className={`hidden lg:table-cell ${isRTL ? "text-right" : ""}`}>
+                        {t("emails.campaigns.table.clickRate")}
+                      </TableHead>
+                      <TableHead className={isRTL ? "text-left" : "text-right"}>
+                        {t("emails.campaigns.table.actions")}
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {emailCampaigns.map((campaign) => (
-                      <TableRow key={campaign.id}>
-                        <TableCell className="font-medium">{campaign.name}</TableCell>
-                        <TableCell>{campaign.recipients.toLocaleString()}</TableCell>
-                        <TableCell>{getStatusBadge(campaign.status)}</TableCell>
-                        <TableCell className="text-muted-foreground text-sm">{campaign.date}</TableCell>
-                        <TableCell className="hidden lg:table-cell">{campaign.openRate}</TableCell>
-                        <TableCell className="hidden lg:table-cell">{campaign.clickRate}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="sm">
+                    {emailCampaigns.map((campaign) => {
+                      const scheduledLabel = formatDateValue(campaign.scheduledDate, locale, notScheduledText)
+                      const openRateLabel = formatPercentageValue(campaign.openRate, locale, notAvailableText)
+                      const clickRateLabel = formatPercentageValue(campaign.clickRate, locale, notAvailableText)
+
+                      return (
+                        <TableRow key={campaign.id}>
+                          <TableCell className={`font-medium ${isRTL ? "text-right" : ""}`}>{campaign.name}</TableCell>
+                          <TableCell className={isRTL ? "text-right" : ""}>
+                            {campaign.recipients.toLocaleString(locale)}
+                          </TableCell>
+                          <TableCell className={isRTL ? "text-right" : ""}>{getStatusBadge(campaign.status, t)}</TableCell>
+                          <TableCell className={`text-muted-foreground text-sm ${isRTL ? "text-right" : ""}`}>
+                            {scheduledLabel}
+                          </TableCell>
+                          <TableCell className={`hidden lg:table-cell ${isRTL ? "text-right" : ""}`}>
+                            {openRateLabel}
+                          </TableCell>
+                          <TableCell className={`hidden lg:table-cell ${isRTL ? "text-right" : ""}`}>
+                            {clickRateLabel}
+                          </TableCell>
+                          <TableCell className={isRTL ? "text-left" : "text-right"}>
+                            <div className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                aria-label={t("common.view")}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                aria-label={t("common.edit")}
+                                onClick={() => {
+                                  setSelectedCampaign(campaign)
+                                  setIsCampaignEditorOpen(true)
+                                }}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="md:hidden space-y-4">
+                {emailCampaigns.map((campaign) => {
+                  const scheduledLabel = formatDateValue(campaign.scheduledDate, locale, notScheduledText)
+                  const openRateLabel = formatPercentageValue(campaign.openRate, locale, notAvailableText)
+                  const clickRateLabel = formatPercentageValue(campaign.clickRate, locale, notAvailableText)
+                  const recipientsLabel = t("emails.campaigns.mobile.recipients").replace(
+                    "{count}",
+                    campaign.recipients.toLocaleString(locale),
+                  )
+                  const dateLabel = campaign.scheduledDate
+                    ? t("emails.campaigns.mobile.date").replace("{date}", scheduledLabel)
+                    : t("emails.campaigns.mobile.noDate")
+                  const metricsLabel = t("emails.campaigns.mobile.metrics")
+                    .replace("{open}", openRateLabel)
+                    .replace("{click}", clickRateLabel)
+
+                  return (
+                    <Card key={campaign.id} className={isRTL ? "text-right" : ""}>
+                      <CardContent className="p-4">
+                        <div className={`flex items-start justify-between mb-3 ${isRTL ? "flex-row-reverse" : ""}`}>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-medium text-sm">{campaign.name}</h3>
+                            <p className="text-xs text-muted-foreground mt-1">{recipientsLabel}</p>
+                          </div>
+                          <div className={`flex items-center gap-1 ${isRTL ? "mr-2 flex-row-reverse" : "ml-2"}`}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              aria-label={t("common.view")}
+                            >
                               <Eye className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
+                              className="h-8 w-8 p-0"
+                              aria-label={t("common.edit")}
                               onClick={() => {
                                 setSelectedCampaign(campaign)
                                 setIsCampaignEditorOpen(true)
@@ -507,53 +747,20 @@ export default function EmailsPage() {
                               <Edit className="h-4 w-4" />
                             </Button>
                           </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-
-              <div className="md:hidden space-y-4">
-                {emailCampaigns.map((campaign) => (
-                  <Card key={campaign.id}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-sm">{campaign.name}</h3>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {campaign.recipients.toLocaleString()} recipients
-                          </p>
                         </div>
-                        <div className="flex items-center gap-1 ml-2">
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            onClick={() => {
-                              setSelectedCampaign(campaign)
-                              setIsCampaignEditorOpen(true)
-                            }}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">{getStatusBadge(campaign.status)}</div>
-                        <div className="text-right">
-                          <div className="text-xs text-muted-foreground">{campaign.date}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {campaign.openRate} open • {campaign.clickRate} click
+                        <div className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}>
+                          <div className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
+                            {getStatusBadge(campaign.status, t)}
+                          </div>
+                          <div className={isRTL ? "text-left" : "text-right"}>
+                            <div className="text-xs text-muted-foreground">{dateLabel}</div>
+                            <div className="text-xs text-muted-foreground">{metricsLabel}</div>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  )
+                })}
               </div>
             </CardContent>
           </Card>
@@ -561,63 +768,91 @@ export default function EmailsPage() {
 
         <TabsContent value="logs" className="space-y-4 md:space-y-6">
           <Card>
-            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-              <CardTitle className="text-lg md:text-xl">Email Logs</CardTitle>
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <CardHeader
+              className={`flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 ${isRTL ? "sm:flex-row-reverse" : ""}`}
+            >
+              <CardTitle className={`text-lg md:text-xl ${isRTL ? "text-right" : "text-left"}`}>
+                {t("emails.logs.title")}
+              </CardTitle>
+              <div
+                className={`flex flex-col sm:flex-row items-stretch sm:items-center gap-2 ${isRTL ? "sm:flex-row-reverse" : ""}`}
+              >
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => window.location.reload()}
-                  className="w-full sm:w-auto"
+                  className={`w-full sm:w-auto ${isRTL ? "flex-row-reverse" : ""}`}
                 >
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  <span className="hidden sm:inline">Refresh</span>
-                  <span className="sm:hidden">Refresh</span>
+                  <RefreshCw className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+                  {t("emails.logs.refresh")}
                 </Button>
                 {selectedLogEntries.length > 0 && (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={exportSelectedLogs}
-                    className="w-full sm:w-auto bg-transparent"
+                    className={`w-full sm:w-auto bg-transparent ${isRTL ? "flex-row-reverse" : ""}`}
                   >
-                    <Download className="mr-2 h-4 w-4" />
-                    Export ({selectedLogEntries.length})
+                    <Download className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+                    {t("emails.logs.export").replace(
+                      "{count}",
+                      selectedLogEntries.length.toLocaleString(locale),
+                    )}
                   </Button>
                 )}
               </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                <div
+                  className={`flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4 ${isRTL ? "sm:flex-row-reverse" : ""}`}
+                >
                   <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Search
+                      className={`absolute top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground ${isRTL ? "right-3" : "left-3"}`}
+                    />
                     <Input
-                      placeholder="Search by recipient, subject, or name..."
-                      className="pl-10"
+                      placeholder={t("emails.logs.searchPlaceholder")}
+                      className={`${isRTL ? "pr-10 text-right" : "pl-10"}`}
                       value={logSearchTerm}
                       onChange={(e) => setLogSearchTerm(e.target.value)}
                     />
                   </div>
-                  <div className="flex gap-2">
+                  <div className={`flex gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
                     <Select value={logTypeFilter} onValueChange={setLogTypeFilter}>
-                      <SelectTrigger className="w-full sm:w-[150px]">
-                        <SelectValue placeholder="Filter by type" />
+                      <SelectTrigger
+                        className={`w-full sm:w-[150px] ${isRTL ? "justify-between text-right" : "justify-between"}`}
+                      >
+                        <SelectValue placeholder={t("emails.logs.filters.type.placeholder")} />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Types</SelectItem>
-                        <SelectItem value="transactional">Transactional</SelectItem>
-                        <SelectItem value="marketing">Marketing</SelectItem>
+                      <SelectContent align={isRTL ? "start" : "end"} className={isRTL ? "text-right" : ""}>
+                        <SelectItem value="all" className={isRTL ? "justify-end text-right" : ""}>
+                          {t("emails.logs.filters.type.options.all")}
+                        </SelectItem>
+                        <SelectItem value="transactional" className={isRTL ? "justify-end text-right" : ""}>
+                          {t("emails.logs.filters.type.options.transactional")}
+                        </SelectItem>
+                        <SelectItem value="marketing" className={isRTL ? "justify-end text-right" : ""}>
+                          {t("emails.logs.filters.type.options.marketing")}
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <Select value={logStatusFilter} onValueChange={setLogStatusFilter}>
-                      <SelectTrigger className="w-full sm:w-[150px]">
-                        <SelectValue placeholder="Filter by status" />
+                      <SelectTrigger
+                        className={`w-full sm:w-[150px] ${isRTL ? "justify-between text-right" : "justify-between"}`}
+                      >
+                        <SelectValue placeholder={t("emails.logs.filters.status.placeholder")} />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all-status">All Status</SelectItem>
-                        <SelectItem value="sent">Sent</SelectItem>
-                        <SelectItem value="failed">Failed</SelectItem>
+                      <SelectContent align={isRTL ? "start" : "end"} className={isRTL ? "text-right" : ""}>
+                        <SelectItem value="all" className={isRTL ? "justify-end text-right" : ""}>
+                          {t("emails.logs.filters.status.options.all")}
+                        </SelectItem>
+                        <SelectItem value="sent" className={isRTL ? "justify-end text-right" : ""}>
+                          {t("emails.logs.filters.status.options.sent")}
+                        </SelectItem>
+                        <SelectItem value="failed" className={isRTL ? "justify-end text-right" : ""}>
+                          {t("emails.logs.filters.status.options.failed")}
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -625,196 +860,248 @@ export default function EmailsPage() {
 
                 <div className="hidden md:block">
                   <div className="rounded-md border">
-                    <Table>
+                    <Table dir={dir}>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="w-12">
+                          <TableHead className={`w-12 ${isRTL ? "text-right" : ""}`}>
                             <Checkbox
                               checked={
                                 selectedLogEntries.length === filteredEmailLogs.length && filteredEmailLogs.length > 0
                               }
-                              onCheckedChange={handleSelectAllLogs}
+                              onCheckedChange={(checked) => handleSelectAllLogs(Boolean(checked))}
+                              aria-label={t("emails.logs.table.select")}
                             />
                           </TableHead>
-                          <TableHead>Recipient</TableHead>
-                          <TableHead className="hidden lg:table-cell">Subject</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead className="hidden lg:table-cell">Template</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className="hidden lg:table-cell">Sent</TableHead>
-                          <TableHead className="hidden xl:table-cell">Engagement</TableHead>
+                          <TableHead className={isRTL ? "text-right" : ""}>
+                            {t("emails.logs.table.recipient")}
+                          </TableHead>
+                          <TableHead className={`hidden lg:table-cell ${isRTL ? "text-right" : ""}`}>
+                            {t("emails.logs.table.subject")}
+                          </TableHead>
+                          <TableHead className={isRTL ? "text-right" : ""}>
+                            {t("emails.logs.table.type")}
+                          </TableHead>
+                          <TableHead className={`hidden lg:table-cell ${isRTL ? "text-right" : ""}`}>
+                            {t("emails.logs.table.template")}
+                          </TableHead>
+                          <TableHead className={isRTL ? "text-right" : ""}>
+                            {t("emails.logs.table.status")}
+                          </TableHead>
+                          <TableHead className={`hidden lg:table-cell ${isRTL ? "text-right" : ""}`}>
+                            {t("emails.logs.table.sent")}
+                          </TableHead>
+                          <TableHead className={`hidden xl:table-cell ${isRTL ? "text-right" : ""}`}>
+                            {t("emails.logs.table.engagement")}
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredEmailLogs.map((log) => (
-                          <TableRow key={log.id}>
-                            <TableCell>
-                              <Checkbox
-                                checked={selectedLogEntries.includes(log.id)}
-                                onCheckedChange={(checked) => handleLogEntrySelection(log.id, checked as boolean)}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div>
-                                <div className="font-medium text-sm">{log.recipientName}</div>
-                                <div className="text-xs text-muted-foreground">{log.recipient}</div>
-                              </div>
-                            </TableCell>
-                            <TableCell className="max-w-xs hidden lg:table-cell">
-                              <div className="truncate" title={log.subject}>
-                                {log.subject}
-                              </div>
-                            </TableCell>
-                            <TableCell>{getTypeBadge(log.type)}</TableCell>
-                            <TableCell className="text-muted-foreground text-sm hidden lg:table-cell">
-                              {log.template}
-                            </TableCell>
-                            <TableCell>
-                              <div className="space-y-1">
-                                {getStatusBadge(log.status)}
-                                {log.status === "failed" && log.failureReason && (
-                                  <div className="text-xs text-red-600">{log.failureReason}</div>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-muted-foreground text-xs hidden lg:table-cell">
-                              {log.date}
-                            </TableCell>
-                            <TableCell className="hidden xl:table-cell">
-                              <div className="space-y-1">
-                                {log.openedAt && (
-                                  <div className="flex items-center gap-1 text-xs text-green-600">
-                                    <Eye className="h-3 w-3" />
-                                    Opened
-                                  </div>
-                                )}
-                                {log.clickedAt && (
-                                  <div className="flex items-center gap-1 text-xs text-blue-600">
-                                    <Mail className="h-3 w-3" />
-                                    Clicked
-                                  </div>
-                                )}
-                                {log.bounced && (
-                                  <div className="flex items-center gap-1 text-xs text-red-600">
-                                    <RefreshCw className="h-3 w-3" />
-                                    Bounced
-                                  </div>
-                                )}
-                                {log.unsubscribed && (
-                                  <div className="flex items-center gap-1 text-xs text-orange-600">
-                                    <Users className="h-3 w-3" />
-                                    Unsubscribed
-                                  </div>
-                                )}
-                                {!log.openedAt &&
-                                  !log.clickedAt &&
-                                  !log.bounced &&
-                                  !log.unsubscribed &&
-                                  log.status === "sent" && (
-                                    <div className="text-xs text-muted-foreground">No activity</div>
+                        {filteredEmailLogs.map((log) => {
+                          const sentLabel = formatDateTimeValue(log.date, locale, notAvailableText)
+
+                          return (
+                            <TableRow key={log.id}>
+                              <TableCell className={isRTL ? "text-right" : ""}>
+                                <Checkbox
+                                  checked={selectedLogEntries.includes(log.id)}
+                                  onCheckedChange={(checked) => handleLogEntrySelection(log.id, Boolean(checked))}
+                                  aria-label={t("emails.logs.table.select")}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <div className={isRTL ? "text-right" : ""}>
+                                  <div className="font-medium text-sm">{log.recipientName}</div>
+                                  <div className="text-xs text-muted-foreground">{log.recipient}</div>
+                                </div>
+                              </TableCell>
+                              <TableCell className={`max-w-xs hidden lg:table-cell ${isRTL ? "text-right" : ""}`}>
+                                <div className="truncate" title={log.subject}>
+                                  {log.subject}
+                                </div>
+                              </TableCell>
+                              <TableCell className={isRTL ? "text-right" : ""}>{getTypeBadge(log.type, t)}</TableCell>
+                              <TableCell className={`text-muted-foreground text-sm hidden lg:table-cell ${isRTL ? "text-right" : ""}`}>
+                                {log.template}
+                              </TableCell>
+                              <TableCell>
+                                <div className={`space-y-1 ${isRTL ? "text-right" : ""}`}>
+                                  {getStatusBadge(log.status, t)}
+                                  {log.status === "failed" && log.failureReason && (
+                                    <div className="text-xs text-red-600">{log.failureReason}</div>
                                   )}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                                </div>
+                              </TableCell>
+                              <TableCell className={`text-muted-foreground text-xs hidden lg:table-cell ${isRTL ? "text-right" : ""}`}>
+                                {sentLabel}
+                              </TableCell>
+                              <TableCell className={`hidden xl:table-cell ${isRTL ? "text-right" : ""}`}>
+                                <div className="space-y-1">
+                                  {log.openedAt && (
+                                    <div className="flex items-center gap-1 text-xs text-green-600">
+                                      <Eye className="h-3 w-3" />
+                                      {t("emails.logs.activity.opened")}
+                                    </div>
+                                  )}
+                                  {log.clickedAt && (
+                                    <div className="flex items-center gap-1 text-xs text-blue-600">
+                                      <Mail className="h-3 w-3" />
+                                      {t("emails.logs.activity.clicked")}
+                                    </div>
+                                  )}
+                                  {log.bounced && (
+                                    <div className="flex items-center gap-1 text-xs text-red-600">
+                                      <RefreshCw className="h-3 w-3" />
+                                      {t("emails.logs.activity.bounced")}
+                                    </div>
+                                  )}
+                                  {log.unsubscribed && (
+                                    <div className="flex items-center gap-1 text-xs text-orange-600">
+                                      <Users className="h-3 w-3" />
+                                      {t("emails.logs.activity.unsubscribed")}
+                                    </div>
+                                  )}
+                                  {!log.openedAt &&
+                                    !log.clickedAt &&
+                                    !log.bounced &&
+                                    !log.unsubscribed &&
+                                    log.status === "sent" && (
+                                      <div className="text-xs text-muted-foreground">
+                                        {t("emails.logs.activity.none")}
+                                      </div>
+                                    )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })}
                       </TableBody>
                     </Table>
                   </div>
                 </div>
 
                 <div className="md:hidden space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}>
                     <Checkbox
-                      checked={selectedLogEntries.length === filteredEmailLogs.length && filteredEmailLogs.length > 0}
-                      onCheckedChange={handleSelectAllLogs}
+                      checked={
+                        selectedLogEntries.length === filteredEmailLogs.length && filteredEmailLogs.length > 0
+                      }
+                      onCheckedChange={(checked) => handleSelectAllLogs(Boolean(checked))}
+                      aria-label={t("emails.logs.table.select")}
                     />
                     <span className="text-sm text-muted-foreground">
-                      {selectedLogEntries.length > 0 && `${selectedLogEntries.length} selected`}
+                      {selectedLogEntries.length > 0
+                        ? t("emails.logs.selected").replace(
+                            "{count}",
+                            selectedLogEntries.length.toLocaleString(locale),
+                          )
+                        : ""}
                     </span>
                   </div>
-                  {filteredEmailLogs.map((log) => (
-                    <Card key={log.id}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-3">
-                          <Checkbox
-                            checked={selectedLogEntries.includes(log.id)}
-                            onCheckedChange={(checked) => handleLogEntrySelection(log.id, checked as boolean)}
-                            className="mt-1"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between mb-2">
-                              <div className="flex-1 min-w-0">
-                                <h3 className="font-medium text-sm">{log.recipientName}</h3>
-                                <p className="text-xs text-muted-foreground truncate">{log.recipient}</p>
+                  {filteredEmailLogs.map((log) => {
+                    const sentLabel = formatDateTimeValue(log.date, locale, notAvailableText)
+
+                    return (
+                      <Card key={log.id} className={isRTL ? "text-right" : ""}>
+                        <CardContent className="p-4">
+                          <div className={`flex items-start gap-3 ${isRTL ? "flex-row-reverse" : ""}`}>
+                            <Checkbox
+                              checked={selectedLogEntries.includes(log.id)}
+                              onCheckedChange={(checked) => handleLogEntrySelection(log.id, Boolean(checked))}
+                              className="mt-1"
+                              aria-label={t("emails.logs.table.select")}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className={`flex items-start justify-between mb-2 ${isRTL ? "flex-row-reverse" : ""}`}>
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="font-medium text-sm">{log.recipientName}</h3>
+                                  <p className="text-xs text-muted-foreground truncate">{log.recipient}</p>
+                                </div>
+                                <div className={isRTL ? "mr-2" : "ml-2"}>{getStatusBadge(log.status, t)}</div>
                               </div>
-                              <div className="ml-2">{getStatusBadge(log.status)}</div>
+                              <p className="text-sm mb-2 line-clamp-2">{log.subject}</p>
+                              <div
+                                className={`flex items-center justify-between text-xs text-muted-foreground ${isRTL ? "flex-row-reverse" : ""}`}
+                              >
+                                <div className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
+                                  {getTypeBadge(log.type, t)}
+                                  <span>{log.template}</span>
+                                </div>
+                                <span>{sentLabel}</span>
+                              </div>
+                              {(log.openedAt || log.clickedAt || log.bounced || log.unsubscribed) && (
+                                <div className={`flex items-center gap-3 mt-2 text-xs ${isRTL ? "flex-row-reverse" : ""}`}>
+                                  {log.openedAt && (
+                                    <div className="flex items-center gap-1 text-green-600">
+                                      <Eye className="h-3 w-3" />
+                                      {t("emails.logs.activity.opened")}
+                                    </div>
+                                  )}
+                                  {log.clickedAt && (
+                                    <div className="flex items-center gap-1 text-blue-600">
+                                      <Mail className="h-3 w-3" />
+                                      {t("emails.logs.activity.clicked")}
+                                    </div>
+                                  )}
+                                  {log.bounced && (
+                                    <div className="flex items-center gap-1 text-red-600">
+                                      <RefreshCw className="h-3 w-3" />
+                                      {t("emails.logs.activity.bounced")}
+                                    </div>
+                                  )}
+                                  {log.unsubscribed && (
+                                    <div className="flex items-center gap-1 text-orange-600">
+                                      <Users className="h-3 w-3" />
+                                      {t("emails.logs.activity.unsubscribed")}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                              {log.status === "failed" && log.failureReason && (
+                                <div className="text-xs text-red-600 mt-1">{log.failureReason}</div>
+                              )}
                             </div>
-                            <p className="text-sm mb-2 line-clamp-2">{log.subject}</p>
-                            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                              <div className="flex items-center gap-2">
-                                {getTypeBadge(log.type)}
-                                <span>{log.template}</span>
-                              </div>
-                              <span>{log.date}</span>
-                            </div>
-                            {(log.openedAt || log.clickedAt || log.bounced || log.unsubscribed) && (
-                              <div className="flex items-center gap-3 mt-2 text-xs">
-                                {log.openedAt && (
-                                  <div className="flex items-center gap-1 text-green-600">
-                                    <Eye className="h-3 w-3" />
-                                    Opened
-                                  </div>
-                                )}
-                                {log.clickedAt && (
-                                  <div className="flex items-center gap-1 text-blue-600">
-                                    <Mail className="h-3 w-3" />
-                                    Clicked
-                                  </div>
-                                )}
-                                {log.bounced && (
-                                  <div className="flex items-center gap-1 text-red-600">
-                                    <RefreshCw className="h-3 w-3" />
-                                    Bounced
-                                  </div>
-                                )}
-                                {log.unsubscribed && (
-                                  <div className="flex items-center gap-1 text-orange-600">
-                                    <Users className="h-3 w-3" />
-                                    Unsubscribed
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                            {log.status === "failed" && log.failureReason && (
-                              <div className="text-xs text-red-600 mt-1">{log.failureReason}</div>
-                            )}
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
                 </div>
 
                 {filteredEmailLogs.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No email logs found matching your criteria.
+                  <div className={`text-center py-8 text-muted-foreground ${isRTL ? "text-right" : "text-center"}`}>
+                    {t("emails.logs.empty")}
                   </div>
                 )}
 
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-muted-foreground">
-                  <div className="text-center sm:text-left">
-                    Showing {filteredEmailLogs.length} of {emailLogs.length} email logs
+                <div
+                  className={`flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-muted-foreground ${isRTL ? "sm:flex-row-reverse" : ""}`}
+                >
+                  <div className={`text-center sm:text-left ${isRTL ? "sm:text-right" : ""}`}>
+                    {t("emails.logs.showing")
+                      .replace("{current}", filteredEmailLogs.length.toLocaleString(locale))
+                      .replace("{total}", emailLogs.length.toLocaleString(locale))}
                     {selectedLogEntries.length > 0 && (
-                      <span className="ml-2">({selectedLogEntries.length} selected)</span>
+                      <span className={isRTL ? "mr-2" : "ml-2"}>
+                        (
+                        {t("emails.logs.selected").replace(
+                          "{count}",
+                          selectedLogEntries.length.toLocaleString(locale),
+                        )}
+                        )
+                      </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 sm:gap-4">
+                  <div className={`flex items-center gap-2 sm:gap-4 ${isRTL ? "flex-row-reverse" : ""}`}>
                     <Button variant="outline" size="sm" disabled>
-                      Previous
+                      {t("common.previous")}
                     </Button>
-                    <span>Page 1 of 1</span>
+                    <span>
+                      {t("emails.logs.pagination.page")
+                        .replace("{current}", "1")
+                        .replace("{total}", "1")}
+                    </span>
                     <Button variant="outline" size="sm" disabled>
-                      Next
+                      {t("common.next")}
                     </Button>
                   </div>
                 </div>

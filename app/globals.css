@@ -80,6 +80,7 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-arabic: var(--font-cairo);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -125,6 +126,66 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* RTL Support - استخدام خط Cairo للعربية */
+  [dir="rtl"] {
+    direction: rtl;
+    font-family: var(--font-cairo), var(--font-sans), system-ui, sans-serif;
+  }
+  
+  [dir="ltr"] {
+    direction: ltr;
+  }
+  
+  /* RTL specific adjustments for common patterns */
+  [dir="rtl"] .mr-2 {
+    @apply ml-2 mr-0;
+  }
+  
+  [dir="rtl"] .ml-2 {
+    @apply mr-2 ml-0;
+  }
+  
+  [dir="rtl"] .mr-4 {
+    @apply ml-4 mr-0;
+  }
+  
+  [dir="rtl"] .ml-4 {
+    @apply mr-4 ml-0;
+  }
+  
+  [dir="rtl"] .pr-4 {
+    @apply pl-4 pr-0;
+  }
+  
+  [dir="rtl"] .pl-4 {
+    @apply pr-4 pl-0;
+  }
+  
+  [dir="rtl"] .text-left {
+    @apply text-right;
+  }
+  
+  [dir="rtl"] .text-right {
+    @apply text-left;
+  }
+  
+  [dir="rtl"] .rounded-l {
+    @apply rounded-r rounded-l-none;
+  }
+  
+  [dir="rtl"] .rounded-r {
+    @apply rounded-l rounded-r-none;
+  }
+  
+  [dir="rtl"] .border-l {
+    @apply border-r border-l-0;
+  }
+  
+  [dir="rtl"] .border-r {
+    @apply border-l border-r-0;
+  }
+  
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;

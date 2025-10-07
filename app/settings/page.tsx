@@ -33,10 +33,42 @@ import {
   AlertCircle,
   Building,
 } from "lucide-react"
+import { useLanguage } from "@/providers/language-provider"
+
+type TranslateFn = (key: string) => string
+
+function translateOrFallback(t: TranslateFn, key: string, fallback: string) {
+  const value = t(key)
+  return value === key ? fallback : value
+}
+
+function formatDateValue(dateString: string | null | undefined, locale: string, fallback: string) {
+  if (!dateString) {
+    return fallback
+  }
+
+  const date = new Date(dateString)
+  if (Number.isNaN(date.getTime())) {
+    return fallback
+  }
+
+  return new Intl.DateTimeFormat(locale, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+  }).format(date)
+}
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
+  const { t, dir } = useLanguage()
+  const isRTL = dir === "rtl"
+  const locale = isRTL ? "ar-EG" : "en-US"
+  const themeMode = theme ?? "system"
+  const notTestedText = t("settings.security.payments.neverTested")
+
   const [language, setLanguage] = useState("english")
+  const [timeZone, setTimeZone] = useState("utc-5")
   const [notifications, setNotifications] = useState({
     email: true,
     push: false,
@@ -85,23 +117,20 @@ export default function SettingsPage() {
       keyId: "",
       keySecret: "",
       status: "disconnected",
-      lastTested: null,
+      lastTested: null as string | null,
     },
   })
 
   const handleSaveProfile = () => {
-    // Save profile logic here
     console.log("Profile saved:", profile)
   }
 
   const handleChangePassword = (e: React.FormEvent) => {
     e.preventDefault()
-    // Password change logic here
     console.log("Password change requested")
   }
 
   const handleAvatarChange = () => {
-    // Avatar upload logic here
     console.log("Avatar change requested")
   }
 
@@ -111,221 +140,256 @@ export default function SettingsPage() {
 
   const handleTestPaymentGateway = (gateway: string) => {
     console.log(`Testing ${gateway} connection...`)
-    // Update last tested date
     setPaymentGateways((prev) => ({
       ...prev,
       [gateway]: {
         ...prev[gateway as keyof typeof prev],
-        lastTested: new Date().toISOString().split("T")[0],
+        lastTested: new Date().toISOString(),
         status: "connected",
       },
     }))
   }
 
+  const themeDisplayName = translateOrFallback(
+    t,
+    `settings.general.theme.modes.${themeMode}`,
+    themeMode,
+  )
+
+  const languageOptions = ["english", "arabic", "spanish", "french"] as const
+  const timeZoneOptions = ["utc-8", "utc-5", "utc+0", "utc+3"] as const
+  const sessionTimeoutOptions = ["15", "30", "60", "240", "never"] as const
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground mt-2">Manage your account settings and preferences.</p>
+    <div className="space-y-6" dir={dir}>
+      <div className={`flex flex-col ${isRTL ? "text-right" : "text-left"}`}>
+        <h1 className="text-3xl font-bold text-foreground">{t("settings.title")}</h1>
+        <p className="text-muted-foreground mt-2">{t("settings.subtitle")}</p>
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
-          <TabsTrigger value="general" className="flex items-center gap-2 h-10">
+          <TabsTrigger
+            value="general"
+            className={`flex items-center gap-2 h-10 ${isRTL ? "flex-row-reverse" : ""}`}
+          >
             <SettingsIcon className="h-4 w-4" />
-            <span className="hidden sm:inline">General</span>
+            <span className="hidden sm:inline">{t("settings.tabs.general")}</span>
           </TabsTrigger>
-          <TabsTrigger value="account" className="flex items-center gap-2 h-10">
+          <TabsTrigger
+            value="account"
+            className={`flex items-center gap-2 h-10 ${isRTL ? "flex-row-reverse" : ""}`}
+          >
             <User className="h-4 w-4" />
-            <span className="hidden sm:inline">Account</span>
+            <span className="hidden sm:inline">{t("settings.tabs.account")}</span>
           </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center gap-2 h-10">
+          <TabsTrigger
+            value="security"
+            className={`flex items-center gap-2 h-10 ${isRTL ? "flex-row-reverse" : ""}`}
+          >
             <Shield className="h-4 w-4" />
-            <span className="hidden sm:inline">Security</span>
+            <span className="hidden sm:inline">{t("settings.tabs.security")}</span>
           </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2 h-10">
+          <TabsTrigger
+            value="notifications"
+            className={`flex items-center gap-2 h-10 ${isRTL ? "flex-row-reverse" : ""}`}
+          >
             <Bell className="h-4 w-4" />
-            <span className="hidden sm:inline">Notifications</span>
+            <span className="hidden sm:inline">{t("settings.tabs.notifications")}</span>
           </TabsTrigger>
         </TabsList>
 
-        {/* General Settings */}
         <TabsContent value="general" className="space-y-6">
           <div className="grid gap-6">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+              <CardHeader className={isRTL ? "text-right" : "text-left"}>
+                <CardTitle className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
                   <Building className="h-5 w-5" />
-                  Site Settings
+                  <span>{t("settings.general.site.title")}</span>
                 </CardTitle>
-                <CardDescription>Configure your store's basic information and branding.</CardDescription>
+                <CardDescription>{t("settings.general.site.description")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="siteName">Site Name</Label>
+                    <Label htmlFor="siteName" className={isRTL ? "text-right" : ""}>
+                      {t("settings.general.site.fields.name.label")}
+                    </Label>
                     <Input
                       id="siteName"
                       value={siteSettings.siteName}
                       onChange={(e) => setSiteSettings({ ...siteSettings, siteName: e.target.value })}
-                      placeholder="Your Store Name"
+                      placeholder={t("settings.general.site.fields.name.placeholder")}
+                      className={isRTL ? "text-right" : ""}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="contactEmail">Contact Email</Label>
+                    <Label htmlFor="contactEmail" className={isRTL ? "text-right" : ""}>
+                      {t("settings.general.site.fields.contactEmail.label")}
+                    </Label>
                     <Input
                       id="contactEmail"
                       type="email"
                       value={siteSettings.contactEmail}
                       onChange={(e) => setSiteSettings({ ...siteSettings, contactEmail: e.target.value })}
-                      placeholder="support@yourstore.com"
+                      placeholder={t("settings.general.site.fields.contactEmail.placeholder")}
+                      className={isRTL ? "text-right" : ""}
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="siteDescription">Site Description</Label>
+                  <Label htmlFor="siteDescription" className={isRTL ? "text-right" : ""}>
+                    {t("settings.general.site.fields.description.label")}
+                  </Label>
                   <Textarea
                     id="siteDescription"
                     value={siteSettings.siteDescription}
                     onChange={(e) => setSiteSettings({ ...siteSettings, siteDescription: e.target.value })}
-                    placeholder="Brief description of your store"
+                    placeholder={t("settings.general.site.fields.description.placeholder")}
                     rows={3}
+                    className={isRTL ? "text-right" : ""}
                   />
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-3">
-                    <Label>Site Logo</Label>
-                    <div className="flex items-center gap-4">
+                    <Label className={isRTL ? "text-right" : ""}>{t("settings.general.site.logo.label")}</Label>
+                    <div className={`flex items-center gap-4 ${isRTL ? "flex-row-reverse" : ""}`}>
                       <div className="h-16 w-16 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-muted/20">
                         <img
                           src={siteSettings.logo || "/placeholder.svg"}
-                          alt="Site Logo"
+                          alt={t("settings.general.site.logo.alt")}
                           className="h-12 w-12 object-contain"
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Button variant="outline" size="sm">
-                          <Upload className="mr-2 h-4 w-4" />
-                          Upload Logo
+                      <div className={`space-y-2 ${isRTL ? "text-right" : ""}`}>
+                        <Button variant="outline" size="sm" className={isRTL ? "flex-row-reverse" : ""}>
+                          <Upload className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+                          {t("settings.general.site.logo.button")}
                         </Button>
-                        <div className="text-xs text-muted-foreground">PNG, JPG up to 2MB</div>
+                        <div className="text-xs text-muted-foreground">
+                          {t("settings.general.site.logo.helper")}
+                        </div>
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-3">
-                    <Label>Favicon</Label>
-                    <div className="flex items-center gap-4">
+                    <Label className={isRTL ? "text-right" : ""}>{t("settings.general.site.favicon.label")}</Label>
+                    <div className={`flex items-center gap-4 ${isRTL ? "flex-row-reverse" : ""}`}>
                       <div className="h-16 w-16 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-muted/20">
                         <img
                           src={siteSettings.favicon || "/placeholder.svg"}
-                          alt="Favicon"
+                          alt={t("settings.general.site.favicon.alt")}
                           className="h-8 w-8 object-contain"
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Button variant="outline" size="sm">
-                          <Upload className="mr-2 h-4 w-4" />
-                          Upload Favicon
+                      <div className={`space-y-2 ${isRTL ? "text-right" : ""}`}>
+                        <Button variant="outline" size="sm" className={isRTL ? "flex-row-reverse" : ""}>
+                          <Upload className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+                          {t("settings.general.site.favicon.button")}
                         </Button>
-                        <div className="text-xs text-muted-foreground">ICO, PNG 32x32px</div>
+                        <div className="text-xs text-muted-foreground">
+                          {t("settings.general.site.favicon.helper")}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <Button onClick={handleSaveSiteSettings} className="w-full md:w-auto">
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Site Settings
+                <Button
+                  onClick={handleSaveSiteSettings}
+                  className={`w-full md:w-auto ${isRTL ? "flex-row-reverse" : ""}`}
+                >
+                  <Save className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+                  {t("settings.general.site.save")}
                 </Button>
               </CardContent>
             </Card>
 
             <div className="grid gap-6 md:grid-cols-2">
-              {/* Theme Settings */}
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                <CardHeader className={isRTL ? "text-right" : "text-left"}>
+                  <CardTitle className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
                     <Palette className="h-5 w-5" />
-                    Theme Preferences
+                    <span>{t("settings.general.theme.title")}</span>
                   </CardTitle>
-                  <CardDescription>Choose how the dashboard appears to you.</CardDescription>
+                  <CardDescription>{t("settings.general.theme.description")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-3">
-                    <Label>Theme Mode</Label>
-                    <Select value={theme} onValueChange={setTheme}>
-                      <SelectTrigger>
-                        <SelectValue />
+                    <Label className={isRTL ? "text-right" : ""}>{t("settings.general.theme.modeLabel")}</Label>
+                    <Select value={themeMode} onValueChange={setTheme}>
+                      <SelectTrigger className={isRTL ? "justify-between text-right" : "justify-between"}>
+                        <SelectValue placeholder={t("settings.general.theme.placeholder")} />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="light">
-                          <div className="flex items-center gap-2">
+                      <SelectContent align={isRTL ? "start" : "end"} className={isRTL ? "text-right" : ""}>
+                        <SelectItem value="light" className={isRTL ? "justify-end text-right" : ""}>
+                          <div className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
                             <Sun className="h-4 w-4" />
-                            Light
+                            <span>{t("settings.general.theme.modes.light")}</span>
                           </div>
                         </SelectItem>
-                        <SelectItem value="dark">
-                          <div className="flex items-center gap-2">
+                        <SelectItem value="dark" className={isRTL ? "justify-end text-right" : ""}>
+                          <div className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
                             <Moon className="h-4 w-4" />
-                            Dark
+                            <span>{t("settings.general.theme.modes.dark")}</span>
                           </div>
                         </SelectItem>
-                        <SelectItem value="system">
-                          <div className="flex items-center gap-2">
+                        <SelectItem value="system" className={isRTL ? "justify-end text-right" : ""}>
+                          <div className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
                             <Monitor className="h-4 w-4" />
-                            System
+                            <span>{t("settings.general.theme.modes.system")}</span>
                           </div>
                         </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="p-4 bg-muted/50 rounded-lg">
-                    <div className="text-sm text-muted-foreground">
-                      Current theme: <span className="font-medium capitalize">{theme || 'system'}</span>
+                    <div className={`text-sm text-muted-foreground ${isRTL ? "text-right" : ""}`}>
+                      {t("settings.general.theme.current").replace("{theme}", themeDisplayName)}
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Language Settings */}
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                <CardHeader className={isRTL ? "text-right" : "text-left"}>
+                  <CardTitle className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
                     <Globe className="h-5 w-5" />
-                    Language & Region
+                    <span>{t("settings.general.language.title")}</span>
                   </CardTitle>
-                  <CardDescription>Set your preferred language and regional settings.</CardDescription>
+                  <CardDescription>{t("settings.general.language.description")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-3">
-                    <Label>Display Language</Label>
+                    <Label className={isRTL ? "text-right" : ""}>{t("settings.general.language.languageLabel")}</Label>
                     <Select value={language} onValueChange={setLanguage}>
-                      <SelectTrigger>
-                        <SelectValue />
+                      <SelectTrigger className={isRTL ? "justify-between text-right" : "justify-between"}>
+                        <SelectValue placeholder={t("settings.general.language.languagePlaceholder")} />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="english">English</SelectItem>
-                        <SelectItem value="arabic">العربية (Arabic)</SelectItem>
-                        <SelectItem value="spanish">Español</SelectItem>
-                        <SelectItem value="french">Français</SelectItem>
+                      <SelectContent align={isRTL ? "start" : "end"} className={isRTL ? "text-right" : ""}>
+                        {languageOptions.map((option) => (
+                          <SelectItem key={option} value={option} className={isRTL ? "justify-end text-right" : ""}>
+                            {t(`settings.general.language.languages.${option}`)}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-3">
-                    <Label>Time Zone</Label>
-                    <Select defaultValue="utc-5">
-                      <SelectTrigger>
-                        <SelectValue />
+                    <Label className={isRTL ? "text-right" : ""}>{t("settings.general.language.timezoneLabel")}</Label>
+                    <Select value={timeZone} onValueChange={setTimeZone}>
+                      <SelectTrigger className={isRTL ? "justify-between text-right" : "justify-between"}>
+                        <SelectValue placeholder={t("settings.general.language.timezonePlaceholder")} />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="utc-8">Pacific Time (UTC-8)</SelectItem>
-                        <SelectItem value="utc-5">Eastern Time (UTC-5)</SelectItem>
-                        <SelectItem value="utc+0">GMT (UTC+0)</SelectItem>
-                        <SelectItem value="utc+3">Arabia Standard Time (UTC+3)</SelectItem>
+                      <SelectContent align={isRTL ? "start" : "end"} className={isRTL ? "text-right" : ""}>
+                        {timeZoneOptions.map((option) => (
+                          <SelectItem key={option} value={option} className={isRTL ? "justify-end text-right" : ""}>
+                            {t(`settings.general.language.timezones.${option}`)}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -335,18 +399,15 @@ export default function SettingsPage() {
           </div>
         </TabsContent>
 
-        {/* Account Settings */}
         <TabsContent value="account" className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
-            {/* Profile Information */}
             <Card>
-              <CardHeader>
-                <CardTitle>Profile Information</CardTitle>
-                <CardDescription>Update your personal information and profile picture.</CardDescription>
+              <CardHeader className={isRTL ? "text-right" : "text-left"}>
+                <CardTitle>{t("settings.account.profile.title")}</CardTitle>
+                <CardDescription>{t("settings.account.profile.description")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Profile Picture */}
-                <div className="flex items-center gap-4">
+                <div className={`flex items-center gap-4 ${isRTL ? "flex-row-reverse" : ""}`}>
                   <Avatar className="h-20 w-20">
                     <AvatarImage src={profile.avatar || "/placeholder.svg"} alt={profile.name} />
                     <AvatarFallback className="text-lg">
@@ -356,85 +417,107 @@ export default function SettingsPage() {
                         .join("")}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="space-y-2">
-                    <Button variant="outline" size="sm" onClick={handleAvatarChange}>
-                      <Camera className="mr-2 h-4 w-4" />
-                      Change Photo
+                  <div className={`space-y-2 ${isRTL ? "text-right" : ""}`}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAvatarChange}
+                      className={isRTL ? "flex-row-reverse" : ""}
+                    >
+                      <Camera className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+                      {t("settings.account.profile.changePhoto")}
                     </Button>
-                    <div className="text-xs text-muted-foreground">JPG, PNG or GIF. Max size 2MB.</div>
+                    <div className="text-xs text-muted-foreground">
+                      {t("settings.account.profile.photoHelper")}
+                    </div>
                   </div>
                 </div>
 
                 <Separator />
 
-                {/* Profile Form */}
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
+                    <Label htmlFor="name" className={isRTL ? "text-right" : ""}>
+                      {t("settings.account.profile.fields.name")}
+                    </Label>
                     <Input
                       id="name"
                       value={profile.name}
                       onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                      className={isRTL ? "text-right" : ""}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
+                    <Label htmlFor="email" className={isRTL ? "text-right" : ""}>
+                      {t("settings.account.profile.fields.email")}
+                    </Label>
                     <Input
                       id="email"
                       type="email"
                       value={profile.email}
                       onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                      className={isRTL ? "text-right" : ""}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
+                    <Label htmlFor="phone" className={isRTL ? "text-right" : ""}>
+                      {t("settings.account.profile.fields.phone")}
+                    </Label>
                     <Input
                       id="phone"
                       value={profile.phone}
                       onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                      className={isRTL ? "text-right" : ""}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Role</Label>
-                    <div className="flex items-center gap-2">
+                    <Label className={isRTL ? "text-right" : ""}>{t("settings.account.profile.fields.role")}</Label>
+                    <div className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
                       <Badge variant="secondary">{profile.role}</Badge>
-                      <span className="text-sm text-muted-foreground">Contact admin to change role</span>
+                      <span className="text-sm text-muted-foreground">
+                        {t("settings.account.profile.roleNote")}
+                      </span>
                     </div>
                   </div>
                 </div>
 
-                <Button onClick={handleSaveProfile} className="w-full">
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Changes
+                <Button onClick={handleSaveProfile} className={`w-full ${isRTL ? "flex-row-reverse" : ""}`}>
+                  <Save className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+                  {t("settings.account.profile.save")}
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Password Settings */}
             <Card>
-              <CardHeader>
-                <CardTitle>Password & Security</CardTitle>
-                <CardDescription>Update your password to keep your account secure.</CardDescription>
+              <CardHeader className={isRTL ? "text-right" : "text-left"}>
+                <CardTitle>{t("settings.account.password.title")}</CardTitle>
+                <CardDescription>{t("settings.account.password.description")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleChangePassword} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="current-password">Current Password</Label>
-                    <Input id="current-password" type="password" />
+                    <Label htmlFor="current-password" className={isRTL ? "text-right" : ""}>
+                      {t("settings.account.password.fields.current")}
+                    </Label>
+                    <Input id="current-password" type="password" className={isRTL ? "text-right" : ""} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="new-password">New Password</Label>
-                    <Input id="new-password" type="password" />
+                    <Label htmlFor="new-password" className={isRTL ? "text-right" : ""}>
+                      {t("settings.account.password.fields.new")}
+                    </Label>
+                    <Input id="new-password" type="password" className={isRTL ? "text-right" : ""} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirm New Password</Label>
-                    <Input id="confirm-password" type="password" />
+                    <Label htmlFor="confirm-password" className={isRTL ? "text-right" : ""}>
+                      {t("settings.account.password.fields.confirm")}
+                    </Label>
+                    <Input id="confirm-password" type="password" className={isRTL ? "text-right" : ""} />
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    Password must be at least 8 characters long and include uppercase, lowercase, and numbers.
+                  <div className={`text-sm text-muted-foreground ${isRTL ? "text-right" : ""}`}>
+                    {t("settings.account.password.helper")}
                   </div>
-                  <Button type="submit" className="w-full">
-                    Update Password
+                  <Button type="submit" className={`w-full ${isRTL ? "flex-row-reverse" : ""}`}>
+                    {t("settings.account.password.submit")}
                   </Button>
                 </form>
               </CardContent>
@@ -442,43 +525,88 @@ export default function SettingsPage() {
           </div>
         </TabsContent>
 
-        {/* Security */}
         <TabsContent value="security" className="space-y-6">
           <div className="grid gap-6">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+              <CardHeader className={isRTL ? "text-right" : "text-left"}>
+                <CardTitle className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
                   <CreditCard className="h-5 w-5" />
-                  Payment Gateways
+                  <span>{t("settings.security.payments.title")}</span>
                 </CardTitle>
-                <CardDescription>Configure and manage your payment processing services.</CardDescription>
+                <CardDescription>{t("settings.security.payments.description")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {Object.entries(paymentGateways).map(([gateway, config]) => (
-                  <div key={gateway} className="border rounded-lg p-4 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-                          <CreditCard className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <div className="font-medium capitalize">{gateway}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {config.status === "connected" ? (
-                              <span className="flex items-center gap-1 text-green-600">
-                                <CheckCircle className="h-3 w-3" />
-                                Connected
-                              </span>
-                            ) : (
-                              <span className="flex items-center gap-1 text-red-600">
-                                <AlertCircle className="h-3 w-3" />
-                                Disconnected
-                              </span>
-                            )}
+                {Object.entries(paymentGateways).map(([gateway, config]) => {
+                  const gatewayLabel = translateOrFallback(
+                    t,
+                    `settings.security.payments.gatewayNames.${gateway}`,
+                    gateway,
+                  )
+                  const statusKey = config.status === "connected" ? "connected" : "disconnected"
+                  const statusText = translateOrFallback(
+                    t,
+                    `settings.status.${statusKey}`,
+                    statusKey,
+                  )
+                  const formattedLastTested = formatDateValue(config.lastTested, locale, notTestedText)
+                  const lastTestedLabel = config.lastTested
+                    ? t("settings.security.payments.lastTested").replace("{date}", formattedLastTested)
+                    : notTestedText
+
+                  const primaryField =
+                    gateway === "stripe" ? "publicKey" : gateway === "paypal" ? "clientId" : "keyId"
+                  const secondaryField =
+                    gateway === "stripe" ? "secretKey" : gateway === "paypal" ? "clientSecret" : "keySecret"
+
+                  const primaryLabel = translateOrFallback(
+                    t,
+                    `settings.security.payments.fields.${primaryField}`,
+                    primaryField,
+                  )
+                  const secondaryLabel = translateOrFallback(
+                    t,
+                    `settings.security.payments.fields.${secondaryField}`,
+                    secondaryField,
+                  )
+
+                  const primaryValue =
+                    gateway === "stripe"
+                      ? (config as typeof paymentGateways.stripe).publicKey
+                      : gateway === "paypal"
+                        ? (config as typeof paymentGateways.paypal).clientId
+                        : (config as typeof paymentGateways.razorpay).keyId
+
+                  const secondaryValue =
+                    gateway === "stripe"
+                      ? (config as typeof paymentGateways.stripe).secretKey
+                      : gateway === "paypal"
+                        ? (config as typeof paymentGateways.paypal).clientSecret
+                        : (config as typeof paymentGateways.razorpay).keySecret
+
+                  return (
+                    <div key={gateway} className="border rounded-lg p-4 space-y-4">
+                      <div className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}>
+                        <div className={`flex items-center gap-3 ${isRTL ? "flex-row-reverse" : ""}`}>
+                          <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
+                            <CreditCard className="h-5 w-5" />
+                          </div>
+                          <div className={isRTL ? "text-right" : ""}>
+                            <div className="font-medium capitalize">{gatewayLabel}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {config.status === "connected" ? (
+                                <span className={`flex items-center gap-1 text-green-600 ${isRTL ? "flex-row-reverse" : ""}`}>
+                                  <CheckCircle className="h-3 w-3" />
+                                  {statusText}
+                                </span>
+                              ) : (
+                                <span className={`flex items-center gap-1 text-red-600 ${isRTL ? "flex-row-reverse" : ""}`}>
+                                  <AlertCircle className="h-3 w-3" />
+                                  {statusText}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
                         <Switch
                           checked={config.enabled}
                           onCheckedChange={(checked) =>
@@ -489,106 +617,93 @@ export default function SettingsPage() {
                           }
                         />
                       </div>
-                    </div>
 
-                    {config.enabled && (
-                      <div className="space-y-3 pl-13">
-                        <div className="grid gap-3 md:grid-cols-2">
-                          <div className="space-y-2">
-                            <Label className="text-xs">
-                              {gateway === "stripe" ? "Public Key" : gateway === "paypal" ? "Client ID" : "Key ID"}
-                            </Label>
-                            <Input
-                              type="password"
-                              value={
-                                gateway === "stripe"
-                                  ? (config as typeof paymentGateways.stripe).publicKey
-                                  : gateway === "paypal"
-                                    ? (config as typeof paymentGateways.paypal).clientId
-                                    : (config as typeof paymentGateways.razorpay).keyId
-                              }
-                              onChange={(e) => {
-                                const field =
-                                  gateway === "stripe" ? "publicKey" : gateway === "paypal" ? "clientId" : "keyId"
-                                setPaymentGateways((prev) => ({
-                                  ...prev,
-                                  [gateway]: { ...prev[gateway as keyof typeof prev], [field]: e.target.value },
-                                }))
-                              }}
-                              placeholder="Enter key..."
-                              className="text-xs"
-                            />
+                      {config.enabled && (
+                        <div className={`space-y-3 ${isRTL ? "pr-13" : "pl-13"}`}>
+                          <div className="grid gap-3 md:grid-cols-2">
+                            <div className="space-y-2">
+                              <Label className={`text-xs ${isRTL ? "text-right" : ""}`}>{primaryLabel}</Label>
+                              <Input
+                                type="password"
+                                value={primaryValue}
+                                onChange={(e) =>
+                                  setPaymentGateways((prev) => ({
+                                    ...prev,
+                                    [gateway]: {
+                                      ...prev[gateway as keyof typeof prev],
+                                      [primaryField]: e.target.value,
+                                    },
+                                  }))
+                                }
+                                placeholder={t("settings.security.payments.placeholder.key")}
+                                className={`text-xs ${isRTL ? "text-right" : ""}`}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label className={`text-xs ${isRTL ? "text-right" : ""}`}>{secondaryLabel}</Label>
+                              <Input
+                                type="password"
+                                value={secondaryValue}
+                                onChange={(e) =>
+                                  setPaymentGateways((prev) => ({
+                                    ...prev,
+                                    [gateway]: {
+                                      ...prev[gateway as keyof typeof prev],
+                                      [secondaryField]: e.target.value,
+                                    },
+                                  }))
+                                }
+                                placeholder={t("settings.security.payments.placeholder.secret")}
+                                className={`text-xs ${isRTL ? "text-right" : ""}`}
+                              />
+                            </div>
                           </div>
-                          <div className="space-y-2">
-                            <Label className="text-xs">
-                              {gateway === "stripe"
-                                ? "Secret Key"
-                                : gateway === "paypal"
-                                  ? "Client Secret"
-                                  : "Key Secret"}
-                            </Label>
-                            <Input
-                              type="password"
-                              value={
-                                gateway === "stripe"
-                                  ? (config as typeof paymentGateways.stripe).secretKey
-                                  : gateway === "paypal"
-                                    ? (config as typeof paymentGateways.paypal).clientSecret
-                                    : (config as typeof paymentGateways.razorpay).keySecret
-                              }
-                              onChange={(e) => {
-                                const field =
-                                  gateway === "stripe"
-                                    ? "secretKey"
-                                    : gateway === "paypal"
-                                      ? "clientSecret"
-                                      : "keySecret"
-                                setPaymentGateways((prev) => ({
-                                  ...prev,
-                                  [gateway]: { ...prev[gateway as keyof typeof prev], [field]: e.target.value },
-                                }))
-                              }}
-                              placeholder="Enter secret..."
-                              className="text-xs"
-                            />
+                          <div className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}>
+                            <div className={`text-xs text-muted-foreground ${isRTL ? "text-right" : ""}`}>
+                              {lastTestedLabel}
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleTestPaymentGateway(gateway)}
+                              className={isRTL ? "flex-row-reverse" : ""}
+                            >
+                              {t("settings.security.payments.test")}
+                            </Button>
                           </div>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <div className="text-xs text-muted-foreground">
-                            {config.lastTested ? `Last tested: ${config.lastTested}` : "Never tested"}
-                          </div>
-                          <Button variant="outline" size="sm" onClick={() => handleTestPaymentGateway(gateway)}>
-                            Test Connection
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                      )}
+                    </div>
+                  )
+                })}
               </CardContent>
             </Card>
 
             <div className="grid gap-6 md:grid-cols-2">
               <Card>
-                <CardHeader>
-                  <CardTitle>Security Settings</CardTitle>
-                  <CardDescription>Manage your account security and privacy settings.</CardDescription>
+                <CardHeader className={isRTL ? "text-right" : "text-left"}>
+                  <CardTitle>{t("settings.security.settings.title")}</CardTitle>
+                  <CardDescription>{t("settings.security.settings.description")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Two-Factor Authentication</Label>
-                      <div className="text-sm text-muted-foreground">Add an extra layer of security</div>
+                  <div className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}>
+                    <div className={`space-y-0.5 ${isRTL ? "text-right" : ""}`}>
+                      <Label>{t("settings.security.settings.twoFactor.label")}</Label>
+                      <div className="text-sm text-muted-foreground">
+                        {t("settings.security.settings.twoFactor.description")}
+                      </div>
                     </div>
                     <Switch
                       checked={security.twoFactor}
                       onCheckedChange={(checked) => setSecurity({ ...security, twoFactor: checked })}
                     />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Login Alerts</Label>
-                      <div className="text-sm text-muted-foreground">Get notified of new login attempts</div>
+                  <div className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}>
+                    <div className={`space-y-0.5 ${isRTL ? "text-right" : ""}`}>
+                      <Label>{t("settings.security.settings.loginAlerts.label")}</Label>
+                      <div className="text-sm text-muted-foreground">
+                        {t("settings.security.settings.loginAlerts.description")}
+                      </div>
                     </div>
                     <Switch
                       checked={security.loginAlerts}
@@ -596,20 +711,22 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-3">
-                    <Label>Session Timeout</Label>
+                    <Label className={isRTL ? "text-right" : ""}>
+                      {t("settings.security.settings.sessionTimeout.label")}
+                    </Label>
                     <Select
                       value={security.sessionTimeout}
                       onValueChange={(value) => setSecurity({ ...security, sessionTimeout: value })}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className={isRTL ? "justify-between text-right" : "justify-between"}>
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="15">15 minutes</SelectItem>
-                        <SelectItem value="30">30 minutes</SelectItem>
-                        <SelectItem value="60">1 hour</SelectItem>
-                        <SelectItem value="240">4 hours</SelectItem>
-                        <SelectItem value="never">Never</SelectItem>
+                      <SelectContent align={isRTL ? "start" : "end"} className={isRTL ? "text-right" : ""}>
+                        {sessionTimeoutOptions.map((value) => (
+                          <SelectItem key={value} value={value} className={isRTL ? "justify-end text-right" : ""}>
+                            {t(`settings.security.settings.sessionTimeout.options.${value}`)}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -617,23 +734,23 @@ export default function SettingsPage() {
               </Card>
 
               <Card>
-                <CardHeader>
-                  <CardTitle>Account Actions</CardTitle>
-                  <CardDescription>Manage your account data and preferences.</CardDescription>
+                <CardHeader className={isRTL ? "text-right" : "text-left"}>
+                  <CardTitle>{t("settings.security.actions.title")}</CardTitle>
+                  <CardDescription>{t("settings.security.actions.description")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Button variant="outline" className="w-full bg-transparent">
-                    Download Account Data
+                  <Button variant="outline" className={`w-full bg-transparent ${isRTL ? "flex-row-reverse" : ""}`}>
+                    {t("settings.security.actions.download")}
                   </Button>
-                  <Button variant="outline" className="w-full bg-transparent">
-                    Export Settings
+                  <Button variant="outline" className={`w-full bg-transparent ${isRTL ? "flex-row-reverse" : ""}`}>
+                    {t("settings.security.actions.export")}
                   </Button>
                   <Separator />
-                  <Button variant="destructive" className="w-full">
-                    Delete Account
+                  <Button variant="destructive" className={`w-full ${isRTL ? "flex-row-reverse" : ""}`}>
+                    {t("settings.security.actions.delete")}
                   </Button>
-                  <div className="text-xs text-muted-foreground">
-                    This action cannot be undone. All your data will be permanently deleted.
+                  <div className={`text-xs text-muted-foreground ${isRTL ? "text-right" : ""}`}>
+                    {t("settings.security.actions.warning")}
                   </div>
                 </CardContent>
               </Card>
@@ -641,55 +758,44 @@ export default function SettingsPage() {
           </div>
         </TabsContent>
 
-        {/* Notifications */}
         <TabsContent value="notifications" className="space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle>Notification Preferences</CardTitle>
-              <CardDescription>Choose how you want to be notified about important updates.</CardDescription>
+            <CardHeader className={isRTL ? "text-right" : "text-left"}>
+              <CardTitle>{t("settings.notifications.title")}</CardTitle>
+              <CardDescription>{t("settings.notifications.description")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Email Notifications</Label>
-                    <div className="text-sm text-muted-foreground">Receive notifications via email</div>
-                  </div>
-                  <Switch
-                    checked={notifications.email}
-                    onCheckedChange={(checked) => setNotifications({ ...notifications, email: checked })}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Push Notifications</Label>
-                    <div className="text-sm text-muted-foreground">Receive push notifications in your browser</div>
-                  </div>
-                  <Switch
-                    checked={notifications.push}
-                    onCheckedChange={(checked) => setNotifications({ ...notifications, push: checked })}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>SMS Notifications</Label>
-                    <div className="text-sm text-muted-foreground">Receive important alerts via SMS</div>
-                  </div>
-                  <Switch
-                    checked={notifications.sms}
-                    onCheckedChange={(checked) => setNotifications({ ...notifications, sms: checked })}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Marketing Communications</Label>
-                    <div className="text-sm text-muted-foreground">Receive updates about new features and tips</div>
-                  </div>
-                  <Switch
-                    checked={notifications.marketing}
-                    onCheckedChange={(checked) => setNotifications({ ...notifications, marketing: checked })}
-                  />
-                </div>
+                {([
+                  "email",
+                  "push",
+                  "sms",
+                  "marketing",
+                ] as const).map((channel) => {
+                  const channelLabel = t(`settings.notifications.channels.${channel}.label`)
+                  const channelDescription = t(`settings.notifications.channels.${channel}.description`)
+
+                  return (
+                    <div
+                      key={channel}
+                      className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}
+                    >
+                      <div className={`space-y-0.5 ${isRTL ? "text-right" : ""}`}>
+                        <Label>{channelLabel}</Label>
+                        <div className="text-sm text-muted-foreground">{channelDescription}</div>
+                      </div>
+                      <Switch
+                        checked={notifications[channel]}
+                        onCheckedChange={(checked) =>
+                          setNotifications((prev) => ({
+                            ...prev,
+                            [channel]: checked,
+                          }))
+                        }
+                      />
+                    </div>
+                  )
+                })}
               </div>
             </CardContent>
           </Card>

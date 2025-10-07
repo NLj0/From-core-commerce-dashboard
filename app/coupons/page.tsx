@@ -10,6 +10,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, Search, MoreHorizontal, Edit, Trash2, Percent, Calendar, Users, TrendingUp } from "lucide-react"
 import { CouponDialog } from "@/components/coupon-dialog"
+import { useLanguage } from "@/providers/language-provider"
+
+type TranslateFn = (key: string) => string
 
 // Mock coupon data
 const mockCoupons = [
@@ -85,7 +88,60 @@ const mockCoupons = [
   },
 ]
 
+function getStatusBadge(status: string, t: TranslateFn) {
+  const key = `coupons.status.${status}`
+  const label = t(key)
+  const text = label === key ? status : label
+
+  switch (status) {
+    case "active":
+      return <Badge variant="success">{text}</Badge>
+    case "expired":
+      return <Badge variant="gray">{text}</Badge>
+    case "disabled":
+      return <Badge variant="danger">{text}</Badge>
+    default:
+      return <Badge variant="outline">{text}</Badge>
+  }
+}
+
+function formatDiscount(type: string, value: number, t: TranslateFn, locale: string, currencySymbol: string) {
+  if (type === "percentage") {
+    return t("coupons.discount.percentage").replace("{value}", value.toLocaleString(locale))
+  }
+
+  const formattedValue = value.toLocaleString(locale)
+  const template = t("coupons.discount.fixed")
+
+  return template
+    .replace("{currency}", currencySymbol)
+    .replace("{value}", formattedValue)
+}
+
+function formatDateLabel(dateString: string, isRTL: boolean) {
+  const locale = isRTL ? "ar-EG" : "en-US"
+  return new Date(dateString).toLocaleDateString(locale, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+  })
+}
+
+function formatCurrencyValue(value: number, locale: string, currency: string) {
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+  }).format(value)
+}
+
 export default function CouponsPage() {
+  const { t, dir } = useLanguage()
+  const isRTL = dir === "rtl"
+  const locale = isRTL ? "ar-EG" : "en-US"
+  const currency = isRTL ? "SAR" : "USD"
+  const currencySymbol = t("formatting.currency")
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -107,6 +163,7 @@ export default function CouponsPage() {
       return sum + c.usageCount * c.discountValue
     }
   }, 0)
+  const activeRate = totalCoupons > 0 ? Math.round((activeCoupons / totalCoupons) * 100) : 0
 
   const handleCreateCoupon = () => {
     setEditingCoupon(null)
@@ -124,38 +181,22 @@ export default function CouponsPage() {
     // For now, just log the data
   }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "active":
-        return <Badge variant="success">Active</Badge>
-      case "expired":
-        return <Badge variant="gray">Expired</Badge>
-      case "disabled":
-        return <Badge variant="danger">Disabled</Badge>
-      default:
-        return <Badge variant="outline">{status}</Badge>
-    }
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString()
-  }
-
-  const formatDiscount = (type: string, value: number) => {
-    return type === "percentage" ? `${value}%` : `$${value}`
-  }
+  const formatDate = (dateString: string) => formatDateLabel(dateString, isRTL)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir={dir}>
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Coupons & Discounts</h1>
-          <p className="text-muted-foreground">Manage discount codes and promotional offers</p>
+        <div className={isRTL ? "text-right" : "text-left"}>
+          <h1 className="text-3xl font-bold text-foreground">{t("coupons.title")}</h1>
+          <p className="text-muted-foreground">{t("coupons.subtitle")}</p>
         </div>
-        <Button className="text-white bg-emerald-600 hover:bg-emerald-700" onClick={handleCreateCoupon}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Coupon
+        <Button
+          className={`text-white bg-emerald-600 hover:bg-emerald-700 ${isRTL ? "flex-row-reverse" : ""}`}
+          onClick={handleCreateCoupon}
+        >
+          <Plus className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+          {t("coupons.actions.create")}
         </Button>
       </div>
 
@@ -163,42 +204,44 @@ export default function CouponsPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Coupons</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("coupons.stats.total")}</CardTitle>
             <Percent className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalCoupons}</div>
-            <p className="text-xs text-muted-foreground">{activeCoupons} active coupons</p>
+            <div className="text-2xl font-bold">{totalCoupons.toLocaleString(locale)}</div>
+            <p className="text-xs text-muted-foreground">
+              {t("coupons.stats.totalDescription").replace("{count}", activeCoupons.toLocaleString(locale))}
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Usage</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("coupons.stats.usage")}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalUsage.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Across all coupons</p>
+            <div className="text-2xl font-bold">{totalUsage.toLocaleString(locale)}</div>
+            <p className="text-xs text-muted-foreground">{t("coupons.stats.usageDescription")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Savings</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("coupons.stats.savings")}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalSavings.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Customer savings</p>
+            <div className="text-2xl font-bold">{formatCurrencyValue(totalSavings, locale, currency)}</div>
+            <p className="text-xs text-muted-foreground">{t("coupons.stats.savingsDescription")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Rate</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("coupons.stats.activeRate")}</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{Math.round((activeCoupons / totalCoupons) * 100)}%</div>
-            <p className="text-xs text-muted-foreground">Of total coupons</p>
+            <div className="text-2xl font-bold">{activeRate.toLocaleString(locale)}%</div>
+            <p className="text-xs text-muted-foreground">{t("coupons.stats.activeRateDescription")}</p>
           </CardContent>
         </Card>
       </div>
@@ -207,28 +250,40 @@ export default function CouponsPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-4 md:flex-row md:items-center">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search
+              className={`absolute top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground ${isRTL ? "right-3" : "left-3"}`}
+            />
             <Input
-              placeholder="Search coupons..."
+              placeholder={t("coupons.filters.searchPlaceholder")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 md:w-[300px]"
+              className={`${isRTL ? "pr-10 text-right" : "pl-10"} md:w-[300px]`}
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by status" />
+            <SelectTrigger className={`w-[180px] ${isRTL ? "justify-between text-right" : "justify-between"}`}>
+              <SelectValue placeholder={t("coupons.filters.statusPlaceholder")} />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="expired">Expired</SelectItem>
-              <SelectItem value="disabled">Disabled</SelectItem>
+            <SelectContent align={isRTL ? "start" : "end"}>
+              <SelectItem value="all" className={isRTL ? "justify-end text-right" : ""}>
+                {t("coupons.filters.statusOptions.all")}
+              </SelectItem>
+              <SelectItem value="active" className={isRTL ? "justify-end text-right" : ""}>
+                {t("coupons.filters.statusOptions.active")}
+              </SelectItem>
+              <SelectItem value="expired" className={isRTL ? "justify-end text-right" : ""}>
+                {t("coupons.filters.statusOptions.expired")}
+              </SelectItem>
+              <SelectItem value="disabled" className={isRTL ? "justify-end text-right" : ""}>
+                {t("coupons.filters.statusOptions.disabled")}
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
-        <div className="text-sm text-muted-foreground">
-          Showing {filteredCoupons.length} of {totalCoupons} coupons
+        <div className={`text-sm text-muted-foreground ${isRTL ? "text-left md:text-right" : "text-right"}`}>
+          {t("coupons.showingCount")
+            .replace("{current}", filteredCoupons.length.toLocaleString(locale))
+            .replace("{total}", totalCoupons.toLocaleString(locale))}
         </div>
       </div>
 
@@ -237,38 +292,42 @@ export default function CouponsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Coupon Code</TableHead>
-              <TableHead>Discount</TableHead>
-              <TableHead>Validity Period</TableHead>
-              <TableHead>Usage</TableHead>
-              <TableHead>Applies To</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+                <TableHead className={isRTL ? "text-right" : ""}>{t("coupons.table.code")}</TableHead>
+                <TableHead className={isRTL ? "text-right" : ""}>{t("coupons.table.discount")}</TableHead>
+                <TableHead className={isRTL ? "text-right" : ""}>{t("coupons.table.validity")}</TableHead>
+                <TableHead className={isRTL ? "text-right" : ""}>{t("coupons.table.usage")}</TableHead>
+                <TableHead className={isRTL ? "text-right" : ""}>{t("coupons.table.appliesTo")}</TableHead>
+                <TableHead className={isRTL ? "text-right" : ""}>{t("coupons.table.status")}</TableHead>
+                <TableHead className={isRTL ? "text-left" : "text-right"}>{t("coupons.table.actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredCoupons.map((coupon) => (
               <TableRow key={coupon.id}>
-                <TableCell className="font-medium">{coupon.code}</TableCell>
-                <TableCell>
+                <TableCell className={`font-medium ${isRTL ? "text-right" : ""}`}>{coupon.code}</TableCell>
+                <TableCell className={isRTL ? "text-right" : ""}>
                   <div className="flex flex-col">
-                    <span className="font-medium">{formatDiscount(coupon.discountType, coupon.discountValue)}</span>
+                    <span className="font-medium">
+                      {formatDiscount(coupon.discountType, coupon.discountValue, t, locale, currencySymbol)}
+                    </span>
                     {coupon.minOrderValue > 0 && (
-                      <span className="text-xs text-muted-foreground">Min: ${coupon.minOrderValue}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {t("coupons.table.min")} {formatCurrencyValue(coupon.minOrderValue, locale, currency)}
+                      </span>
                     )}
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className={isRTL ? "text-right" : ""}>
                   <div className="flex flex-col">
                     <span className="text-sm">
                       {formatDate(coupon.startDate)} - {formatDate(coupon.endDate)}
                     </span>
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className={isRTL ? "text-right" : ""}>
                   <div className="flex flex-col">
                     <span className="font-medium">
-                      {coupon.usageCount} / {coupon.usageLimit || "∞"}
+                      {coupon.usageCount.toLocaleString(locale)} / {coupon.usageLimit ? coupon.usageLimit.toLocaleString(locale) : "∞"}
                     </span>
                     <div className="w-full bg-muted rounded-full h-1.5 mt-1">
                       <div
@@ -282,35 +341,48 @@ export default function CouponsPage() {
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className={isRTL ? "text-right" : ""}>
                   {coupon.appliesTo === "all" ? (
-                    <span className="text-sm">All Products</span>
+                    <span className="text-sm">{t("coupons.table.allProducts")}</span>
                   ) : (
                     <div className="flex flex-col">
-                      <span className="text-sm font-medium">Selected Products</span>
+                      <span className="text-sm font-medium">{t("coupons.table.selectedProducts")}</span>
                       <span className="text-xs text-muted-foreground">
-                        {coupon.products.slice(0, 2).join(", ")}
-                        {coupon.products.length > 2 && ` +${coupon.products.length - 2} more`}
+                        {coupon.products.slice(0, 2).join(isRTL ? "، " : ", ")}
+                        {coupon.products.length > 2 && (
+                          <span>
+                            {" "}
+                            {t("coupons.table.more").replace(
+                              "{count}",
+                              (coupon.products.length - 2).toLocaleString(locale),
+                            )}
+                          </span>
+                        )}
                       </span>
                     </div>
                   )}
                 </TableCell>
-                <TableCell>{getStatusBadge(coupon.status)}</TableCell>
-                <TableCell className="text-right">
+                <TableCell>{getStatusBadge(coupon.status, t)}</TableCell>
+                <TableCell className={isRTL ? "text-left" : "text-right"}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
+                      <Button variant="ghost" className={`h-8 w-8 p-0 ${isRTL ? "rotate-180" : ""}`}>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleEditCoupon(coupon)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
+                    <DropdownMenuContent align={isRTL ? "start" : "end"} className={isRTL ? "text-right" : ""}>
+                      <DropdownMenuItem
+                        onClick={() => handleEditCoupon(coupon)}
+                        className={isRTL ? "flex-row-reverse justify-end gap-2" : ""}
+                      >
+                        <Edit className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+                        {t("coupons.actions.edit")}
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
+                      <DropdownMenuItem
+                        className={`text-destructive ${isRTL ? "flex-row-reverse justify-end gap-2" : ""}`}
+                      >
+                        <Trash2 className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+                        {t("coupons.actions.delete")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -324,41 +396,52 @@ export default function CouponsPage() {
       {/* Mobile Cards */}
       <div className="space-y-4 md:hidden">
         {filteredCoupons.map((coupon) => (
-          <Card key={coupon.id} className="p-4">
+          <Card key={coupon.id} className={`p-4 ${isRTL ? "text-right" : ""}`}>
             <div className="space-y-3">
               {/* First Line: Code, Discount, Status */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+              <div className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}>
+                <div className={`flex items-center gap-3 ${isRTL ? "flex-row-reverse" : ""}`}>
                   <span className="font-bold text-lg">{coupon.code}</span>
                   <Badge variant="outline" className="text-xs">
-                    {formatDiscount(coupon.discountType, coupon.discountValue)}
+                    {formatDiscount(coupon.discountType, coupon.discountValue, t, locale, currencySymbol)}
                   </Badge>
                 </div>
-                {getStatusBadge(coupon.status)}
+                {getStatusBadge(coupon.status, t)}
               </div>
 
               {/* Second Line: Usage, Validity, Actions */}
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <div className="flex items-center gap-4">
+              <div
+                className={`flex items-center justify-between text-sm text-muted-foreground ${
+                  isRTL ? "flex-row-reverse" : ""
+                }`}
+              >
+                <div className={`flex items-center gap-4 ${isRTL ? "flex-row-reverse" : ""}`}>
                   <span>
-                    {coupon.usageCount}/{coupon.usageLimit || "∞"} used
+                    {coupon.usageCount.toLocaleString(locale)}/{
+                      coupon.usageLimit ? coupon.usageLimit.toLocaleString(locale) : "∞"
+                    } {t("coupons.table.used")}
                   </span>
-                  <span>Until {formatDate(coupon.endDate)}</span>
+                  <span>{t("coupons.table.until").replace("{date}", formatDate(coupon.endDate))}</span>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <Button variant="ghost" size="sm" className={`h-8 w-8 p-0 ${isRTL ? "rotate-180" : ""}`}>
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleEditCoupon(coupon)}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
+                  <DropdownMenuContent align={isRTL ? "start" : "end"} className={isRTL ? "text-right" : ""}>
+                    <DropdownMenuItem
+                      onClick={() => handleEditCoupon(coupon)}
+                      className={isRTL ? "flex-row-reverse justify-end gap-2" : ""}
+                    >
+                      <Edit className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+                      {t("coupons.actions.edit")}
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
+                    <DropdownMenuItem
+                      className={`text-destructive ${isRTL ? "flex-row-reverse justify-end gap-2" : ""}`}
+                    >
+                      <Trash2 className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+                      {t("coupons.actions.delete")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -367,8 +450,16 @@ export default function CouponsPage() {
               {/* Additional Info */}
               {coupon.appliesTo === "selected" && (
                 <div className="text-xs text-muted-foreground">
-                  Applies to: {coupon.products.slice(0, 2).join(", ")}
-                  {coupon.products.length > 2 && ` +${coupon.products.length - 2} more`}
+                  {t("coupons.mobile.appliesTo")} {coupon.products.slice(0, 2).join(isRTL ? "، " : ", ")}
+                  {coupon.products.length > 2 && (
+                    <span>
+                      {" "}
+                      {t("coupons.table.more").replace(
+                        "{count}",
+                        (coupon.products.length - 2).toLocaleString(locale),
+                      )}
+                    </span>
+                  )}
                 </div>
               )}
             </div>

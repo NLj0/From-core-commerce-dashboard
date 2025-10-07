@@ -18,50 +18,51 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useLanguage } from "@/providers/language-provider"
 
 const sidebarItems = [
   {
-    title: "Dashboard",
+    titleKey: "navigation.dashboard",
     href: "/",
     icon: LayoutDashboard,
   },
   {
-    title: "Products",
+    titleKey: "navigation.products",
     href: "/products",
     icon: Package,
   },
   {
-    title: "Categories",
+    titleKey: "navigation.categories",
     href: "/categories",
     icon: FolderOpen,
   },
   {
-    title: "Orders",
+    titleKey: "navigation.orders",
     href: "/orders",
     icon: ShoppingCart,
   },
   {
-    title: "Customers",
+    titleKey: "navigation.customers",
     href: "/customers",
     icon: Users,
   },
   {
-    title: "Reviews",
+    titleKey: "navigation.reviews",
     href: "/reviews",
     icon: Star,
   },
   {
-    title: "Coupons",
+    titleKey: "navigation.coupons",
     href: "/coupons",
     icon: Percent,
   },
   {
-    title: "Emails",
+    titleKey: "navigation.emails",
     href: "/emails",
     icon: Mail,
   },
   {
-    title: "Settings",
+    titleKey: "navigation.settings",
     href: "/settings",
     icon: Settings,
   },
@@ -74,6 +75,8 @@ interface DashboardSidebarProps {
 
 export function DashboardSidebar({ isOpen = true, onClose }: DashboardSidebarProps) {
   const pathname = usePathname()
+  const { t, dir } = useLanguage()
+  const isRTL = dir === "rtl"
 
   return (
     <>
@@ -83,10 +86,13 @@ export function DashboardSidebar({ isOpen = true, onClose }: DashboardSidebarPro
         className={cn(
           "fixed inset-y-0 left-0 z-50 flex h-full w-64 flex-col bg-sidebar border-r border-sidebar-border transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full",
+          isRTL ? "items-end text-right" : "items-start text-left",
         )}
+        dir={dir}
       >
         {/* Logo and Store Name */}
-        <div className="flex items-center gap-2 p-6 border-b border-sidebar-border">
+        <div className={cn("flex items-center gap-2 p-6 border-b border-sidebar-border", isRTL ? "flex-row-reverse" : "")}
+        >
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary">
             <Store className="h-4 w-4 text-sidebar-primary-foreground" />
           </div>
@@ -109,10 +115,11 @@ export function DashboardSidebar({ isOpen = true, onClose }: DashboardSidebarPro
                   key={item.href}
                   variant={isActive ? "default" : "ghost"}
                   className={cn(
-                    "w-full justify-start gap-3 h-10",
+                    "w-full h-10 gap-3",
                     isActive
                       ? "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
                       : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                    isRTL ? "justify-end" : "justify-start",
                   )}
                   asChild
                   onClick={() => {
@@ -121,9 +128,24 @@ export function DashboardSidebar({ isOpen = true, onClose }: DashboardSidebarPro
                     }
                   }}
                 >
-                  <Link href={item.href}>
-                    <item.icon className="h-4 w-4" />
-                    {item.title}
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      "flex w-full items-center gap-3",
+                      isRTL ? "flex-row-reverse text-right" : "text-left",
+                    )}
+                  >
+                    {isRTL ? (
+                      <>
+                        <item.icon className="h-4 w-4" />
+                        <span className="flex-1 truncate">{t(item.titleKey)}</span>
+                      </>
+                    ) : (
+                      <>
+                        <item.icon className="h-4 w-4" />
+                        <span className="flex-1 truncate">{t(item.titleKey)}</span>
+                      </>
+                    )}
                   </Link>
                 </Button>
               )

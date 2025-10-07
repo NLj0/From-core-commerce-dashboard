@@ -12,7 +12,7 @@ const badgeVariants = cva(
         default:
           "border-primary text-primary [a&]:hover:bg-primary/10",
         secondary:
-          "border-secondary text-secondary [a&]:hover:bg-secondary/10",
+          "border-secondary [a&]:hover:bg-secondary/10",
         destructive:
           "border-destructive text-destructive [a&]:hover:bg-destructive/10 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
         outline:
@@ -40,9 +40,9 @@ const badgeVariants = cva(
           "bg-rose-500/10 text-rose-600 border-rose-500/30 hover:bg-rose-500/20 dark:text-rose-400 dark:border-rose-500/30",
 
         "badge-gray": 
-          "bg-gray-500/10 text-gray-700 border-gray-500/30 hover:bg-gray-500/20 dark:text-gray-400 dark:border-gray-500/30",
+          "bg-gray-500/10 border-gray-500/30 hover:bg-gray-500/20 dark:text-gray-400 dark:border-gray-500/30",
         gray:
-          "bg-gray-500/10 text-gray-700 border-gray-500/30 hover:bg-gray-500/20 dark:text-gray-400 dark:border-gray-500/30",
+          "bg-gray-500/10 border-gray-500/30 hover:bg-gray-500/20 dark:text-gray-400 dark:border-gray-500/30",
 
         "badge-blue": 
           "bg-blue-500/10 text-blue-600 border-blue-500/30 hover:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30",
