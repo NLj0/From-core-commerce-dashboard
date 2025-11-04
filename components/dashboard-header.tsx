@@ -1,5 +1,7 @@
 "use client"
 
+import { useEffect, useState } from "react"
+import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -10,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Bell, Settings, LogOut, User, Menu, ShoppingCart, Package, Star, UserPlus, AlertTriangle } from "lucide-react"
+import { Bell, Settings, LogOut, User, Menu, ShoppingCart, Package, Star, UserPlus, AlertTriangle, Sun, Moon } from "lucide-react"
 import { LanguageSwitcher } from "@/components/language-switcher"
 
 interface DashboardHeaderProps {
@@ -85,6 +87,16 @@ function getNotificationColor(type: string) {
 
 export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
   const unreadCount = mockNotifications.filter((n) => n.unread).length
+  const { resolvedTheme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === "dark" ? "light" : "dark")
+  }
 
   return (
     <header className="flex h-16 items-center justify-between border-b border-border bg-background px-4 md:px-6">
@@ -102,6 +114,16 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
       </div>
 
       <div className="flex items-center gap-2 md:gap-4 ml-auto md:ml-0">
+        {mounted && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+          >
+            {resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
+        )}
         {/* Language Switcher */}
         <LanguageSwitcher />
 

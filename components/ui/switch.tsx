@@ -9,6 +9,12 @@ function Switch({
   className,
   ...props
 }: React.ComponentProps<typeof SwitchPrimitive.Root>) {
+  const [isRTL, setIsRTL] = React.useState(false)
+
+  React.useEffect(() => {
+    setIsRTL(document.documentElement.dir === "rtl")
+  }, [])
+
   return (
     <SwitchPrimitive.Root
       data-slot="switch"
@@ -21,7 +27,10 @@ function Switch({
       <SwitchPrimitive.Thumb
         data-slot="switch-thumb"
         className={cn(
-          "bg-background dark:data-[state=unchecked]:bg-foreground dark:data-[state=checked]:bg-primary-foreground pointer-events-none block size-4 rounded-full ring-0 transition-transform data-[state=checked]:translate-x-[calc(100%-2px)] data-[state=unchecked]:translate-x-0"
+          "bg-background dark:data-[state=unchecked]:bg-foreground dark:data-[state=checked]:bg-primary-foreground pointer-events-none block size-4 rounded-full ring-0 transition-transform",
+          isRTL
+            ? "data-[state=checked]:translate-x-0 data-[state=unchecked]:translate-x-[calc(100%-30px)]"
+            : "data-[state=checked]:translate-x-[calc(100%-2px)] data-[state=unchecked]:translate-x-0"
         )}
       />
     </SwitchPrimitive.Root>

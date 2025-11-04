@@ -608,6 +608,546 @@
       "security": "Security",
       "notifications": "Notifications"
     },
+    "overview": {
+      "intro": "Choose a section to configure your store settings.",
+      "manage": "Manage",
+      "sections": {
+        "basic": {
+          "title": "Basic Settings",
+          "description": "Update store identity, contact details, and branding."
+        },
+        "integrations": {
+          "title": "Service Integrations",
+          "description": "Connect essential tools and automations to your store."
+        },
+        "payments": {
+          "title": "Payment Methods",
+          "description": "Configure gateways, credentials, and transaction rules."
+        },
+        "store": {
+          "title": "Store Options",
+          "description": "Control storefront behavior, policies, and customer experience."
+        },
+        "currencies": {
+          "title": "Currencies",
+          "description": "Define default currency and manage exchange preferences."
+        },
+        "maintenance": {
+          "title": "Maintenance Mode",
+          "description": "Pause storefront access while you work on updates."
+        },
+        "notifications": {
+          "title": "Notifications",
+          "description": "Customize alerts for orders, customers, and system events."
+        },
+        "staff": {
+          "title": "Store Staff",
+          "description": "Manage staff accounts, roles, and permissions."
+        },
+        "seo": {
+          "title": "SEO",
+          "description": "Optimize metadata, sitemap, and search engine visibility."
+        },
+        "theme": {
+          "title": "Site Theme",
+          "description": "Customize your store appearance for special occasions and events."
+        }
+      }
+    },
+    "detail": {
+      "back": "Back to Settings",
+      "comingSoon": "We're working on detailed controls for this section. Check back soon!",
+      "languages": {
+        "en": "English version",
+        "ar": "Arabic version"
+      },
+      "actions": {
+        "saveSeo": "Save SEO settings",
+        "previewSearch": "Preview search result",
+        "saveRobots": "Save Robots.txt",
+        "saveMaintenance": "Save maintenance settings",
+        "saveBasicBranding": "Save branding",
+        "saveBasicSupport": "Save support channels",
+        "saveBasicSocial": "Save social accounts"
+      },
+      "basic": {
+        "branding": {
+          "title": "Store branding",
+          "description": "Define how your store appears in browser tabs and shared links.",
+          "fields": {
+            "logo": {
+              "label": "Store logo",
+              "placeholder": "Upload store logo",
+              "helper": "Upload an SVG or high-resolution PNG with a transparent background."
+            },
+            "favicon": {
+              "label": "Store favicon",
+              "placeholder": "Upload store favicon",
+              "helper": "Upload a 32×32 PNG or ICO file so the tab icon stays crisp."
+            },
+            "name": {
+              "label": "Store name",
+              "placeholder": "Enter your storefront name"
+            },
+            "about": {
+              "label": "About the store",
+              "placeholder": "Write a short description that introduces your store." ,
+              "helper": "This copy appears in receipts, emails, and some SEO snippets."
+            }
+          }
+        },
+        "support": {
+          "title": "Customer service channels",
+          "description": "Share the best ways for shoppers to reach your team.",
+          "fields": {
+            "phone": {
+              "label": "Primary phone number",
+              "placeholder": "+966 5 5555 5555"
+            },
+            "whatsapp": {
+              "label": "WhatsApp number",
+              "placeholder": "+966 5 5555 4444"
+            },
+            "telegram": {
+              "label": "Telegram username",
+              "placeholder": "@yourstore_support"
+            },
+            "email": {
+              "label": "Support email address",
+              "placeholder": "support@yourstore.com"
+            }
+          }
+        },
+        "social": {
+          "title": "Social media accounts",
+          "description": "Keep customers engaged across your social platforms.",
+          "fields": {
+            "instagram": {
+              "label": "Instagram handle",
+              "placeholder": "https://instagram.com/yourstore"
+            },
+            "x": {
+              "label": "X (Twitter) handle",
+              "placeholder": "https://x.com/yourstore"
+            },
+            "snapchat": {
+              "label": "Snapchat account",
+              "placeholder": "https://www.snapchat.com/add/yourstore"
+            },
+            "tiktok": {
+              "label": "TikTok account",
+              "placeholder": "https://www.tiktok.com/@yourstore"
+            },
+            "youtube": {
+              "label": "YouTube channel",
+              "placeholder": "https://youtube.com/@yourstore"
+            }
+          }
+        }
+      },
+      "seo": {
+        "heading": "Search visibility",
+        "description": "Tune the metadata that helps search engines and social platforms showcase your store.",
+  "languageDescription": "Provide localized meta content so each language shines in search results.",
+        "homepageTitle": {
+          "label": "Homepage title",
+          "placeholder": {
+            "en": "Example: Modern home decor store",
+            "ar": "مثال: متجر ديكور منزلي عصري"
+          }
+        },
+        "metaDescription": {
+          "label": "Meta description",
+          "placeholder": {
+            "en": "Describe your storefront in one compelling sentence...",
+            "ar": "لخّص متجرك بجملة جذابة واحدة..."
+          },
+          "helper": "Aim for fewer than 160 characters so the full message appears in search results."
+        },
+        "keywords": {
+          "label": "Keywords",
+          "placeholder": {
+            "en": "separate, words, with, commas",
+            "ar": "افصل، الكلمات، بفواصل"
+          },
+          "helper": "Add 5-10 phrases customers might search for, separated by commas."
+        },
+        "robots": {
+          "title": "Robots.txt",
+          "description": "Control how search engines crawl your storefront.",
+          "label": "Custom rules",
+          "placeholder": "User-agent: *\nAllow: /\nDisallow: /checkout",
+          "helper": "Leave this empty to keep the default rules we generate for you."
+        }
+      },
+      "staff": {
+        "tabs": {
+          "employees": "Employees",
+          "roles": "Roles"
+        },
+        "employees": {
+          "title": "Team members",
+          "description": "Manage who can access your dashboard and what devices they're using.",
+          "subtitle": "People with access",
+          "helper": "Invite teammates to collaborate and track their active sessions.",
+          "add": "Add employee",
+          "table": {
+            "name": "Employee name",
+            "device": "Device info",
+            "status": "Status"
+          },
+          "status": {
+            "active": "Active",
+            "invited": "Invited",
+            "inactive": "Inactive"
+          }
+        },
+        "roles": {
+          "title": "Roles & permissions",
+          "description": "Group permissions and assign them to multiple teammates at once.",
+          "subtitle": "Role library",
+          "helper": "Create focused permission sets to match how your team works.",
+          "create": "Create new role",
+          "table": {
+            "name": "Role name",
+            "type": "Type",
+            "members": "Members"
+          },
+          "examples": {
+            "manager": {
+              "name": "Store Manager",
+              "type": "Administrative"
+            },
+            "support": {
+              "name": "Support Specialist",
+              "type": "Operational"
+            },
+            "viewer": {
+              "name": "Read-only Viewer",
+              "type": "Read-only"
+            }
+          }
+        }
+      },
+      "maintenance": {
+        "title": "Maintenance Mode",
+        "description": "Temporarily disable storefront access while you perform updates or maintenance.",
+        "status": {
+          "label": "Maintenance status",
+          "enabled": "Enabled",
+          "disabled": "Disabled",
+          "helper": "When enabled, visitors will see a maintenance message instead of your store."
+        },
+        "message": {
+          "label": "Maintenance message",
+          "placeholder": {
+            "en": "We're currently performing scheduled maintenance. We'll be back shortly!",
+            "ar": "نقوم حاليًا بإجراء صيانة مجدولة. سنعود قريبًا!"
+          },
+          "helper": "This message will be displayed to visitors during maintenance."
+        },
+        "allowedIPs": {
+          "label": "Allowed IP addresses",
+          "placeholder": "192.168.1.1, 10.0.0.1",
+          "helper": "Enter IP addresses that can access the store during maintenance (comma-separated)."
+        },
+        "schedule": {
+          "label": "Maintenance schedule",
+          "start": "Start time",
+          "end": "End time",
+          "helper": "Optionally schedule when maintenance mode will automatically activate and deactivate."
+        }
+      },
+      "currencies": {
+        "title": "Store currencies",
+        "description": "Set your default currency and manage accepted payment currencies.",
+        "default": {
+          "label": "Default currency",
+          "description": "This is the primary currency shown on your storefront.",
+          "placeholder": "Select a currency"
+        },
+        "accepted": {
+          "title": "Accepted currencies",
+          "description": "Enable the currencies your customers can use to make purchases.",
+          "add": "Add currency",
+          "columns": {
+            "currency": "Currency",
+            "code": "Code",
+            "symbol": "Symbol",
+            "rate": "Exchange Rate",
+            "status": "Status",
+            "actions": "Actions"
+          },
+          "statuses": {
+            "active": "Active",
+            "inactive": "Inactive"
+          },
+          "edit": "Edit",
+          "remove": "Remove",
+          "autoUpdate": "Auto-update exchange rates",
+          "autoUpdateHelper": "Automatically fetch and update exchange rates daily",
+          "empty": "No currencies added yet. Add at least one currency to get started.",
+          "addDialogTitle": "Add a new currency",
+          "addDialogDescription": "Select and configure a currency for your store.",
+          "editDialogTitle": "Edit currency",
+          "editDialogDescription": "Update the currency settings.",
+          "selectCurrency": "Select currency",
+          "manualRate": "Manual exchange rate",
+          "manualRateHelper": "Set a fixed exchange rate when auto-update is disabled",
+          "save": "Save currency",
+          "cancel": "Cancel"
+        },
+        "formatting": {
+          "title": "Currency formatting",
+          "description": "Customize how prices are displayed to customers.",
+          "symbolPosition": {
+            "label": "Symbol position",
+            "before": "Before amount (e.g. $100)",
+            "after": "After amount (e.g. 100$)"
+          },
+          "decimalSeparator": {
+            "label": "Decimal separator",
+            "period": "Period (.)",
+            "comma": "Comma (,)"
+          },
+          "thousandsSeparator": {
+            "label": "Thousands separator",
+            "comma": "Comma (,)",
+            "period": "Period (.)",
+            "space": "Space ( )",
+            "none": "None"
+          },
+          "preview": "Price preview",
+          "example": "1,234.56"
+        }
+      },
+      "integrations": {
+        "title": "Service Integrations",
+        "description": "Connect and manage APIs and external services for your store.",
+        "apiKeys": {
+          "title": "API Keys",
+          "description": "Manage your store API keys for third-party integrations and automations.",
+          "add": "Generate New Key",
+          "table": {
+            "name": "Key name",
+            "created": "Created",
+            "lastUsed": "Last used",
+            "status": "Status",
+            "actions": "Actions"
+          },
+          "status": {
+            "active": "Active",
+            "revoked": "Revoked",
+            "expired": "Expired"
+          },
+          "copy": "Copy key",
+          "copySuccess": "Copied to clipboard",
+          "revoke": "Revoke",
+          "edit": "Edit",
+          "delete": "Delete",
+          "neverUsed": "Never used",
+          "modal": {
+            "title": "Generate API Key",
+            "name": "Key name",
+            "namePlaceholder": "e.g., Mobile App Integration",
+            "description": "Description (optional)",
+            "descriptionPlaceholder": "What is this key for?",
+            "permissions": "Permissions",
+            "permissionsHelper": "Select which scopes this key can access",
+            "generate": "Generate Key",
+            "viewKey": "Your API key",
+            "viewKeyHelper": "Save this somewhere safe. You won't be able to view it again.",
+            "done": "I've saved my key"
+          }
+        },
+        "services": {
+          "title": "Service Verification",
+          "description": "Check the status and connectivity of your integrated services.",
+          "ssl": {
+            "name": "SSL/TLS Certificate",
+            "description": "Verify your domain's SSL certificate status for secure connections."
+          },
+          "smtp": {
+            "name": "SMTP Email Server",
+            "description": "Check if your email configuration is working properly."
+          },
+          "dns": {
+            "name": "DNS Configuration",
+            "description": "Verify DNS records and domain settings."
+          },
+          "cdn": {
+            "name": "CDN Service",
+            "description": "Check your content delivery network connectivity."
+          },
+          "storage": {
+            "name": "Cloud Storage",
+            "description": "Verify connection to your cloud storage service."
+          },
+          "backup": {
+            "name": "Backup Service",
+            "description": "Check automated backup status and last backup date."
+          },
+          "status": {
+            "verifying": "Verifying...",
+            "connected": "Connected",
+            "error": "Connection error",
+            "warning": "Check configuration"
+          },
+          "test": "Test Connection",
+          "details": "Details",
+          "configure": "Configure",
+          "certificateExpires": "Certificate expires",
+          "daysRemaining": "days",
+          "certificateExpired": "Certificate expired",
+          "lastCheck": "Last checked",
+          "version": "Version",
+          "endpoint": "Endpoint"
+        }
+      },
+      "notifications": {
+        "title": "Notification Preferences",
+        "description": "Manage how you receive notifications about store activities and customer interactions.",
+        "channels": {
+          "title": "Notification Channels",
+          "description": "Choose which channels to receive notifications on and configure their settings.",
+          "email": {
+            "label": "Email Notifications",
+            "description": "Receive notifications via email",
+            "enabled": "Email notifications enabled",
+            "disabled": "Email notifications disabled",
+            "settings": "Email Settings",
+            "frequency": "Email Frequency",
+            "frequencies": {
+              "instant": "Instant - Send immediately",
+              "hourly": "Hourly digest",
+              "daily": "Daily digest",
+              "weekly": "Weekly digest"
+            },
+            "template": "Email Template",
+            "preview": "Preview"
+          },
+          "whatsapp": {
+            "label": "WhatsApp Business",
+            "description": "Receive notifications via WhatsApp Business",
+            "enabled": "WhatsApp notifications enabled",
+            "disabled": "WhatsApp notifications disabled",
+            "settings": "WhatsApp Settings",
+            "accountNumber": "WhatsApp Business Account Number",
+            "accountNumberPlaceholder": "+966XXXXXXXXX",
+            "businessName": "Business Account Name",
+            "businessNamePlaceholder": "Enter your business name",
+            "messageTemplate": "Message Template",
+            "preview": "Message Preview",
+            "testMessage": "Send Test Message"
+          }
+        },
+        "events": {
+          "title": "Notification Types",
+          "description": "Choose which events trigger notifications.",
+          "newOrder": {
+            "label": "New Order",
+            "description": "Receive alert when a new order is placed"
+          },
+          "orderStatusChange": {
+            "label": "Order Status Change",
+            "description": "Get notified when an order status changes"
+          },
+          "orderShipped": {
+            "label": "Order Shipped",
+            "description": "Alert when an order is shipped"
+          },
+          "paymentReceived": {
+            "label": "Payment Received",
+            "description": "Notification when payment is processed"
+          },
+          "customerMessage": {
+            "label": "Customer Message",
+            "description": "Get notified of new messages from customers"
+          },
+          "newReview": {
+            "label": "New Review",
+            "description": "Alert when a customer leaves a review"
+          },
+          "lowStock": {
+            "label": "Low Stock Alert",
+            "description": "Notify when product inventory is low"
+          },
+          "stockOut": {
+            "label": "Out of Stock",
+            "description": "Alert when a product runs out of stock"
+          },
+          "abandonedCart": {
+            "label": "Abandoned Cart",
+            "description": "Remind about carts that haven't been completed"
+          },
+          "newsAndUpdates": {
+            "label": "News & Updates",
+            "description": "Receive store news and feature updates"
+          }
+        },
+        "quiet": {
+          "title": "Quiet Hours",
+          "description": "Set times when you don't want to receive notifications.",
+          "enabled": "Enable quiet hours",
+          "startTime": "Start time",
+          "endTime": "End time",
+          "helper": "Notifications won't be sent during these hours"
+        }
+      },
+      "theme": {
+        "title": "Site Theme & Occasions",
+        "description": "Customize your store's appearance for special occasions and holidays.",
+        "currentTheme": "Current Theme",
+        "defaultTheme": "Default Theme",
+        "activeTheme": "Active",
+        "occasions": {
+          "title": "Occasion Themes",
+          "description": "Apply festive themes to celebrate special occasions with your customers.",
+          "ramadan": {
+            "name": "Ramadan",
+            "description": "A blessed theme for the holy month of Ramadan with Islamic patterns and colors."
+          },
+          "eidFitr": {
+            "name": "Eid Al-Fitr",
+            "description": "Celebrate the joyous occasion of Eid with festive decorations and colors."
+          },
+          "eidAdha": {
+            "name": "Eid Al-Adha",
+            "description": "Honor the blessed Eid Al-Adha with a special celebratory theme."
+          },
+          "nationalDay": {
+            "name": "National Day",
+            "description": "Celebrate your nation's pride with patriotic colors and decorations."
+          },
+          "newYear": {
+            "name": "New Year",
+            "description": "Welcome the new year with festive celebrations and fresh colors."
+          },
+          "default": {
+            "name": "Default",
+            "description": "Your store's original theme without any special occasion styling."
+          }
+        },
+        "actions": {
+          "edit": "Edit Theme",
+          "activate": "Activate",
+          "deactivate": "Deactivate",
+          "preview": "Preview",
+          "customize": "Customize"
+        },
+        "settings": {
+          "autoActivate": "Auto-activate on occasion dates",
+          "autoActivateHelper": "Automatically apply themes based on calendar dates",
+          "startDate": "Start Date",
+          "endDate": "End Date",
+          "primaryColor": "Primary Color",
+          "secondaryColor": "Secondary Color",
+          "bannerImage": "Banner Image",
+          "uploadBanner": "Upload Banner",
+          "removeBanner": "Remove Banner"
+        }
+      }
+    },
     "general": {
       "site": {
         "title": "Site Settings",
@@ -707,7 +1247,11 @@
         "gatewayNames": {
           "stripe": "Stripe",
           "paypal": "PayPal",
-          "razorpay": "Razorpay"
+          "razorpay": "Razorpay",
+          "paylink": "Paylink",
+          "stcpay": "stc pay",
+          "tamara": "Tamara",
+          "tap": "Tap"
         },
         "fields": {
           "publicKey": "Public Key",
@@ -715,11 +1259,18 @@
           "clientId": "Client ID",
           "clientSecret": "Client Secret",
           "keyId": "Key ID",
-          "keySecret": "Key Secret"
+          "keySecret": "Key Secret",
+          "apiKey": "API Key",
+          "merchantId": "Merchant ID"
         },
         "placeholder": {
           "key": "Enter key...",
           "secret": "Enter secret..."
+        },
+        "status": {
+          "active": "Active",
+          "inactive": "Inactive",
+          "testing": "Testing"
         },
         "lastTested": "Last tested: {date}",
         "neverTested": "Never tested",
@@ -754,28 +1305,6 @@
         "export": "Export Settings",
         "delete": "Delete Account",
         "warning": "This action cannot be undone. All your data will be permanently deleted."
-      }
-    },
-    "notifications": {
-      "title": "Notification Preferences",
-      "description": "Choose how you want to be notified about important updates.",
-      "channels": {
-        "email": {
-          "label": "Email Notifications",
-          "description": "Receive notifications via email"
-        },
-        "push": {
-          "label": "Push Notifications",
-          "description": "Receive push notifications in your browser"
-        },
-        "sms": {
-          "label": "SMS Notifications",
-          "description": "Receive important alerts via SMS"
-        },
-        "marketing": {
-          "label": "Marketing Communications",
-          "description": "Receive updates about new features and tips"
-        }
       }
     },
     "status": {

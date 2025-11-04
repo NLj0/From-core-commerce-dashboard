@@ -62,7 +62,7 @@ function DialogContent({
             {React.Children.toArray(children).filter(
               (child) =>
                 React.isValidElement(child) &&
-                (child.props["data-slot"] === "dialog-header" || child.type === DialogHeader),
+                ((child.props as any)["data-slot"] === "dialog-header" || child.type === DialogHeader),
             )}
           </div>
 
@@ -70,8 +70,8 @@ function DialogContent({
             {React.Children.toArray(children).filter(
               (child) =>
                 React.isValidElement(child) &&
-                child.props["data-slot"] !== "dialog-header" &&
-                child.props["data-slot"] !== "dialog-footer" &&
+                (child.props as any)["data-slot"] !== "dialog-header" &&
+                (child.props as any)["data-slot"] !== "dialog-footer" &&
                 child.type !== DialogHeader &&
                 child.type !== DialogFooter,
             )}
@@ -81,7 +81,7 @@ function DialogContent({
             {React.Children.toArray(children).filter(
               (child) =>
                 React.isValidElement(child) &&
-                (child.props["data-slot"] === "dialog-footer" || child.type === DialogFooter),
+                ((child.props as any)["data-slot"] === "dialog-footer" || child.type === DialogFooter),
             )}
           </div>
         </div>

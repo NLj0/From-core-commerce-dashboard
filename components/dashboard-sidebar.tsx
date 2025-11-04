@@ -109,7 +109,9 @@ export function DashboardSidebar({ isOpen = true, onClose }: DashboardSidebarPro
         <ScrollArea className="flex-1 px-3 py-4">
           <nav className="space-y-2">
             {sidebarItems.map((item) => {
-              const isActive = pathname === item.href
+              const isActive =
+                pathname === item.href ||
+                (item.href !== "/" && pathname.startsWith(`${item.href}/`))
               return (
                 <Button
                   key={item.href}
