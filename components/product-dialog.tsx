@@ -22,7 +22,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
-import { Upload, X, Plus, Search, Globe } from "lucide-react"
+import { Upload, X, Plus, Search, Globe, Trash2 } from "lucide-react"
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
 
 interface Product {
@@ -53,6 +53,8 @@ interface Product {
   isActive?: boolean
   allowRepeatPurchase?: boolean
   preventDiscount?: boolean
+  images?: string[]
+  mainImage?: string
 }
 
 interface ProductDialogProps {
@@ -77,6 +79,9 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
     salePrice: "",
     stock: "",
     image: "",
+    // Multiple images support
+    images: [] as string[],
+    mainImage: "",
     // SEO fields
     metaTitle: "",
     metaDescription: "",
@@ -153,6 +158,10 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
 
   useEffect(() => {
     if (product) {
+      // Initialize images from product data
+      const productImages = product.images ?? []
+      const productMainImage = product.mainImage ?? (productImages.length > 0 ? productImages[0] : "")
+      
       setFormData({
         name: product.name ?? "",
         nameArabic: product.nameArabic ?? "",
@@ -170,6 +179,8 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
               : "",
         stock: product.stock != null ? product.stock.toString() : "",
         image: product.image ?? "",
+        images: productImages,
+        mainImage: productMainImage,
         metaTitle: "",
         metaDescription: "",
         keywords: "",
@@ -212,6 +223,8 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
         salePrice: "",
         stock: "",
         image: "",
+        images: [],
+        mainImage: "",
         metaTitle: "",
         metaDescription: "",
         keywords: "",
@@ -260,6 +273,9 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
     const displayedDiscountRateValue = parseFloatValue(formData.displayedDiscountRate)
     const averageRatingValue = parseFloatValue(formData.averageRating)
 
+    // Use main image or first image or generate placeholder
+    const primaryImage = formData.mainImage || (formData.images.length > 0 ? formData.images[0] : formData.image) || `/placeholder.svg?height=60&width=60&query=${formData.name}`
+
     const productData = {
       ...formData,
       name: formData.name,
@@ -273,7 +289,9 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
       stock: formData.unlimitedStock ? null : parseIntValue(formData.stock),
       category: formData.category,
       sku: formData.sku,
-      image: formData.image || `/placeholder.svg?height=60&width=60&query=${formData.name}`,
+      image: primaryImage,
+      images: formData.images,
+      mainImage: formData.mainImage,
       productType: productType || "standard",
       discountType: formData.discountType,
       discountValue,
@@ -455,6 +473,71 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
     if (file) {
       setFormData({ ...formData, uploadedFile: file })
     }
+  }
+
+  // Image handling functions for multiple product images
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (!files) return
+
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
+    const maxSize = 5 * 1024 * 1024 // 5MB
+
+    Array.from(files).forEach((file) => {
+      if (!validTypes.includes(file.type)) {
+        // File type validation - using console.warn as toast system is not available
+        console.warn(`Invalid file type: ${file.name}. Supported formats: JPG, PNG, GIF`)
+        return
+      }
+      if (file.size > maxSize) {
+        // File size validation - using console.warn as toast system is not available
+        console.warn(`File too large: ${file.name}. Maximum size is 5MB`)
+        return
+      }
+
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const imageUrl = e.target?.result as string
+        setFormData((prev) => {
+          const updatedImages = [...prev.images, imageUrl]
+          // Set as main image if it's the first image
+          const updatedMainImage = prev.mainImage || imageUrl
+          return {
+            ...prev,
+            images: updatedImages,
+            mainImage: updatedMainImage,
+          }
+        })
+      }
+      reader.readAsDataURL(file)
+    })
+
+    // Reset input
+    event.target.value = ''
+  }
+
+  const setAsMainImage = (index: number) => {
+    const image = formData.images[index]
+    if (image) {
+      setFormData({ ...formData, mainImage: image })
+    }
+  }
+
+  const removeImage = (index: number) => {
+    const imageToRemove = formData.images[index]
+    const newImages = formData.images.filter((_, i) => i !== index)
+    
+    // If removing the main image, set the first remaining image as main
+    let newMainImage = formData.mainImage
+    if (formData.mainImage === imageToRemove) {
+      newMainImage = newImages.length > 0 ? newImages[0] : ""
+    }
+    
+    setFormData({
+      ...formData,
+      images: newImages,
+      mainImage: newMainImage,
+    })
   }
 
   const handleCodesFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1422,7 +1505,9 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
               <TabsContent value="images" className="space-y-4">
                 <div className="space-y-3">
                   <Label>Product Images</Label>
-                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center mb-4">
+                  
+                  {/* Upload Area */}
+                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
                     <Upload className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
                     <p className="text-sm text-muted-foreground mb-2">
                       {productType === "service"
@@ -1434,10 +1519,88 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                     <p className="text-xs text-muted-foreground mb-4">
                       Supported formats: JPG, PNG, GIF (Max 5MB each)
                     </p>
-                    <Button type="button" variant="outline">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/gif"
+                      multiple
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      id="image-upload"
+                    />
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      onClick={() => document.getElementById('image-upload')?.click()}
+                    >
                       Choose Files
                     </Button>
                   </div>
+
+                  {/* Image Preview Grid */}
+                  {formData.images.length > 0 && (
+                    <div className="space-y-3">
+                      <Label>Uploaded Images ({formData.images.length})</Label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {formData.images.map((image, index) => (
+                          <div
+                            key={index}
+                            className={`relative group rounded-lg overflow-hidden border-2 ${
+                              formData.mainImage === image
+                                ? 'border-primary'
+                                : 'border-muted-foreground/25'
+                            }`}
+                          >
+                            <div className="aspect-square relative">
+                              <img
+                                src={image}
+                                alt={`Product ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                              
+                              {/* Main Image Badge */}
+                              {formData.mainImage === image && (
+                                <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
+                                  Main
+                                </div>
+                              )}
+
+                              {/* Action Buttons */}
+                              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                {formData.mainImage !== image && (
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={() => setAsMainImage(index)}
+                                  >
+                                    Set Main
+                                  </Button>
+                                )}
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => removeImage(index)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Click on an image to set it as the main product image. The main image will be displayed first.
+                      </p>
+                    </div>
+                  )}
+
+                  {formData.images.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p className="text-sm">No images uploaded yet</p>
+                      <p className="text-xs mt-1">Upload images to display your product</p>
+                    </div>
+                  )}
                 </div>
               </TabsContent>
             </div>
