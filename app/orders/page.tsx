@@ -525,21 +525,21 @@ export default function OrdersPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleViewOrder(order)}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            {t("orders.viewOrder")}
+                          <DropdownMenuItem onClick={() => handleViewOrder(order)} className="hover:bg-accent/50 transition-colors">
+                          <Eye className="mr-2 h-4 w-4" />
+                          {t("orders.viewOrder")}
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "processing")}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            {t("orders.markProcessing")}
+                          <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "processing")} className="hover:bg-accent/50 transition-colors">
+                          <Edit className="mr-2 h-4 w-4" />
+                          {t("orders.markProcessing")}
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "delivered")}>
-                            <Download className="mr-2 h-4 w-4" />
-                            {t("orders.markDelivered")}
+                          <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "delivered")} className="hover:bg-accent/50 transition-colors">
+                          <Download className="mr-2 h-4 w-4" />
+                          {t("orders.markDelivered")}
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "completed")}>
-                            <CheckCircle className="mr-2 h-4 w-4" />
-                            {t("orders.markCompleted")}
+                          <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "completed")} className="hover:bg-accent/50 transition-colors">
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                          {t("orders.markCompleted")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -610,19 +610,19 @@ export default function OrdersPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleViewOrder(order)}>
+                        <DropdownMenuItem onClick={() => handleViewOrder(order)} className="hover:bg-accent/50 transition-colors">
                           <Eye className="mr-2 h-4 w-4" />
                           {t("orders.viewOrder")}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "processing")}>
+                        <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "processing")} className="hover:bg-accent/50 transition-colors">
                           <Edit className="mr-2 h-4 w-4" />
                           {t("orders.markProcessing")}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "delivered")}>
+                        <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "delivered")} className="hover:bg-accent/50 transition-colors">
                           <Download className="mr-2 h-4 w-4" />
                           {t("orders.markDelivered")}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "completed")}>
+                        <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, "completed")} className="hover:bg-accent/50 transition-colors">
                           <CheckCircle className="mr-2 h-4 w-4" />
                           {t("orders.markCompleted")}
                         </DropdownMenuItem>

@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -22,8 +22,22 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
-import { Upload, X, Plus, Search, Globe } from "lucide-react"
+import { Upload, X, Plus, Search, Globe, Trash2, Expand, AlertCircle, Loader2 } from "lucide-react"
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
+
+// Helper function to convert ISO date to yyyy-MM-dd format for input type="date"
+const formatDateForInput = (dateString: string | null | undefined): string => {
+  if (!dateString) return ""
+  try {
+    const date = new Date(dateString)
+    const year = date.getUTCFullYear()
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0")
+    const day = String(date.getUTCDate()).padStart(2, "0")
+    return `${year}-${month}-${day}`
+  } catch {
+    return ""
+  }
+}
 
 interface Product {
   id: string
@@ -31,12 +45,17 @@ interface Product {
   price: number
   stock: number
   status: string
-  image: string
-  category: string
+  image?: string
+  images?: string | string[]
+  videos?: string | string[]
+  category?: string | { id: string; name: string }
+  categoryId?: string
   sku: string
   nameArabic?: string
+  nameAr?: string
   description?: string
   descriptionArabic?: string
+  descriptionAr?: string
   basePrice?: number
   costPrice?: number
   salePrice?: number
@@ -53,6 +72,30 @@ interface Product {
   isActive?: boolean
   allowRepeatPurchase?: boolean
   preventDiscount?: boolean
+  deliveryMethod?: string
+  codes?: string[]
+  downloadLink?: string
+  expirationDays?: string
+  deliveryTime?: string
+  emailMessage?: string
+  digitalSettings?: string // JSON string containing digital product settings
+  unlimitedStock?: boolean
+  quantity?: number | null
+  productType?: string | null
+  metaTitle?: string
+  metaDescription?: string
+  keywords?: string
+  monthlyStats?: Array<{
+    id: string
+    productId: string
+    month: string
+    year: number
+    sales: number
+    revenue: number
+    profit: number
+    createdAt?: string
+    updatedAt?: string
+  }>
 }
 
 interface ProductDialogProps {
@@ -60,76 +103,187 @@ interface ProductDialogProps {
   onOpenChange: (open: boolean) => void
   product: Product | null
   productType?: string | null
-  onSave: (product: any) => void
+  onSave: (product: ProductData) => void
 }
+
+type CategoryOption = {
+  id: string
+  name: string
+  nameAr?: string | null
+}
+
+interface CustomField {
+  id: string
+  type: "text" | "textarea" | "image" | "dropdown"
+  label: string
+  required: boolean
+  options?: Array<{ label: string; price: number }>
+}
+
+interface DropdownOption {
+  label: string
+  price: number
+}
+
+interface FormDataState {
+  name: string
+  nameArabic: string
+  description: string
+  descriptionArabic: string
+  categoryId: string
+  sku: string
+  basePrice: string
+  costPrice: string
+  salePrice: string
+  stock: string
+  image: string
+  metaTitle: string
+  metaDescription: string
+  keywords: string
+  deliveryMethod: string
+  downloadLink: string
+  expirationDays: string
+  codes: string[]
+  deliveryTime: string
+  deliveryType: string
+  uploadedFile: File | null
+  emailMessage: string
+  bundleProducts: string[]
+  bundleDelivery: string
+  customFields: CustomField[]
+  discountType: "percentage" | "amount"
+  discountValue: string
+  discountStartDate: string
+  discountEndDate: string
+  totalSales: string
+  totalRevenue: string
+  netProfit: string
+  displayedDiscountRate: string
+  averageRating: string
+  unlimitedStock: boolean
+  promotionalTitle: string
+  isActive: boolean
+  allowRepeatPurchase: boolean
+  preventDiscount: boolean
+  images: string[] // Data URLs للـ preview
+  imageFiles: File[] // الملفات الفعلية (يتم رفعها عند الـ save)
+  mainImage: string
+  video: string
+  videoFile: File | null // ملف الفيديو الفعلي (يتم رفعه عند الـ save)
+}
+
+interface ProductData {
+  name: string
+  nameArabic: string
+  description: string
+  descriptionArabic: string
+  categoryId: string | null
+  sku: string
+  basePrice: number | null
+  costPrice: number | null
+  salePrice: number | null
+  price: number
+  stock: string
+  quantity: number
+  trackQuantity: boolean
+  unlimitedStock: boolean
+  isDigital: boolean
+  digitalSettings: string
+  image: string
+  images: string[]
+  videos: string[]
+  codes: string[]
+  customFields: CustomField[]
+  productType: string
+  discountType: "percentage" | "amount"
+  discountValue: number | null
+  discountStartDate: string | null
+  discountEndDate: string | null
+  totalSales: number | null
+  totalRevenue: number | null
+  netProfit: number | null
+  displayedDiscountRate: number | null
+  averageRating: number | null
+  metaTitle: string
+  metaDescription: string
+  keywords: string
+  promotionalTitle: string
+  isActive: boolean
+  allowRepeatPurchase: boolean
+  preventDiscount: boolean
+}
+
+const MAX_IMAGES = 5
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024 // 50MB
 
 export function ProductDialog({ open, onOpenChange, product, productType, onSave }: ProductDialogProps) {
   const [currentStep, setCurrentStep] = useState("basic")
-  const [formData, setFormData] = useState({
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [formData, setFormData] = useState<FormDataState>({
     name: "",
     nameArabic: "",
     description: "",
     descriptionArabic: "",
-    category: "",
+    categoryId: "",
     sku: "",
     basePrice: "",
     costPrice: "",
     salePrice: "",
     stock: "",
     image: "",
-    // SEO fields
     metaTitle: "",
     metaDescription: "",
     keywords: "",
-    // Delivery fields
     deliveryMethod: "",
     downloadLink: "",
     expirationDays: "",
-    codes: [] as string[],
+    codes: [],
     deliveryTime: "",
-    deliveryType: "", // for services: file, email, link
-    uploadedFile: null as File | null,
-    emailMessage: "", // Custom email message with {code} placeholder
-    // Bundle fields
-    bundleProducts: [] as string[],
+    deliveryType: "",
+    uploadedFile: null,
+    emailMessage: "",
+    bundleProducts: [],
     bundleDelivery: "combined",
-    // Custom fields
-    customFields: [] as any[],
-    // Discount fields
-    discountType: "percentage" as "percentage" | "amount",
+    customFields: [],
+    discountType: "percentage",
     discountValue: "",
     discountStartDate: "",
     discountEndDate: "",
-    // Product stats
     totalSales: "",
     totalRevenue: "",
     netProfit: "",
     displayedDiscountRate: "",
     averageRating: "",
-    // Stock management
     unlimitedStock: false,
     promotionalTitle: "",
     isActive: true,
     allowRepeatPurchase: true,
     preventDiscount: false,
+    images: [],
+    imageFiles: [],
+    mainImage: "",
+    video: "",
+    videoFile: null,
   })
+  const [categories, setCategories] = useState<CategoryOption[]>([])
+  const [categoriesLoading, setCategoriesLoading] = useState(false)
+  const [categoriesError, setCategoriesError] = useState<string | null>(null)
+  const [pendingCategoryName, setPendingCategoryName] = useState<string | null>(null)
+  const [videoModalOpen, setVideoModalOpen] = useState(false)
 
-  const productStatsData = [
-    { month: "Jan", sales: 45, revenue: 2250, profit: 1125 },
-    { month: "Feb", sales: 52, revenue: 2600, profit: 1300 },
-    { month: "Mar", sales: 61, revenue: 3050, profit: 1525 },
-    { month: "Apr", sales: 58, revenue: 2900, profit: 1450 },
-    { month: "May", sales: 70, revenue: 3500, profit: 1750 },
-    { month: "Jun", sales: 68, revenue: 3400, profit: 1700 },
-  ]
+  const currencyFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 0,
+      }),
+    [],
+  )
 
-  const currencyFormatter = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  })
-
-  const formatCurrencyTick = (value: number) => {
+  const formatCurrencyTick = useCallback((value: number): string => {
     if (Math.abs(value) >= 1000000) {
       return `$${(value / 1000000).toFixed(1)}M`
     }
@@ -137,28 +291,104 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
       return `$${(value / 1000).toFixed(0)}k`
     }
     return `$${value}`
-  }
+  }, [])
 
-  const formatTooltipValue = (value: number, name: string) => {
+  const formatTooltipValue = useCallback((value: number, name: string): [string, string] => {
     switch (name) {
       case "Revenue":
       case "Profit":
         return [currencyFormatter.format(value), name]
       case "Sales":
-        return [value, name]
+        return [value.toString(), name]
       default:
-        return [value, name]
+        return [value.toString(), name]
     }
-  }
+  }, [currencyFormatter])
 
   useEffect(() => {
     if (product) {
+      let digitalSettings: any = {}
+      try {
+        digitalSettings = product.digitalSettings ? JSON.parse(product.digitalSettings) : {}
+      } catch (e) {
+        console.warn("Failed to parse digitalSettings:", e)
+        digitalSettings = {}
+      }
+
+      const parsedCodes = Array.isArray(digitalSettings.codes)
+        ? digitalSettings.codes
+        : Array.isArray(product.codes)
+          ? product.codes
+          : []
+
+      let parsedImages: string[] = []
+      if (product.images) {
+        if (typeof product.images === "string") {
+          try {
+            parsedImages = JSON.parse(product.images)
+          } catch (error) {
+            console.warn("Failed to parse product images", error)
+          }
+        } else if (Array.isArray(product.images)) {
+          parsedImages = product.images
+        }
+      }
+
+      let parsedVideo = ""
+      if (product.videos) {
+        if (typeof product.videos === "string") {
+          try {
+            const parsed = JSON.parse(product.videos)
+            if (Array.isArray(parsed) && parsed.length) {
+              parsedVideo = typeof parsed[0] === "string" ? parsed[0] : ""
+            } else if (typeof parsed === "string" && parsed.startsWith("/")) {
+              parsedVideo = parsed
+            } else if (product.videos.trim().startsWith("/")) {
+              parsedVideo = product.videos
+            }
+          } catch (error) {
+            if (product.videos.trim().startsWith("/")) {
+              parsedVideo = product.videos
+            }
+          }
+        } else if (Array.isArray(product.videos) && product.videos.length) {
+          parsedVideo = product.videos.find((item): item is string => typeof item === "string") || ""
+        }
+      }
+
+      if (!parsedImages.length && product.image) {
+        parsedImages = [product.image]
+      }
+
+      if (parsedImages.length > MAX_IMAGES) {
+        parsedImages = parsedImages.slice(0, MAX_IMAGES)
+      }
+
+      const fallbackImage = parsedImages[0] ?? product.image ?? ""
+      const primaryCategoryId =
+        product.categoryId ??
+        (typeof product.category === "object" && product.category !== null ? product.category.id : undefined)
+
+      let fallbackCategoryName = ""
+      if (!primaryCategoryId) {
+        if (typeof product.category === "string") {
+          fallbackCategoryName = product.category
+        } else if (typeof product.category === "object" && product.category) {
+          fallbackCategoryName = product.category.name ?? ""
+        }
+      }
+
+      let normalizedDeliveryMethod = digitalSettings.deliveryMethod ?? product.deliveryMethod ?? ""
+      if (productType === "digital" && normalizedDeliveryMethod === "email") {
+        normalizedDeliveryMethod = "code"
+      }
+
       setFormData({
         name: product.name ?? "",
-        nameArabic: product.nameArabic ?? "",
+        nameArabic: product.nameArabic ?? product.nameAr ?? "",
         description: product.description ?? "",
-        descriptionArabic: product.descriptionArabic ?? "",
-        category: product.category ?? "",
+        descriptionArabic: product.descriptionArabic ?? product.descriptionAr ?? "",
+        categoryId: primaryCategoryId ?? "",
         sku: product.sku ?? "",
         basePrice: product.basePrice != null ? product.basePrice.toString() : "",
         costPrice: product.costPrice != null ? product.costPrice.toString() : "",
@@ -168,22 +398,27 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
             : product.price != null
               ? product.price.toString()
               : "",
-        stock: product.stock != null ? product.stock.toString() : "",
-        image: product.image ?? "",
-        metaTitle: "",
-        metaDescription: "",
-        keywords: "",
-        deliveryMethod: "",
-        downloadLink: "",
-        expirationDays: "",
-        codes: [],
-        deliveryTime: "",
-        deliveryType: "",
+        stock:
+          product.stock != null
+            ? product.stock.toString()
+            : product.quantity != null
+              ? product.quantity.toString()
+              : "",
+  image: fallbackImage,
+  metaTitle: product.metaTitle ?? "",
+  metaDescription: product.metaDescription ?? "",
+  keywords: product.keywords ?? "",
+        deliveryMethod: normalizedDeliveryMethod,
+        downloadLink: digitalSettings.downloadLink ?? product.downloadLink ?? "",
+        expirationDays: digitalSettings.expirationDays ?? product.expirationDays ?? "",
+        codes: parsedCodes,
+        deliveryTime: digitalSettings.deliveryTime ?? product.deliveryTime ?? "",
+        deliveryType: digitalSettings.deliveryType ?? "",
         uploadedFile: null,
-        emailMessage: "",
+        emailMessage: digitalSettings.emailMessage ?? product.emailMessage ?? "",
         bundleProducts: [],
-        bundleDelivery: "combined",
-        customFields: [],
+        bundleDelivery: digitalSettings.bundleDelivery ?? "combined",
+        customFields: Array.isArray(digitalSettings.customFields) ? digitalSettings.customFields : [],
         discountType: product.discountType ?? "percentage",
         discountValue: product.discountValue != null ? product.discountValue.toString() : "",
         discountStartDate: product.discountStartDate ?? "",
@@ -193,19 +428,32 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
         netProfit: product.netProfit != null ? product.netProfit.toString() : "",
         displayedDiscountRate: product.displayedDiscountRate != null ? product.displayedDiscountRate.toString() : "",
         averageRating: product.averageRating != null ? product.averageRating.toString() : "",
-        unlimitedStock: product.stock === null,
+        unlimitedStock:
+          product.unlimitedStock ??
+          (product.stock === null ||
+            (product.quantity != null && product.quantity >= 999999)),
         promotionalTitle: product.promotionalTitle ?? "",
         isActive: product.isActive ?? true,
         allowRepeatPurchase: product.allowRepeatPurchase ?? true,
         preventDiscount: product.preventDiscount ?? false,
+        images: parsedImages,
+        imageFiles: [],
+        mainImage: fallbackImage,
+        video: parsedVideo,
+        videoFile: null,
       })
+
+      setPendingCategoryName(primaryCategoryId ? null : fallbackCategoryName || null)
     } else {
+      // Default delivery method
+      const defaultDeliveryMethod = "code"
+
       setFormData({
         name: "",
         nameArabic: "",
         description: "",
         descriptionArabic: "",
-        category: "",
+        categoryId: "",
         sku: "",
         basePrice: "",
         costPrice: "",
@@ -215,7 +463,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
         metaTitle: "",
         metaDescription: "",
         keywords: "",
-        deliveryMethod: "",
+        deliveryMethod: defaultDeliveryMethod,
         downloadLink: "",
         expirationDays: "",
         codes: [],
@@ -240,109 +488,304 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
         isActive: true,
         allowRepeatPurchase: true,
         preventDiscount: false,
+        images: [],
+        imageFiles: [],
+        mainImage: "",
+        video: "",
+        videoFile: null,
       })
+      setPendingCategoryName(null)
     }
   }, [product])
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  useEffect(() => {
+    let isMounted = true
 
-    const parseFloatValue = (value: string) => (value ? Number.parseFloat(value) : null)
-    const parseIntValue = (value: string) => (value ? Number.parseInt(value, 10) : null)
-
-    const basePriceValue = parseFloatValue(formData.basePrice)
-    const costPriceValue = parseFloatValue(formData.costPrice)
-    const salePriceValue = parseFloatValue(formData.salePrice)
-    const discountValue = parseFloatValue(formData.discountValue)
-    const totalSalesValue = parseIntValue(formData.totalSales)
-    const totalRevenueValue = parseFloatValue(formData.totalRevenue)
-    const netProfitValue = parseFloatValue(formData.netProfit)
-    const displayedDiscountRateValue = parseFloatValue(formData.displayedDiscountRate)
-    const averageRatingValue = parseFloatValue(formData.averageRating)
-
-    const productData = {
-      ...formData,
-      name: formData.name,
-      nameArabic: formData.nameArabic,
-      description: formData.description,
-      descriptionArabic: formData.descriptionArabic,
-      basePrice: basePriceValue,
-      costPrice: costPriceValue,
-      salePrice: salePriceValue,
-      price: salePriceValue ?? basePriceValue ?? 0,
-      stock: formData.unlimitedStock ? null : parseIntValue(formData.stock),
-      category: formData.category,
-      sku: formData.sku,
-      image: formData.image || `/placeholder.svg?height=60&width=60&query=${formData.name}`,
-      productType: productType || "standard",
-      discountType: formData.discountType,
-      discountValue,
-      discountStartDate: formData.discountStartDate || null,
-      discountEndDate: formData.discountEndDate || null,
-      totalSales: totalSalesValue,
-      totalRevenue: totalRevenueValue,
-      netProfit: netProfitValue,
-      displayedDiscountRate: displayedDiscountRateValue,
-      averageRating: averageRatingValue,
+    const loadCategories = async () => {
+      try {
+        setCategoriesLoading(true)
+        setCategoriesError(null)
+        const response = await fetch("/api/categories")
+        if (!response.ok) {
+          const message = await response.text().catch(() => "Failed to fetch categories")
+          console.error("Failed to load categories", new Error(message || "Failed to fetch categories"))
+          if (isMounted) {
+            setCategoriesError("تعذر تحميل التصنيفات. تأكد من إضافة التصنيفات من صفحة التصنيفات.")
+          }
+          return
+        }
+        const data = await response.json()
+        const normalizedCategories: CategoryOption[] = Array.isArray(data)
+          ? data.map((category: any) => ({
+              id: category.id,
+              name: category.name,
+            }))
+          : []
+        if (isMounted) {
+          setCategories(normalizedCategories)
+        }
+      } catch (error) {
+        console.error("Failed to load categories", error)
+        if (isMounted) {
+          setCategoriesError("تعذر تحميل التصنيفات. تأكد من إضافة التصنيفات من صفحة التصنيفات.")
+        }
+      } finally {
+        if (isMounted) {
+          setCategoriesLoading(false)
+        }
+      }
     }
 
-    onSave(productData)
+    loadCategories()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!pendingCategoryName || !categories.length) return
+
+    const normalizedPendingName = pendingCategoryName.trim().toLowerCase()
+    const matchedCategory = categories.find(
+      (category) =>
+        category.name?.trim().toLowerCase() === normalizedPendingName,
+    )
+
+    if (matchedCategory) {
+      setFormData((prev) => ({
+        ...prev,
+        categoryId: prev.categoryId || matchedCategory.id,
+      }))
+      setPendingCategoryName(null)
+    }
+  }, [pendingCategoryName, categories])
+
+  // Check if product type supports unlimited stock
+  const supportsUnlimitedStock = productType === "digital" || productType === "digital-card"
+
+  // File validation and upload utilities
+  const validateAndUploadImages = async (): Promise<string[]> => {
+    const uploadedUrls: string[] = []
+    const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/gif", "image/webp"])
+
+    for (const file of formData.imageFiles) {
+      // Security validation
+      if (file.size > MAX_IMAGE_SIZE) {
+        setSubmitError(`Image ${file.name} is too large. Max size is 5MB.`)
+        continue
+      }
+
+      if (!allowedImageTypes.has(file.type)) {
+        setSubmitError(`Image ${file.name} has unsupported format. Allowed: JPEG, PNG, GIF, WebP.`)
+        continue
+      }
+
+      if (!file.type.startsWith("image/")) {
+        setSubmitError(`File ${file.name} is not a valid image.`)
+        continue
+      }
+
+      const formPayload = new FormData()
+      formPayload.append("file", file)
+
+      try {
+        const response = await fetch("/api/uploads", {
+          method: "POST",
+          body: formPayload,
+        })
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          console.error("Failed to upload image", errorText)
+          setSubmitError(`Failed to upload ${file.name}`)
+          continue
+        }
+
+        const result = (await response.json()) as { url?: string }
+        if (result?.url) {
+          uploadedUrls.push(result.url)
+        }
+      } catch (error) {
+        console.error("Error uploading image:", error)
+        setSubmitError(`Failed to upload ${file.name}: ${error instanceof Error ? error.message : "Unknown error"}`)
+      }
+    }
+
+    return uploadedUrls
   }
 
-  const generateSKU = () => {
-    let prefix = "ST"
-    if (productType === "digital") prefix = "DG"
-    else if (productType === "digital-card") prefix = "DC"
-    else if (productType === "service") prefix = "SV"
-    else if (productType === "bundle") prefix = "BN"
+  const validateAndUploadVideo = async (): Promise<string | null> => {
+    if (!formData.videoFile) return null
 
-    const random = Math.floor(Math.random() * 1000)
-      .toString()
-      .padStart(3, "0")
-    setFormData({ ...formData, sku: `${prefix}-${random}` })
+    // Security validation
+    if (formData.videoFile.size > MAX_VIDEO_SIZE) {
+      setSubmitError(`Video is too large. Max size is 50MB.`)
+      return null
+    }
+
+    if (formData.videoFile.type !== "video/mp4") {
+      setSubmitError("Only MP4 videos are supported.")
+      return null
+    }
+
+    if (!formData.videoFile.type.startsWith("video/")) {
+      setSubmitError("File is not a valid video.")
+      return null
+    }
+
+    const formPayload = new FormData()
+    formPayload.append("file", formData.videoFile)
+
+    try {
+      const response = await fetch("/api/uploads?type=video", {
+        method: "POST",
+        body: formPayload,
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error("Failed to upload video", errorText)
+        setSubmitError("Failed to upload video")
+        return null
+      }
+
+      const result = (await response.json()) as { url?: string }
+      return result?.url || null
+    } catch (error) {
+      console.error("Error uploading video:", error)
+      setSubmitError(`Failed to upload video: ${error instanceof Error ? error.message : "Unknown error"}`)
+      return null
+    }
   }
+
+  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setSubmitError(null)
+
+    if (!formData.categoryId) {
+      setSubmitError("Please select a category before saving the product.")
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+      
+      const parseFloatValue = (value: string): number | null => (value ? Number.parseFloat(value) : null)
+      const parseIntValue = (value: string): number | null => (value ? Number.parseInt(value, 10) : null)
+
+      const basePriceValue = parseFloatValue(formData.basePrice)
+      const costPriceValue = parseFloatValue(formData.costPrice)
+      const salePriceValue = parseFloatValue(formData.salePrice)
+      const discountValue = parseFloatValue(formData.discountValue)
+      const totalSalesValue = parseIntValue(formData.totalSales)
+      const totalRevenueValue = parseFloatValue(formData.totalRevenue)
+      const netProfitValue = parseFloatValue(formData.netProfit)
+      const displayedDiscountRateValue = parseFloatValue(formData.displayedDiscountRate)
+      const averageRatingValue = parseFloatValue(formData.averageRating)
+
+      const { uploadedFile, codes, customFields, ...restFormData } = formData
+
+      const trimmedCodes = (codes ?? []).map((code) => code.trim()).filter((code) => code.length > 0)
+
+      const digitalSettingsPayload = {
+        deliveryMethod: restFormData.deliveryMethod || null,
+        downloadLink: restFormData.downloadLink || null,
+        expirationDays: restFormData.expirationDays || null,
+        codes: trimmedCodes,
+        deliveryTime: restFormData.deliveryTime || null,
+        deliveryType: restFormData.deliveryType || null,
+        emailMessage: restFormData.emailMessage || null,
+        bundleDelivery: restFormData.bundleDelivery || null,
+        customFields,
+      }
+
+      const supportedDigitalTypes = new Set(["digital", "digital-card", "service"])
+      const isDigitalProduct = productType ? supportedDigitalTypes.has(productType) : false
+      const unlimitedStockSelected = supportsUnlimitedStock && restFormData.unlimitedStock
+      const parsedStockValue = restFormData.stock ? Number.parseInt(restFormData.stock, 10) : null
+      const stockValue = Number.isFinite(parsedStockValue as number) ? (parsedStockValue as number) : null
+
+      const computedQuantity = isDigitalProduct
+        ? unlimitedStockSelected
+          ? 999999
+          : trimmedCodes.length > 0
+            ? trimmedCodes.length
+            : stockValue ?? 0
+        : stockValue ?? 0
+
+      // Auto-fill SEO fields if empty
+      const finalMetaTitle = formData.metaTitle.trim() || formData.name
+      const trimmedDescription = formData.description.length > 155 ? `${formData.description.slice(0, 152)}...` : formData.description
+      const finalMetaDescription = formData.metaDescription.trim() || trimmedDescription
+
+      // Upload files now (delayed from handleImageUpload/handleVideoUpload)
+      const uploadedImageUrls = await validateAndUploadImages()
+      const uploadedVideoUrl = await validateAndUploadVideo()
+
+      const productData: ProductData = {
+        ...restFormData,
+        codes: trimmedCodes,
+        customFields,
+        name: restFormData.name,
+        nameArabic: restFormData.nameArabic,
+        description: restFormData.description,
+        descriptionArabic: restFormData.descriptionArabic,
+        basePrice: basePriceValue,
+        costPrice: costPriceValue,
+        salePrice: salePriceValue,
+        price: salePriceValue ?? basePriceValue ?? 0,
+        stock: unlimitedStockSelected ? "" : restFormData.stock,
+        quantity: computedQuantity,
+        trackQuantity: !unlimitedStockSelected,
+        unlimitedStock: unlimitedStockSelected,
+        isDigital: isDigitalProduct,
+        digitalSettings: JSON.stringify(digitalSettingsPayload),
+        categoryId: restFormData.categoryId || null,
+        sku: restFormData.sku,
+        image: formData.mainImage || uploadedImageUrls[0] || `/placeholder.svg?height=60&width=60&query=${restFormData.name}`,
+        images: uploadedImageUrls.length > 0 ? uploadedImageUrls : formData.images,
+        videos: uploadedVideoUrl ? [uploadedVideoUrl] : (formData.video ? [formData.video] : []),
+        productType: productType || "digital",
+        discountType: restFormData.discountType,
+        discountValue,
+        discountStartDate: restFormData.discountStartDate || null,
+        discountEndDate: restFormData.discountEndDate || null,
+        totalSales: totalSalesValue,
+        totalRevenue: totalRevenueValue,
+        netProfit: netProfitValue,
+        displayedDiscountRate: displayedDiscountRateValue,
+        averageRating: averageRatingValue,
+        metaTitle: finalMetaTitle,
+        metaDescription: finalMetaDescription,
+        keywords: formData.keywords,
+        promotionalTitle: formData.promotionalTitle,
+        isActive: formData.isActive,
+        allowRepeatPurchase: formData.allowRepeatPurchase,
+        preventDiscount: formData.preventDiscount,
+      }
+
+      onSave(productData)
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to save product"
+      setSubmitError(errorMessage)
+      console.error("Error saving product:", error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }, [formData, productType, supportsUnlimitedStock, onSave])
 
   const getProductTypeTitle = () => {
-    switch (productType) {
-      case "digital":
-        return "Digital Product"
-      case "digital-card":
-        return "Digital Card"
-      case "service":
-        return "On-Demand Service"
-      case "bundle":
-        return "Bundle Products"
-      default:
-        return "Product"
-    }
+    return "Product"
   }
 
   const getDeliveryMethods = () => {
-    switch (productType) {
-      case "digital":
-        return [
-          { value: "download", label: "Direct Download Link" },
-          { value: "code", label: "Code sent" },
-          { value: "file", label: "File displayed on Order Page" },
-          { value: "custom-fields", label: "Custom Order Fields" },
-        ]
-      case "digital-card":
-        return [
-          { value: "email", label: "Code sent" },
-          { value: "order-page", label: "Code shown on Order Page" },
-          { value: "file", label: "File containing multiple codes" },
-          { value: "custom-fields", label: "Custom Order Fields" },
-        ]
-      case "service":
-        return [
-          { value: "file", label: "Upload file after completion" },
-          { value: "email", label: "Send by Email" },
-          { value: "link", label: "Share through external link" },
-          { value: "custom-fields", label: "Custom Order Fields" },
-        ]
-      default:
-        return []
-    }
+    return [
+      { value: "download", label: "Direct Download Link" },
+      { value: "code", label: "Code sent" },
+      { value: "file", label: "File displayed on Order Page" },
+      { value: "custom-fields", label: "Custom Order Fields" },
+    ]
   }
 
   const slugify = (value: string) =>
@@ -399,20 +842,39 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
   const discountPercentDisplay = `${Number.isFinite(discountPercent) ? discountPercent.toFixed(1) : "0.0"}%`
   const discountAmountDisplay = `$${Number.isFinite(discountAmount) ? discountAmount.toFixed(2) : "0.00"}`
 
-  const methodsWithImplicitStockLimits = new Set(["code"])
-  const supportsUnlimitedStock = productType === "digital" || productType === "digital-card"
+  const methodsWithImplicitStockLimits = new Set(["code", "email", "order-page"])
 
   const shouldRenderStockControls = (method?: string | null) => {
     if (!method) return false
     return !methodsWithImplicitStockLimits.has(method)
   }
 
+  const getStockDisplay = (method?: string) => {
+    const deliveryMethod = method ?? formData.deliveryMethod
+    
+    // بالنسبة للكود - عدد الكودات هو الـ stock
+    if (deliveryMethod === "code" || deliveryMethod === "email" || deliveryMethod === "order-page") {
+      return formData.codes.length
+    }
+    
+    // بالنسبة للتحميل المباشر والملفات
+    if (deliveryMethod === "download" || deliveryMethod === "file" || deliveryMethod === "custom-fields") {
+      if (formData.unlimitedStock) return "Unlimited"
+      return formData.stock || "0"
+    }
+    
+    return formData.stock || "0"
+  }
+
   const renderStockControls = (methodOverride?: string) => {
     const method = methodOverride ?? formData.deliveryMethod
-    if (!shouldRenderStockControls(method)) {
+    
+    // الطرق التي تعتمد على الكودات - لا تحتاج تحكم
+    if (method === "code" || method === "email" || method === "order-page") {
       return null
     }
 
+    // الطرق الأخرى (download, file, custom-fields) - تحتاج تحكم
     const isUnlimited = supportsUnlimitedStock && formData.unlimitedStock
     const stockIsRequired = !isUnlimited && productType !== "digital"
 
@@ -450,31 +912,54 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
     )
   }
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      setFormData({ ...formData, uploadedFile: file })
+  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = event.target.files?.[0]
+      if (file) {
+        setFormData((prev) => ({ ...prev, uploadedFile: file }))
+      }
+    } catch (error) {
+      console.error("Error handling file upload:", error)
+      setSubmitError("Failed to process file upload")
     }
-  }
+  }, [])
 
-  const handleCodesFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !file.name.endsWith(".txt")) {
-      alert("Please select a .txt file")
-      return
-    }
+  const handleCodesFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = e.target.files?.[0]
+      if (!file) {
+        setSubmitError("No file selected")
+        return
+      }
+      if (!file.name.endsWith(".txt")) {
+        setSubmitError("Please select a .txt file")
+        return
+      }
 
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      const content = event.target?.result as string
-      const lines = content
-        .split("\n")
-        .map((line) => line.trim())
-        .filter((line) => line.length > 0)
-      setFormData({ ...formData, codes: [...formData.codes, ...lines] })
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        try {
+          const content = event.target?.result as string
+          const lines = content
+            .split("\n")
+            .map((line) => line.trim())
+            .filter((line) => line.length > 0)
+          setFormData((prev) => ({ ...prev, codes: [...prev.codes, ...lines] }))
+          setSubmitError(null)
+        } catch (error) {
+          console.error("Error parsing file:", error)
+          setSubmitError("Failed to parse file contents")
+        }
+      }
+      reader.onerror = () => {
+        setSubmitError("Failed to read file")
+      }
+      reader.readAsText(file)
+    } catch (error) {
+      console.error("Error in handleCodesFileUpload:", error)
+      setSubmitError("Failed to upload codes file")
     }
-    reader.readAsText(file)
-  }
+  }, [])
 
   const addCode = () => {
     setFormData({ ...formData, codes: [...formData.codes, ""] })
@@ -491,105 +976,337 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
     setFormData({ ...formData, codes: newCodes })
   }
 
-  const addCustomField = (type: "text" | "textarea" | "image" | "dropdown") => {
-    const textFieldCount = formData.customFields.filter((f) => f.type === "text").length
-    const hasTextarea = formData.customFields.some((f) => f.type === "textarea")
-    const hasImageUpload = formData.customFields.some((f) => f.type === "image")
-    const hasDropdown = formData.customFields.some((f) => f.type === "dropdown")
+  const addCustomField = useCallback((type: "text" | "textarea" | "image" | "dropdown") => {
+    setFormData((prev) => {
+      try {
+        const textFieldCount = prev.customFields.filter((f) => f.type === "text").length
+        const hasTextarea = prev.customFields.some((f) => f.type === "textarea")
+        const hasImageUpload = prev.customFields.some((f) => f.type === "image")
+        const hasDropdown = prev.customFields.some((f) => f.type === "dropdown")
 
-    if (type === "text" && textFieldCount >= 7) {
-      alert("Maximum 7 text fields allowed")
-      return
-    }
+        // Validation
+        if (type === "text" && textFieldCount >= 7) {
+          setSubmitError("Maximum 7 text fields allowed")
+          return prev
+        }
 
-    if (type === "textarea" && hasTextarea) {
-      alert("Only 1 textarea allowed")
-      return
-    }
+        if (type === "textarea" && hasTextarea) {
+          setSubmitError("Only 1 textarea allowed")
+          return prev
+        }
 
-    if (type === "image" && hasImageUpload) {
-      alert("Only 1 image upload field allowed")
-      return
-    }
+        if (type === "image" && hasImageUpload) {
+          setSubmitError("Only 1 image upload field allowed")
+          return prev
+        }
 
-    if (type === "dropdown" && hasDropdown) {
-      alert("Only 1 dropdown field allowed")
-      return
-    }
+        if (type === "dropdown" && hasDropdown) {
+          setSubmitError("Only 1 dropdown field allowed")
+          return prev
+        }
 
-    if ((type === "textarea" || type === "image" || type === "dropdown") && textFieldCount >= 3) {
-      alert("When using Textarea, Image Upload, or Dropdown, you can only add up to 3 Text Fields")
-      return
-    }
+        if ((type === "textarea" || type === "image" || type === "dropdown") && textFieldCount >= 3) {
+          setSubmitError("When using Textarea, Image Upload, or Dropdown, you can only add up to 3 Text Fields")
+          return prev
+        }
 
-    if ((type === "textarea" || type === "image" || type === "dropdown") && textFieldCount > 3) {
-      alert("You have more than 3 text fields. Remove some text fields before adding this field type.")
-      return
-    }
+        const newField: CustomField = {
+          id: Date.now().toString(),
+          type,
+          label: `${type.charAt(0).toUpperCase() + type.slice(1)} Field`,
+          required: false,
+          options:
+            type === "dropdown"
+              ? [
+                  { label: "Option 1", price: 0 },
+                  { label: "Option 2", price: 0 },
+                ]
+              : undefined,
+        }
 
-    const newField = {
-      id: Date.now().toString(),
-      type,
-      label: `${type.charAt(0).toUpperCase() + type.slice(1)} Field`,
-      required: false,
-      options:
-        type === "dropdown"
-          ? [
-              { label: "Option 1", price: 0 },
-              { label: "Option 2", price: 0 },
-            ]
-          : undefined,
-    }
+        setSubmitError(null)
+        return {
+          ...prev,
+          customFields: [...prev.customFields, newField],
+        }
+      } catch (error) {
+        console.error("Error adding custom field:", error)
+        setSubmitError("Failed to add custom field")
+        return prev
+      }
+    })
+  }, [])
 
-    setFormData((prev) => ({
-      ...prev,
-      customFields: [...prev.customFields, newField],
-    }))
-  }
-
-  const removeCustomField = (fieldId: string) => {
+  const removeCustomField = useCallback((fieldId: string) => {
     setFormData((prev) => ({
       ...prev,
       customFields: prev.customFields.filter((f) => f.id !== fieldId),
     }))
-  }
+  }, [])
 
-  const updateCustomField = (fieldId: string, updates: Partial<(typeof formData.customFields)[0]>) => {
+  const updateCustomField = useCallback((fieldId: string, updates: Partial<CustomField>) => {
     setFormData((prev) => ({
       ...prev,
       customFields: prev.customFields.map((f) => (f.id === fieldId ? { ...f, ...updates } : f)),
     }))
-  }
+  }, [])
 
-  const addDropdownOption = (fieldId: string) => {
-    const field = formData.customFields.find((f) => f.id === fieldId)
-    if (field && field.type === "dropdown") {
-      const newOptions = [...(field.options || []), { label: "New Option", price: 0 }]
-      updateCustomField(fieldId, { options: newOptions })
+  const addDropdownOption = useCallback((fieldId: string) => {
+    try {
+      const field = formData.customFields.find((f) => f.id === fieldId)
+      if (field && field.type === "dropdown") {
+        const newOptions = [...(field.options || []), { label: "New Option", price: 0 }]
+        updateCustomField(fieldId, { options: newOptions })
+      }
+    } catch (error) {
+      console.error("Error adding dropdown option:", error)
+      setSubmitError("Failed to add dropdown option")
     }
-  }
+  }, [formData.customFields, updateCustomField])
 
-  const updateDropdownOption = (fieldId: string, optionIndex: number, updates: { label?: string; price?: number }) => {
-    const field = formData.customFields.find((f) => f.id === fieldId)
-    if (field && field.options) {
-      const newOptions = [...field.options]
-      newOptions[optionIndex] = { ...newOptions[optionIndex], ...updates }
-      updateCustomField(fieldId, { options: newOptions })
+  const updateDropdownOption = useCallback(
+    (fieldId: string, optionIndex: number, updates: Partial<DropdownOption>) => {
+      try {
+        const field = formData.customFields.find((f) => f.id === fieldId)
+        if (field && field.options) {
+          const newOptions = [...field.options]
+          newOptions[optionIndex] = { ...newOptions[optionIndex], ...updates }
+          updateCustomField(fieldId, { options: newOptions })
+        }
+      } catch (error) {
+        console.error("Error updating dropdown option:", error)
+        setSubmitError("Failed to update dropdown option")
+      }
+    },
+    [formData.customFields, updateCustomField],
+  )
+
+  const removeDropdownOption = useCallback(
+    (fieldId: string, optionIndex: number) => {
+      try {
+        const field = formData.customFields.find((f) => f.id === fieldId)
+        if (field && field.options) {
+          if (field.options.length <= 1) {
+            setSubmitError("You must have at least one option in the dropdown")
+            return
+          }
+          const newOptions = field.options.filter((_: DropdownOption, i: number) => i !== optionIndex)
+          updateCustomField(fieldId, { options: newOptions })
+        }
+      } catch (error) {
+        console.error("Error removing dropdown option:", error)
+        setSubmitError("Failed to remove dropdown option")
+      }
+    },
+    [formData.customFields, updateCustomField],
+  )
+
+  const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const files = e.target.files ? Array.from(e.target.files) : []
+      if (!files.length) return
+
+      const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/gif", "image/webp"])
+      let canProceed = true
+
+      setFormData((prev) => {
+        const remainingSlots = MAX_IMAGES - prev.imageFiles.length
+        if (remainingSlots <= 0) {
+          setSubmitError(`You can only upload up to ${MAX_IMAGES} images.`)
+          canProceed = false
+          e.target.value = ""
+          return prev
+        }
+
+        if (files.length > remainingSlots) {
+          setSubmitError(`Only ${remainingSlots} more image${remainingSlots === 1 ? "" : "s"} can be added.`)
+        }
+
+        return prev
+      })
+
+      if (!canProceed) return
+
+      const filesToAdd: File[] = []
+      const previewUrls: string[] = []
+
+      for (const file of files) {
+        // Quick validation
+        if (file.size > MAX_IMAGE_SIZE) {
+          setSubmitError(`File ${file.name} is too large. Max size is 5MB.`)
+          continue
+        }
+
+        if (!allowedImageTypes.has(file.type)) {
+          setSubmitError(`File ${file.name} is not a supported image format.`)
+          continue
+        }
+
+        filesToAdd.push(file)
+
+        // Create Data URL for preview
+        const reader = new FileReader()
+        reader.onload = (event) => {
+          previewUrls.push(event.target?.result as string)
+
+          // When all files are processed, update state
+          if (previewUrls.length === filesToAdd.length) {
+            setFormData((prev) => {
+              const newImageFiles = [...prev.imageFiles, ...filesToAdd].slice(0, MAX_IMAGES)
+              const newImages = [...prev.images, ...previewUrls].slice(0, MAX_IMAGES)
+              return {
+                ...prev,
+                imageFiles: newImageFiles,
+                images: newImages,
+                mainImage: prev.mainImage || previewUrls[0] || "",
+              }
+            })
+            setSubmitError(null)
+          }
+        }
+        reader.onerror = () => {
+          setSubmitError(`Failed to read ${file.name}`)
+        }
+        reader.readAsDataURL(file)
+      }
+
+      e.target.value = ""
+    } catch (error) {
+      console.error("Error in handleImageUpload:", error)
+      setSubmitError("Failed to process image upload")
     }
-  }
+  }, [])
 
-  const removeDropdownOption = (fieldId: string, optionIndex: number) => {
-    const field = formData.customFields.find((f) => f.id === fieldId)
-    if (field && field.options) {
-      // Prevent removing the last option
-      if (field.options.length <= 1) {
-        alert("You must have at least one option in the dropdown")
+  const handleVideoUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = e.target.files?.[0]
+      if (!file) return
+
+      if (formData.videoFile) {
+        setSubmitError("You can only upload one product video.")
+        e.target.value = ""
         return
       }
-      const newOptions = field.options.filter((_: any, i: number) => i !== optionIndex)
-      updateCustomField(fieldId, { options: newOptions })
+
+      // Quick validation
+      if (file.type !== "video/mp4") {
+        setSubmitError("Only MP4 videos are supported.")
+        e.target.value = ""
+        return
+      }
+
+      if (file.size > MAX_VIDEO_SIZE) {
+        setSubmitError("Video size must be 50MB or less.")
+        e.target.value = ""
+        return
+      }
+
+      // Create Data URL for preview
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        setFormData((prev) => ({
+          ...prev,
+          videoFile: file,
+          video: (event.target?.result as string) || "",
+        }))
+        setSubmitError(null)
+      }
+      reader.onerror = () => {
+        setSubmitError("Failed to read video file")
+      }
+      reader.readAsDataURL(file)
+
+      e.target.value = ""
+    } catch (error) {
+      console.error("Error in handleVideoUpload:", error)
+      setSubmitError("Failed to process video upload")
     }
-  }
+  }, [])
+
+  const removeImage = useCallback((index: number) => {
+    setFormData((prev) => {
+      const newImages = prev.images.filter((_, i) => i !== index)
+      const newImageFiles = prev.imageFiles.filter((_, i) => i !== index)
+      const newMainImage = prev.mainImage === prev.images[index] ? newImages[0] || "" : prev.mainImage
+
+      return {
+        ...prev,
+        images: newImages,
+        imageFiles: newImageFiles,
+        mainImage: newMainImage,
+      }
+    })
+  }, [])
+
+  const setAsMainImage = useCallback((index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      mainImage: prev.images[index],
+    }))
+  }, [])
+
+  const setAsMainMedia = useCallback((type: "image" | "video") => {
+    if (type === "video") {
+      setFormData((prev) => ({
+        ...prev,
+        mainImage: prev.video,
+      }))
+    }
+  }, [])
+
+  const removeVideo = useCallback(() => {
+    setFormData((prev) => ({
+      ...prev,
+      video: "",
+      videoFile: null,
+    }))
+  }, [])
+
+  // Memoized generated SKU
+  const generateSKU = useCallback(() => {
+    let prefix = "ST"
+    if (productType === "digital") prefix = "DG"
+    else if (productType === "digital-card") prefix = "DC"
+    else if (productType === "service") prefix = "SV"
+    else if (productType === "bundle") prefix = "BN"
+
+    const random = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, "0")
+    setFormData((prev) => ({ ...prev, sku: `${prefix}-${random}` }))
+  }, [productType])
+
+  // Memoized product stats chart data - من البيانات الشهرية الفعلية
+  const productStatsData = useMemo(() => {
+    if (!product?.monthlyStats || product.monthlyStats.length === 0) {
+      // إذا لم توجد بيانات، عرض الشهور الستة الأخيرة بقيم فارغة
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
+      return months.map((month) => ({
+        month,
+        sales: 0,
+        revenue: 0,
+        profit: 0,
+      }))
+    }
+
+    // ترتيب البيانات حسب الشهر
+    const monthOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    const sortedStats = (product.monthlyStats as any[]).sort((a, b) => {
+      const aIndex = monthOrder.indexOf(a.month)
+      const bIndex = monthOrder.indexOf(b.month)
+      return aIndex - bIndex
+    })
+
+    // أخذ آخر 6 شهور
+    const last6Months = sortedStats.slice(-6)
+    
+    return last6Months.map((stat: any) => ({
+      month: stat.month,
+      sales: stat.sales || 0,
+      revenue: stat.revenue || 0,
+      profit: stat.profit || 0,
+    }))
+  }, [product?.monthlyStats])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -612,7 +1329,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
             <TabsTrigger value="basic">Basic Info</TabsTrigger>
             <TabsTrigger value="seo">SEO</TabsTrigger>
             <TabsTrigger value="delivery">Delivery</TabsTrigger>
-            <TabsTrigger value="images">Images</TabsTrigger>
+            <TabsTrigger value="images">Product Images & Video</TabsTrigger>
           </TabsList>
 
           <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
@@ -686,22 +1403,42 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                       <div className="space-y-2">
                         <Label htmlFor="category">Category *</Label>
                         <Select
-                          value={formData.category}
-                          onValueChange={(value) => setFormData({ ...formData, category: value })}
+                          value={formData.categoryId}
+                          onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
                           required
+                          disabled={categoriesLoading || (!categoriesLoading && categories.length === 0)}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select category" />
+                            <SelectValue
+                              placeholder={
+                                categoriesLoading
+                                  ? "Loading categories..."
+                                  : categories.length
+                                    ? "Select category"
+                                    : "No categories available"
+                              }
+                            />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="Digital Products">Digital Products</SelectItem>
-                            <SelectItem value="Digital Cards">Digital Cards</SelectItem>
-                            <SelectItem value="Services">Services</SelectItem>
-                            <SelectItem value="Bundles">Bundles</SelectItem>
-                            <SelectItem value="Software">Software</SelectItem>
-                            <SelectItem value="Templates">Templates</SelectItem>
+                            {categories.length > 0 ? (
+                              categories.map((category) => (
+                                <SelectItem key={category.id} value={category.id}>
+                                  {category.name}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="no-categories" disabled>
+                                {categoriesLoading ? "Loading..." : "Add categories first"}
+                              </SelectItem>
+                            )}
                           </SelectContent>
                         </Select>
+                        {categoriesError && <p className="text-xs text-destructive mt-1">{categoriesError}</p>}
+                        {!categoriesError && !categoriesLoading && categories.length === 0 && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Create at least one category from the Categories page before adding products.
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div className="space-y-2">
@@ -852,7 +1589,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                           <Input
                             id="discountStartDate"
                             type="date"
-                            value={formData.discountStartDate}
+                            value={formatDateForInput(formData.discountStartDate)}
                             onChange={(e) => setFormData({ ...formData, discountStartDate: e.target.value })}
                           />
                         </div>
@@ -861,7 +1598,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                           <Input
                             id="discountEndDate"
                             type="date"
-                            value={formData.discountEndDate}
+                            value={formatDateForInput(formData.discountEndDate)}
                             onChange={(e) => setFormData({ ...formData, discountEndDate: e.target.value })}
                           />
                         </div>
@@ -894,8 +1631,8 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                         </p>
                       </div>
                     </div>
-                    <div className="h-[220px] w-full">
-                      <ResponsiveContainer width="100%" height="100%">
+                    <div className="w-full" style={{ height: 220, minWidth: 300 }}>
+                      <ResponsiveContainer width="100%" height={220}>
                         <AreaChart data={productStatsData} margin={{ top: 10, right: 48, left: 0, bottom: 0 }}>
                           <defs>
                             <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
@@ -1132,7 +1869,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="emailMessage">Email Message Template</Label>
+                          <Label htmlFor="emailMessage">Message Template</Label>
                           <Textarea
                             id="emailMessage"
                             value={formData.emailMessage}
@@ -1320,7 +2057,7 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
                                       </Button>
                                     </div>
                                     {field.options &&
-                                      field.options.map((option: any, optionIndex: number) => (
+                                      field.options.map((option: DropdownOption, optionIndex: number) => (
                                         <div key={optionIndex} className="flex gap-2 items-center">
                                           <Input
                                             value={option.label}
@@ -1420,39 +2157,235 @@ export function ProductDialog({ open, onOpenChange, product, productType, onSave
               </TabsContent>
 
               <TabsContent value="images" className="space-y-4">
-                <div className="space-y-3">
-                  <Label>Product Images</Label>
-                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center mb-4">
-                    <Upload className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground mb-2">
-                      {productType === "service"
-                        ? "Upload portfolio samples or service images"
-                        : productType === "digital-card"
-                          ? "Upload card design or preview images"
-                          : "Upload product images or screenshots"}
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Product Images & Video</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Upload up to {MAX_IMAGES} images (JPG, PNG, GIF, WebP – 5MB each) and one optional MP4 video up to 50MB.
                     </p>
-                    <p className="text-xs text-muted-foreground mb-4">
-                      Supported formats: JPG, PNG, GIF (Max 5MB each)
-                    </p>
-                    <Button type="button" variant="outline">
-                      Choose Files
-                    </Button>
                   </div>
+
+                  {/* Upload Area */}
+                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center space-y-4">
+                    <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      Showcase the product with screenshots, lifestyle images, or a short video walkthrough.
+                    </p>
+                    <div className="flex flex-wrap justify-center gap-3">
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                        multiple
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        id="image-upload"
+                      />
+                      <input
+                        type="file"
+                        accept="video/mp4"
+                        onChange={handleVideoUpload}
+                        className="hidden"
+                        id="video-upload"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById('image-upload')?.click()}
+                      >
+                        Upload Images
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        disabled={Boolean(formData.video)}
+                        onClick={() => document.getElementById('video-upload')?.click()}
+                      >
+                        {formData.video ? 'Video Added' : 'Upload Video'}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Images: {formData.images.length}/{MAX_IMAGES} · Video: {formData.video ? 1 : 0}/1
+                    </p>
+                  </div>
+
+                  {/* Combined Images & Video Grid */}
+                  {(formData.images.length > 0 || formData.video) && (
+                    <div className="space-y-3">
+                      <Label>Uploaded Media ({formData.images.length + (formData.video ? 1 : 0)})</Label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {/* Images */}
+                        {formData.images.map((image, index) => (
+                          <div
+                            key={`img-${index}`}
+                            className={`relative group rounded-lg overflow-hidden border-2 ${
+                              formData.mainImage === image
+                                ? 'border-primary'
+                                : 'border-muted-foreground/25'
+                            }`}
+                          >
+                            <div className="aspect-square relative">
+                              <img
+                                src={image}
+                                alt={`Product ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                              
+                              {/* Main Image Badge */}
+                              {formData.mainImage === image && (
+                                <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
+                                  Main
+                                </div>
+                              )}
+
+                              {/* Action Buttons */}
+                              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                {formData.mainImage !== image && (
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={() => setAsMainImage(index)}
+                                  >
+                                    Set Main
+                                  </Button>
+                                )}
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => removeImage(index)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+
+                        {/* Video */}
+                        {formData.video && (
+                          <div className="relative group rounded-lg overflow-hidden border-2 border-muted-foreground/25">
+                            <div className="aspect-square relative bg-black">
+                              <video
+                                src={formData.video}
+                                className="w-full h-full object-cover"
+                              />
+                              
+                              {/* Video Badge */}
+                              <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
+                                Video
+                              </div>
+
+                              {/* Action Buttons */}
+                              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="secondary"
+                                  onClick={() => setAsMainMedia("video")}
+                                >
+                                  Set Main
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="secondary"
+                                  onClick={() => setVideoModalOpen(true)}
+                                >
+                                  <Expand className="h-4 w-4 mr-1" />
+                                  View
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={removeVideo}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Click on an image to set it as the main product image. Click "Set Main" on the video to display it as the primary media.
+                      </p>
+                    </div>
+                  )}
+
+                  {formData.images.length === 0 && !formData.video && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p className="text-sm">No media uploaded yet</p>
+                      <p className="text-xs mt-1">Upload images and video to showcase your product</p>
+                    </div>
+                  )}
                 </div>
               </TabsContent>
             </div>
 
+            {/* Error Display */}
+            {submitError && (
+              <div className="mt-4 mb-4 flex items-start gap-3 p-3 bg-destructive border border-destructive/90 rounded-lg">
+              <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">{submitError}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSubmitError(null)}
+                className="hover:opacity-70"
+              >
+                <X className="h-4 w-4" />
+              </button>
+              </div>
+            )}
+
             <DialogFooter className="flex flex-col sm:flex-col gap-2">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="w-full sm:w-auto"
+                disabled={isSubmitting}
+              >
                 Cancel
               </Button>
-              <Button type="submit" className="w-full sm:w-auto">
-                {product ? "Update Product" : "Add Product"}
+              <Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    {product ? "Updating..." : "Adding..."}
+                  </>
+                ) : product ? (
+                  "Update Product"
+                ) : (
+                  "Add Product"
+                )}
               </Button>
             </DialogFooter>
           </form>
         </Tabs>
       </DialogContent>
+
+      {/* Video Expand Modal */}
+      <Dialog open={videoModalOpen} onOpenChange={setVideoModalOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Product Video</DialogTitle>
+          </DialogHeader>
+          {formData.video && (
+            <div className="w-full bg-black rounded-lg overflow-hidden">
+              <video
+                src={formData.video}
+                controls
+                autoPlay
+                className="w-full h-auto"
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Dialog>
   )
 }
