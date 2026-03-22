@@ -22,6 +22,8 @@
 - **Tailwind CSS**: لتصميم واجهة المستخدم.
 - **Shadcn UI**: مكونات واجهة مستخدم قابلة للتخصيص.
 - **Recharts**: مكتبة لإنشاء الرسوم البيانية.
+- **Prisma**: ORM للتعامل مع قاعدة البيانات.
+- **SQLite**: قاعدة بيانات للتطوير (قابلة للتبديل إلى PostgreSQL للإنتاج).
 
 ## هيكل المشروع
 
@@ -55,12 +57,19 @@ styles/               # أنماط CSS
    pnpm install
    \`\`\`
 
-2. **تشغيل خادم التطوير**:
+2. **إعداد قاعدة البيانات**:
+   \`\`\`bash
+   npx prisma generate
+   npx prisma db push
+   npx tsx prisma/seed.ts
+   \`\`\`
+
+3. **تشغيل خادم التطوير**:
    \`\`\`bash
    pnpm dev
    \`\`\`
 
-3. **الوصول للتطبيق**:
+4. **الوصول للتطبيق**:
    افتح متصفحك على الرابط http://localhost:3000
 
 ## التخصيص
@@ -106,6 +115,8 @@ A comprehensive dashboard for managing an e-commerce store, built with Next.js a
 - **Tailwind CSS**: For designing the user interface.
 - **Shadcn UI**: Customizable UI components.
 - **Recharts**: Library for creating charts.
+- **Prisma**: ORM for database operations.
+- **SQLite**: Development database (switchable to PostgreSQL for production).
 
 ## Project Structure
 
@@ -139,12 +150,19 @@ styles/               # CSS styles
    pnpm install
    \`\`\`
 
-2. **Run the development server**:
+2. **Setup database**:
+   \`\`\`bash
+   npx prisma generate
+   npx prisma db push
+   npx tsx prisma/seed.ts
+   \`\`\`
+
+3. **Run the development server**:
    \`\`\`bash
    pnpm dev
    \`\`\`
 
-3. **Access the application**:
+4. **Access the application**:
    Open your browser at http://localhost:3000
 
 ## Customization

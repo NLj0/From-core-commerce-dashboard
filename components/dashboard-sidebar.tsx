@@ -84,8 +84,9 @@ export function DashboardSidebar({ isOpen = true, onClose }: DashboardSidebarPro
 
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex h-full w-64 flex-col bg-sidebar border-r border-sidebar-border transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0",
-          isOpen ? "translate-x-0" : "-translate-x-full",
+          "fixed inset-y-0 z-50 flex h-full w-64 flex-col bg-sidebar transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0",
+          isRTL ? "right-0 border-l border-sidebar-border" : "left-0 border-r border-sidebar-border",
+          isRTL && isOpen ? "translate-x-0" : !isRTL && isOpen ? "translate-x-0" : isRTL ? "translate-x-full" : "-translate-x-full",
           isRTL ? "items-end text-right" : "items-start text-left",
         )}
         dir={dir}
@@ -93,12 +94,12 @@ export function DashboardSidebar({ isOpen = true, onClose }: DashboardSidebarPro
         {/* Logo and Store Name */}
         <div className={cn("flex items-center gap-2 p-6 border-b border-sidebar-border", isRTL ? "flex-row-reverse" : "")}
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary flex-shrink-0">
             <Store className="h-4 w-4 text-sidebar-primary-foreground" />
           </div>
-          <div className="flex flex-col flex-1">
-            <h1 className="text-lg font-semibold text-sidebar-foreground">StoreAdmin</h1>
-            <p className="text-xs text-muted-foreground">E-commerce Dashboard</p>
+          <div className={cn("flex flex-col flex-1", isRTL ? "text-right" : "text-left")}>
+            <h1 className={cn("text-lg font-semibold text-sidebar-foreground", isRTL && "font-arabic")}>{isRTL ? "لوحة التحكم" : "StoreAdmin"}</h1>
+            <p className={cn("text-xs text-muted-foreground", isRTL && "font-arabic")}>{isRTL ? "لوحة تحكم التجارة الإلكترونية" : "E-commerce Dashboard"}</p>
           </div>
           <Button variant="ghost" size="sm" className="lg:hidden h-8 w-8 p-0" onClick={onClose}>
             <X className="h-4 w-4" />
@@ -137,17 +138,8 @@ export function DashboardSidebar({ isOpen = true, onClose }: DashboardSidebarPro
                       isRTL ? "flex-row-reverse text-right" : "text-left",
                     )}
                   >
-                    {isRTL ? (
-                      <>
-                        <item.icon className="h-4 w-4" />
-                        <span className="flex-1 truncate">{t(item.titleKey)}</span>
-                      </>
-                    ) : (
-                      <>
-                        <item.icon className="h-4 w-4" />
-                        <span className="flex-1 truncate">{t(item.titleKey)}</span>
-                      </>
-                    )}
+                    <item.icon className="h-4 w-4 flex-shrink-0" />
+                    <span className={cn("flex-1 truncate", isRTL && "font-arabic")}>{t(item.titleKey)}</span>
                   </Link>
                 </Button>
               )

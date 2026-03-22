@@ -412,7 +412,6 @@ export default function EmailsPage() {
 
   const exportSelectedLogs = () => {
     const selectedLogs = filteredEmailLogs.filter((log) => selectedLogEntries.includes(log.id))
-    console.log("Exporting logs:", selectedLogs)
     // Handle export logic here
   }
 
@@ -1178,7 +1177,6 @@ export default function EmailsPage() {
           setSelectedTemplate(null)
         }}
         onSave={(template) => {
-          console.log("Saving template:", template)
           // Handle template save logic here
         }}
       />
@@ -1191,7 +1189,6 @@ export default function EmailsPage() {
           setSelectedCampaign(null)
         }}
         onSave={(campaign) => {
-          console.log("Saving campaign:", campaign)
           // Handle campaign save logic here
         }}
       />

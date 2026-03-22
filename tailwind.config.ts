@@ -9,7 +9,11 @@ const config: Config = {
     "./styles/**/*.{ts,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        arabic: ["var(--font-cairo), system-ui, -apple-system, sans-serif"],
+      },
+    },
   },
   plugins: [tailwindcssAnimate],
   darkMode: "class",

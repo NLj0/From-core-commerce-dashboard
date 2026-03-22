@@ -118,7 +118,9 @@
       "all": "All Categories",
       "Electronics": "Electronics",
       "Accessories": "Accessories"
-    }
+    },
+    "noProducts": "No products found",
+    "noProductsDescription": "There are no products yet. Create your first product to get started."
   },
   "categories": {
     "title": "Categories",
@@ -159,7 +161,10 @@
     "icon": "Icon",
     "image": "Image",
     "uploadImage": "Upload Image",
-    "deleteConfirm": "Are you sure you want to delete this category? This action cannot be undone."
+    "deleteConfirm": "Are you sure you want to delete this category? This action cannot be undone.",
+    "noCategories": "No categories yet",
+    "noData": "Get started by creating your first category",
+    "noFilterResults": "No categories match your filters"
   },
   "orders": {
     "title": "Orders",
